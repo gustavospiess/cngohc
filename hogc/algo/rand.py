@@ -36,6 +36,11 @@ def rand_uni(data: tp.Sequence[_T], *, rand: Random) -> _T:
 
 
 @__rand_safe
+def rand_uni_range(minimum: int, maximum: int, *, rand: Random) -> int:
+    return rand.randint(minimum, maximum)
+
+
+@__rand_safe
 def sample(
         data: tp.Union[tp.Sequence[_T], tp.AbstractSet[_T]],
         *,

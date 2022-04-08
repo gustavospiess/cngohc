@@ -16,13 +16,17 @@ def test_rand_uni():
     assert count['b'] > 450
 
 
+def test_rand_uni_range():
+    count = Counter([rand.rand_uni_range(1, 2) for _ in range(1000)])
+    assert count[1] > 450
+    assert count[2] > 450
+
+
 def test_rand_sample():
     data = ['a', 'b', 'c']
     count = Counter(tuple(sorted(rand.sample(data, k=2))) for _ in range(1000))
-    print(count)
 
     for group in itertools.combinations(data, 2):
-        print(group)
         assert count[group] > 300
 
 
@@ -71,6 +75,19 @@ def test_rand_uni_seed():
 
     r.seed(seed)
     count_b = Counter(rand.rand_uni(data, rand=r) for _ in range(1000))
+
+    assert count_a == count_b
+
+
+def test_rand_uni_range_seed():
+    seed = 'seeded_test'
+    r = random.Random()
+
+    r.seed(seed)
+    count_a = Counter(rand.rand_uni_range(1, 999, rand=r) for _ in range(1000))
+
+    r.seed(seed)
+    count_b = Counter(rand.rand_uni_range(1, 999, rand=r) for _ in range(1000))
 
     assert count_a == count_b
 
