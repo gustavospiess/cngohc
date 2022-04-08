@@ -97,9 +97,8 @@ class Partition(
     '''
 
     def __init__(self,
-                 data: tp.Iterable[Vertex] = tuple(),
-                 identifier: tp.Optional[int] = None,
-                 **kwargs):
+                 members: tp.Iterable[tp.Union[Vertex, 'Partition']] = tuple(),
+                 identifier: tp.Optional[int] = None):
         if identifier is None:
             identifier = id(self)
         self.identifier: int = identifier
@@ -107,9 +106,7 @@ class Partition(
         This is used to force a static hash, if not informed in initialization
         `id(self)` will be used
         '''
-        self.__inner_set: tp.Set[PartitionMember] = set(data)
-
-        super().__init__(**kwargs)
+        self.__inner_set: tp.Set[PartitionMember] = set(members)
 
     def __len__(self) -> int:
         return len(self.__inner_set)
@@ -139,7 +136,7 @@ class Partition(
         It is optimized for readability and ease of use, not for performance.
         '''
         return {
-                'id': self.identifier,
+                'identifier': self.identifier,
                 'members': tuple(m.to_raw() for m in self)
                 }
 
@@ -161,19 +158,30 @@ class Partition(
         Class method for generating a new instance of `Partition` from the raw
         data extracted from `to_raw`.
         '''
-        if not isinstance(raw, dict):
+        if not isinstance(raw, tp.Mapping):
             raise TypeError('Invalid data structure')
-        if 'id' not in raw or 'members' not in raw:
+
+        args, kwargs = cls._clear_args(**raw)
+        return cls(*args, **kwargs)
+
+    @classmethod
+    def _clear_args(
+            cls,
+            *args,
+            **kwargs) -> tp.Tuple[tp.Tuple[tp.Any, ...], tp.Dict[str, tp.Any]]:
+        members: tp.Set[tp.Union[Vertex, 'Partition']] = set()
+        if 'identifier' not in kwargs or 'members' not in kwargs:
             raise TypeError('Invalid data structure')
-        base = Partition(identifier=raw['id'])
-        for m in raw['members']:
+
+        for m in kwargs['members']:
             if isinstance(m, dict):
-                base.add(cls.from_raw(m))
+                members.add(cls.from_raw(m))
             elif isinstance(m, tp.Iterable):
-                base.add(Vertex(m))
+                members.add(Vertex(m))
             else:
                 raise TypeError('Invalid data structure')
-        return base
+        kwargs['members'] = members
+        return args, kwargs
 
 
 class WeighedPartition(Partition):
@@ -182,13 +190,41 @@ class WeighedPartition(Partition):
     implementation.
     '''
 
-    def __init__(self, data=tuple()):
-        self.weigh_vector: Vector = None
+    def __init__(
+            self,
+            *args,
+            weigh_vector: Vector = Vector(),
+            **kwargs):
+        self.weigh_vector = weigh_vector
         '''
         Vector of weighs to consider while calculating the distance /
         compatibility of a pair of Vertexes for the context of this partition.
         '''
-        super().__init__(data)
+        super().__init__(*args, **kwargs)
+
+    @classmethod
+    def _clear_args(
+            cls,
+            *args,
+            **kwargs) -> tp.Tuple[tp.Tuple[tp.Any, ...], tp.Dict[str, tp.Any]]:
+
+        if 'weigh_vector' not in kwargs:
+            raise TypeError('Invalid data structure')
+
+        kwargs['weigh_vector'] = Vector(kwargs['weigh_vector'])
+
+        return super()._clear_args(*args, **kwargs)
+
+    def to_raw(self) -> tp.Dict[str, tp.Any]:
+        '''
+        Extract the data into a `Raw` and JSON serializable data structure for
+        saving the data.
+
+        It is optimized for readability and ease of use, not for performance.
+        '''
+        base = super().to_raw()
+        base['weigh_vector'] = self.weigh_vector
+        return base
 
     def compatibility(self, representative: Vertex, other: Vertex) -> float:
         '''
@@ -222,7 +258,7 @@ class WeighedPartition(Partition):
         return Vector(i/sum(inverted) for i in inverted)
 
 
-class Graph():
+class Graph(tp.NamedTuple):
     '''
     Representation of a mutable graph.
 
@@ -232,10 +268,35 @@ class Graph():
     and the set `p` for the partitions.
     '''
 
-    def __init__(self):
-        self.vertex_set: tp.Set[Vertex] = set()
-        self.edge_set: tp.Set[tp.Tuple[Vertex, Vertex]] = set()
-        self.partition: Partition = Partition()
+    vertex_set: tp.Set[Vertex]
+    edge_set: tp.Set[tp.Tuple[Vertex, Vertex]]
+    partition: Partition
+
+    @classmethod
+    def make(
+            cls,
+            vertex_set: tp.Optional[tp.Set[Vertex]] = None,
+            edge_set: tp.Optional[tp.Set[tp.Tuple[Vertex, Vertex]]] = None,
+            partition: tp.Optional[Partition] = None
+            ):
+        '''TODO'''
+        return cls(
+                vertex_set if vertex_set else set(),  # TODO make frozenset
+                edge_set if edge_set else set(),  # TODO make frozenset
+                partition if partition else Partition()
+                )
+
+    @property
+    def neighbors_of(
+            self) -> tp.Mapping[Vertex, tp.Generator[Vertex, None, None]]:
+        '''TODO'''
+        return _NeighborsOf(self)
+
+    @property
+    def partitions_of(
+            self) -> tp.Mapping[Vertex, tp.Generator[Partition, None, None]]:
+        '''TODO'''
+        return _PartitionsOf(self)
 
     def write_partition_to_buffer(self, buf: tp.IO[str]):
         json_dump(self.partition.to_raw(), buf)
@@ -247,15 +308,75 @@ class Graph():
         csv_writer(buf).writerows(chain(*self.edge_set))
 
     def read_partition_from_buffer(self, buf: tp.IO[str]):
-        self.partition = Partition.from_raw(json_load(buf))
+        return type(self).make(
+                vertex_set=self.vertex_set,
+                edge_set=self.edge_set,
+                partition=Partition.from_raw(json_load(buf)),
+                )
 
     def read_vertex_from_buffer(self, buf: tp.Iterable[tp.Text]):
-        self.vertex_set = set(Vertex.from_str(l) for l in csv_reader(buf))
+        return type(self).make(
+                vertex_set=set(Vertex.from_str(l) for l in csv_reader(buf)),
+                edge_set=self.edge_set,
+                partition=self.partition
+                )
 
     def read_edge_from_buffer(self, buf: tp.Iterable[tp.Text]):
         unchain = _unchain(csv_reader(buf))
-        self.edge_set = set((Vertex.from_str(p), Vertex.from_str(q))
-                            for p, q in unchain)
+        edge_set = set(
+                (Vertex.from_str(p), Vertex.from_str(q)) for p, q in unchain)
+        res = type(self).make(
+                vertex_set=self.vertex_set,
+                edge_set=edge_set,
+                partition=self.partition)
+        return res
+
+
+_T = tp.TypeVar('_T')
+
+
+class _GraphMapping(
+        tp.Mapping[Vertex, tp.Generator[_T, None, None]],
+        tp.Generic[_T]):
+    '''TODO'''
+    __slots__ = ['graph']
+
+    def __init__(self, graph: Graph):
+        self.graph = graph
+
+    def __iter__(self) -> tp.Iterator[Vertex]:
+        return iter(self.graph.vertex_set)
+
+    def __len__(self) -> int:
+        return len(self.graph.vertex_set)
+
+
+class _PartitionsOf(_GraphMapping[Partition]):
+    '''TODO'''
+    def __getitem__(self, item: Vertex) -> tp.Generator[Partition, None, None]:
+        yield from self.__recursive_gen(item, (self.graph.partition,))
+
+    def __recursive_gen(
+            self,
+            item: Vertex,
+            stack: tp.Tuple[Partition, ...] = tuple()):
+        for sub in stack[-1]:
+            if isinstance(sub, Partition):
+                parts = self.__recursive_gen(item, stack + (sub,))
+                if (parts is not None):
+                    return parts
+            elif item == sub:
+                return stack + (sub,)
+
+
+class _NeighborsOf(_GraphMapping[Vertex]):
+    '''TODO'''
+    def __getitem__(self, item: Vertex) -> tp.Generator[Vertex, None, None]:
+        for edge in self.graph.edge_set:
+            if item == edge[0]:
+                yield edge[1]
+            elif item == edge[1]:
+                yield edge[0]
 
 
 T = tp.TypeVar('T')

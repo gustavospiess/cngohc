@@ -68,12 +68,13 @@ class KMedoidsCluster(tp.Sequence[Vector]):
 class KMedoids(tp.Sequence[Cluster]):
     def __init__(
             self,
-            data: tp.Sequence[Vector],
+            data: tp.Iterable[Vector],
             *,
             n_clusters: int):
         '''
         K medoids adapter
         '''
+        data = tuple(data)
         self._k = _KMedoids(n_clusters=n_clusters, random_state=0).fit(data)
         self._data = data
         self.centers = tuple(c.center for c in self)

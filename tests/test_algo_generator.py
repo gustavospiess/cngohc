@@ -5,6 +5,7 @@ Tests for `hogc.algo.generator` module.
 from hogc.algo import generator
 from hogc import models
 from collections import Counter
+from functools import reduce
 
 import pytest
 
@@ -66,3 +67,60 @@ def test_initialize_graph_vertex_len(qtd, data, length):
     assert len(g.vertex_set) == qtd
     for v in g.vertex_set:
         assert len(v) == length
+
+
+@pytest.mark.parametrize('vertex_count', [
+    100,
+    500,
+    1000,
+    ])
+@pytest.mark.parametrize('deviation_sequence', [
+    (10,),
+    (1, 2,),
+    (1, 2, 3,),
+    (1, 2, 3,) * 3,
+    ])
+@pytest.mark.parametrize('community_count', [
+    (2, 3,),
+    (3, 2,),
+    (2, 2, 2,),
+    ])
+def test_initialize_communities(
+        vertex_count,
+        deviation_sequence,
+        community_count):
+    p = generator.Parameters(
+            vertex_count=vertex_count,
+            deviation_sequence=deviation_sequence,
+            community_count=community_count)
+    g = generator.initialize_graph(p)
+    g = generator.initialize_communities(p, g)
+
+    assert len(g.partition) == community_count[0]
+
+    def partition_depht(part, n=0):
+        yield part, n
+        for sub in part:
+            if isinstance(sub, models.Partition):
+                yield from partition_depht(sub, n+1)
+
+    for expected_level in range(1, len(community_count)+1):
+        expected = reduce(
+                lambda x, y: x*y,
+                community_count[:expected_level],
+                1)
+        communities_of_level = tuple(
+                part for part, level in partition_depht(g.partition)
+                if level == expected_level)
+        assert len(communities_of_level) == expected
+
+    proccessed = tuple(g.partition.depht)
+    for vertex in proccessed:
+        neighbor_list = tuple(g.neighbors_of[vertex])
+        assert len(neighbor_list) > 0
+        for neighbor in neighbor_list:
+            assert neighbor in proccessed
+
+    for vertex in proccessed:
+        assert g.partition in g.partitions_of[vertex]
+        assert len(set(g.partition) & set(g.partitions_of[vertex])) == 1

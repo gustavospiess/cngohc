@@ -3,8 +3,9 @@ This module wraps all the methods for the graph generation.
 '''
 
 
-from ..models import Vertex, Graph
-from .rand import rand_norm
+from ..models import Vertex, Vector, Graph, Partition
+from .rand import rand_norm, sample, rand_uni_range
+from .clustering import KMedoids
 
 import typing as tp
 
@@ -20,7 +21,7 @@ class Parameters(tp.NamedTuple):
     '''Ratio of vertexes to be added by homogeneity'''
     representative_count: int = 3  # NbRep
     '''Number oif representatieves of a partition'''
-    comunity_count: tp.Tuple[int, ...] = (3, 2,)  # K
+    community_count: tp.Tuple[int, ...] = (3, 2,)  # K
     '''
     Sequence of hierarchical communities quantities, the first value indicates
     how many communities will be created at the root of the graph, the second
@@ -38,7 +39,7 @@ class Parameters(tp.NamedTuple):
     second level community and so on.
     This should be a sequence of length equal to the level count of the graph.
     '''
-    max_between_edge: int = 3  # E_max_wth
+    max_between_edge: int = 3  # E_max_btw
     '''Maximum quantity of initial edges a vertex will recieve on addition to a
     community linking it to outside the comunity.'''
 
@@ -47,8 +48,60 @@ def make_vertex(deviation_seq: tp.Sequence[float]) -> Vertex:
     return Vertex(rand_norm(0, dev) for dev in deviation_seq)
 
 
-def initialize_graph(p: Parameters) -> Graph:
-    g = Graph()
-    g.vertex_set.update(
-            make_vertex(p.deviation_sequence) for _ in range(p.vertex_count))
+def initialize_graph(param: Parameters) -> Graph:
+    g = Graph.make(set(
+        make_vertex(param.deviation_sequence)
+        for _ in range(param.vertex_count)))
     return g
+
+
+def _initialize_communities(
+        graph: Graph,
+        param: Parameters,
+        population: tp.Iterable[Vector] = tuple(),
+        level: int = 0
+        ) -> tp.Tuple[tp.Set[tp.Tuple[Vertex, Vertex]], Partition]:
+
+    if not population:
+        return _initialize_communities(graph, param, graph.vertex_set, level)
+
+    max_level = len(param.community_count)
+    if level == max_level:
+        return _initialize_leaf_communities(population, graph, param)
+
+    sample_size = param.representative_count ** (max_level-level)
+    smp = sample(population, k=sample_size)
+
+    cluster_set = KMedoids(smp, n_clusters=param.community_count[level])
+    cluster_set = cluster_set.cap(cluster_set.min_len)
+    part = Partition()
+    edge_set = set()
+    for cluster in cluster_set:
+        nxt = level + 1
+        sub_edge, sub_part = _initialize_communities(graph, param, smp, nxt)
+        part.add(sub_part)
+        edge_set.update(sub_edge)
+    return edge_set, part
+
+
+def _initialize_leaf_communities(
+        population: tp.Iterable[Vector],
+        graph: Graph,
+        param: Parameters
+        ) -> tp.Tuple[tp.Set[tp.Tuple[Vertex, Vertex]], Partition]:
+    partition = Partition(Vertex(p) for p in population)
+    edge_set: tp.Set[tp.Tuple[Vertex, Vertex]] = set()
+    for vertex in partition:
+        vertex_pool = partition - {vertex} - {e[1] for e in edge_set}
+        max_edge_count = min(len(vertex_pool), param.max_within_edge[-1])
+        edge_count = max_edge_count
+        if (max_edge_count > 1):
+            edge_count = rand_uni_range(1, max_edge_count)
+        for other_vertex in sample(vertex_pool, k=edge_count):
+            edge_set.add((vertex, other_vertex))  # type: ignore
+    return edge_set, partition
+
+
+def initialize_communities(param: Parameters, graph: Graph) -> Graph:
+    edge_set, partition = _initialize_communities(graph, param)
+    return Graph(graph.vertex_set, edge_set, partition)

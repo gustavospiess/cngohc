@@ -8,7 +8,7 @@ import pytest
 
 
 def test_factorty():
-    g = models.Graph()
+    g = models.Graph.make()
     p = models.Partition()
     v = models.Vertex((0, 1,))
     g.vertex_set.add(v)
@@ -57,19 +57,87 @@ def test_partition_json():
     assert p.identifier == q.identifier
 
 
+def test_weighedpartition_json():
+    p = models.WeighedPartition()
+    p2 = models.Partition()
+    data = models.Vertex((1, 2,))
+    p.add(data)
+    p2.add(data)
+
+    assert p.to_raw() != p2.to_raw()
+
+    p.weigh_vector = models.Vector((0, 0))
+
+    serial = json.dumps(p.to_raw())
+    raw = json.loads(serial)
+    q = models.WeighedPartition.from_raw(raw)
+    assert q == p
+    assert hash(p) == hash(q)
+    assert p.identifier == q.identifier
+    assert p.weigh_vector == q.weigh_vector
+
+
 def test_partition_invalid_raw():
     with pytest.raises(TypeError):
         models.Partition.from_raw(None)
     with pytest.raises(TypeError):
         models.Partition.from_raw({})
     with pytest.raises(TypeError):
-        models.Partition.from_raw({'id': 0, 'members': None})
+        models.Partition.from_raw({'identifier': 0, 'members': None})
     with pytest.raises(TypeError):
-        models.Partition.from_raw({'id': 0, 'members': [1]})
+        models.Partition.from_raw({'identifier': 0, 'members': [1]})
+    with pytest.raises(TypeError):
+        models.WeighedPartition.from_raw({'identifier': 0, 'members': [1]})
+
+
+def test_graph_neighbors():
+    g = models.Graph.make()
+    v1 = models.Vertex((1.0, 2.0,))
+    v2 = models.Vertex((2.0, 2.0,))
+    v3 = models.Vertex((3.0, 2.0,))
+    v4 = models.Vertex((4.0, 2.0,))
+    g.edge_set.add((v1, v2,))
+    g.edge_set.add((v1, v3))
+    g.edge_set.add((v1, v4,))
+    g.edge_set.add((v2, v3,))
+    g.edge_set.add((v2, v4,))
+    g.edge_set.add((v3, v4,))
+    g.vertex_set.update((v1, v2, v3, v4,))
+
+    assert len(tuple(g.neighbors_of)) == 4
+    assert len(tuple(g.neighbors_of[v1])) == 3
+    assert len(tuple(g.neighbors_of[v2])) == 3
+    assert len(tuple(g.neighbors_of[v3])) == 3
+    assert len(tuple(g.neighbors_of[v4])) == 3
+
+    assert v1 not in g.neighbors_of[v1]
+    assert v2 in g.neighbors_of[v1]
+    assert v3 in g.neighbors_of[v1]
+    assert v4 in g.neighbors_of[v1]
+
+    assert v1 in g.neighbors_of[v2]
+    assert v2 not in g.neighbors_of[v2]
+    assert v3 in g.neighbors_of[v2]
+    assert v4 in g.neighbors_of[v2]
+
+    assert v1 in g.neighbors_of[v3]
+    assert v2 in g.neighbors_of[v3]
+    assert v3 not in g.neighbors_of[v3]
+    assert v4 in g.neighbors_of[v3]
+
+    assert v1 in g.neighbors_of[v4]
+    assert v2 in g.neighbors_of[v4]
+    assert v3 in g.neighbors_of[v4]
+    assert v4 not in g.neighbors_of[v4]
+
+    assert v1 in tuple(g.neighbors_of)
+    assert v2 in tuple(g.neighbors_of)
+    assert v3 in tuple(g.neighbors_of)
+    assert v4 in tuple(g.neighbors_of)
 
 
 def test_graph_save_partition():
-    g = models.Graph()
+    g = models.Graph.make()
     v1 = models.Vertex((1.0, 2.0,))
     v2 = models.Vertex((2.0, 2.0,))
     g.vertex_set.add(v1)
@@ -90,15 +158,15 @@ def test_graph_save_partition():
     assert partition == g.partition
     assert hash(partition) == hash(g.partition)
 
-    g_loaded = models.Graph()
+    g_loaded = models.Graph.make()
     with open(path, 'r') as buf:
-        g_loaded.read_partition_from_buffer(buf)
+        g_loaded = g_loaded.read_partition_from_buffer(buf)
     assert g_loaded.partition == g.partition
     assert hash(g_loaded.partition) == hash(g.partition)
 
 
 def test_graph_save_vertex():
-    g = models.Graph()
+    g = models.Graph.make()
     assert len(g.vertex_set) == 0
     v1 = models.Vertex((1.0, 2.0,))
     v2 = models.Vertex((2.0, 2.0,))
@@ -116,14 +184,14 @@ def test_graph_save_vertex():
     assert lines[0] == '1.0,2.0\n'
     assert lines[1] == '2.0,2.0\n'
 
-    g_loaded = models.Graph()
+    g_loaded = models.Graph.make()
     with open(path, 'r') as buf:
-        g_loaded.read_vertex_from_buffer(buf)
+        g_loaded = g_loaded.read_vertex_from_buffer(buf)
     assert g_loaded.vertex_set == g.vertex_set
 
 
 def test_graph_save_edge():
-    g = models.Graph()
+    g = models.Graph.make()
     v1 = models.Vertex((1.0, 2.0,))
     v2 = models.Vertex((2.0, 2.0,))
     v3 = models.Vertex((3.0, 2.0,))
@@ -149,10 +217,52 @@ def test_graph_save_edge():
     for l1, l2 in zip(lines, expected_lines):
         assert l1 == l2
 
-    g_loaded = models.Graph()
+    g_loaded = models.Graph.make()
     with open(path, 'r') as buf:
-        g_loaded.read_edge_from_buffer(buf)
+        g_loaded = g_loaded.read_edge_from_buffer(buf)
     assert g_loaded.edge_set == g.edge_set
+
+
+def test_graph_save():
+    v1 = models.Vertex((1.0, 2.0,))
+    v2 = models.Vertex((2.0, 2.0,))
+    v3 = models.Vertex((3.0, 2.0,))
+    v4 = models.Vertex((4.0, 2.0,))
+
+    g = models.Graph.make()
+    g.edge_set.add((v1, v2,))
+    g.edge_set.add((v2, v3,))
+    g.edge_set.add((v3, v1,))
+    g.edge_set.add((v1, v4,))
+    g.edge_set.add((v2, v4,))
+    g.edge_set.add((v3, v4,))
+
+    p1 = models.Partition((v1, v2, v3, v4,))
+    g.partition.add(p1)
+
+    g_loaded = models.Graph.make()
+
+    path = tempfile.gettempprefix()
+    with open(path, 'w') as buf:
+        g.write_vertex_to_buffer(buf)
+    with open(path, 'r') as buf:
+        g_loaded = g_loaded.read_vertex_from_buffer(buf)
+
+    path = tempfile.gettempprefix()
+    with open(path, 'w') as buf:
+        g.write_edge_to_buffer(buf)
+    with open(path, 'r') as buf:
+        g_loaded = g_loaded.read_edge_from_buffer(buf)
+
+    with open(path, 'w') as buf:
+        g.write_partition_to_buffer(buf)
+    with open(path, 'r') as buf:
+        g_loaded = g_loaded.read_partition_from_buffer(buf)
+
+    assert g_loaded.vertex_set == g.vertex_set
+    assert g_loaded.edge_set == g.edge_set
+    assert g_loaded.partition == g.partition
+    assert hash(g_loaded.partition) == hash(g.partition)
 
 
 def test_vertex_utils():
@@ -235,14 +345,12 @@ def test_inverse_max_inertia_axis_noise(noise):
     assert round(sum(axis_b), 9) == 1
     assert round(sum(axis), 9) == 1
 
-    print(axis_b)
     centered = tuple(v - axis_b for v in p_b.depht)
     balanced_inertia = sum(sum(abs(v*a)**2 for v, a in zip(vec, axis_b))
                            for vec in zip(*centered))
     alt_axis = (0.5, 0.5)
     inertia = sum(sum(abs(v*a)**2 for v, a in zip(vec, alt_axis))
                   for vec in zip(*centered))
-    print(centered)
 
     assert balanced_inertia*0.75 < inertia
 
@@ -295,3 +403,10 @@ def test_compatibility_within_weigh():
     assert p.compatibility(models.Vertex((1, 0)), models.Vertex((0, 0))) == 0.7
     assert p.compatibility(models.Vertex((0, 1)), models.Vertex((0, 0))) == 0.3
     assert p.compatibility(models.Vertex((1, 1)), models.Vertex((0, 0))) == 1
+
+
+def test_graph_immutable():
+    g1 = models.Graph.make()
+    g2 = models.Graph.make()
+    assert g1 == g2
+    g1.vertex_set.add(1)
