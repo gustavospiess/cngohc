@@ -55,11 +55,12 @@ class Vertex(Vector):
     Representation of attributed vertex for the graphs
     '''
 
-    def to_raw(self) -> 'Vertex':
+    def to_raw(self) -> tp.Tuple[float, ...]:
         return self
 
     @classmethod
-    def from_str(cls, data: tp.Iterable[str]) -> 'Vertex':
+    def from_raw(
+            cls, data: tp.Iterable[tp.Union[tp.Text, int, float]]) -> 'Vertex':
         return cls(float(f) for f in data)
 
 
@@ -94,6 +95,8 @@ class Partition(
 
     It also override the __contains__ method from `set`, so it checks if the
     given value is in itself or in some descendant.
+
+    TODO: make imutable
     '''
 
     def __init__(self,
@@ -268,34 +271,26 @@ class Graph(tp.NamedTuple):
     and the set `p` for the partitions.
     '''
 
-    vertex_set: tp.Set[Vertex]
-    edge_set: tp.Set[tp.Tuple[Vertex, Vertex]]
-    partition: Partition
-
-    @classmethod
-    def make(
-            cls,
-            vertex_set: tp.Optional[tp.Set[Vertex]] = None,
-            edge_set: tp.Optional[tp.Set[tp.Tuple[Vertex, Vertex]]] = None,
-            partition: tp.Optional[Partition] = None
-            ):
-        '''TODO'''
-        return cls(
-                vertex_set if vertex_set else set(),  # TODO make frozenset
-                edge_set if edge_set else set(),  # TODO make frozenset
-                partition if partition else Partition()
-                )
+    vertex_set: tp.FrozenSet[Vertex] = frozenset()
+    edge_set: tp.FrozenSet[tp.Tuple[Vertex, Vertex]] = frozenset()
+    partition: Partition = Partition()
 
     @property
     def neighbors_of(
             self) -> tp.Mapping[Vertex, tp.Generator[Vertex, None, None]]:
-        '''TODO'''
+        '''
+        Mapping property of the graph that returns a generator of vertexes
+        next to the index.
+        '''
         return _NeighborsOf(self)
 
     @property
     def partitions_of(
             self) -> tp.Mapping[Vertex, tp.Generator[Partition, None, None]]:
-        '''TODO'''
+        '''
+        Mapping property of the graph that returns a generator of partitions,
+        yeilding every partition the vertex is inside.
+        '''
         return _PartitionsOf(self)
 
     def write_partition_to_buffer(self, buf: tp.IO[str]):
@@ -308,24 +303,25 @@ class Graph(tp.NamedTuple):
         csv_writer(buf).writerows(chain(*self.edge_set))
 
     def read_partition_from_buffer(self, buf: tp.IO[str]):
-        return type(self).make(
+        return Graph(
                 vertex_set=self.vertex_set,
                 edge_set=self.edge_set,
                 partition=Partition.from_raw(json_load(buf)),
                 )
 
     def read_vertex_from_buffer(self, buf: tp.Iterable[tp.Text]):
-        return type(self).make(
-                vertex_set=set(Vertex.from_str(l) for l in csv_reader(buf)),
+        reader = csv_reader(buf)
+        return Graph(
+                vertex_set=frozenset(Vertex.from_raw(l) for l in reader),
                 edge_set=self.edge_set,
                 partition=self.partition
                 )
 
     def read_edge_from_buffer(self, buf: tp.Iterable[tp.Text]):
         unchain = _unchain(csv_reader(buf))
-        edge_set = set(
-                (Vertex.from_str(p), Vertex.from_str(q)) for p, q in unchain)
-        res = type(self).make(
+        edge_set = frozenset(
+                (Vertex.from_raw(p), Vertex.from_raw(q)) for p, q in unchain)
+        res = Graph(
                 vertex_set=self.vertex_set,
                 edge_set=edge_set,
                 partition=self.partition)
@@ -338,11 +334,17 @@ _T = tp.TypeVar('_T')
 class _GraphMapping(
         tp.Mapping[Vertex, tp.Generator[_T, None, None]],
         tp.Generic[_T]):
-    '''TODO'''
-    __slots__ = ['graph']
+    '''
+    Abstract map of properties in a graph.
+    '''
+    __slots__ = ['__graph']
 
     def __init__(self, graph: Graph):
-        self.graph = graph
+        self.__graph = graph
+
+    @property
+    def graph(self) -> Graph:
+        return self.__graph
 
     def __iter__(self) -> tp.Iterator[Vertex]:
         return iter(self.graph.vertex_set)
@@ -352,7 +354,7 @@ class _GraphMapping(
 
 
 class _PartitionsOf(_GraphMapping[Partition]):
-    '''TODO'''
+    '''Graph mapping for vertex communities'''
     def __getitem__(self, item: Vertex) -> tp.Generator[Partition, None, None]:
         yield from self.__recursive_gen(item, (self.graph.partition,))
 
@@ -370,7 +372,7 @@ class _PartitionsOf(_GraphMapping[Partition]):
 
 
 class _NeighborsOf(_GraphMapping[Vertex]):
-    '''TODO'''
+    '''Graph mapping for vertex neibors'''
     def __getitem__(self, item: Vertex) -> tp.Generator[Vertex, None, None]:
         for edge in self.graph.edge_set:
             if item == edge[0]:

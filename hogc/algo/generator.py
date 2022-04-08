@@ -49,7 +49,7 @@ def make_vertex(deviation_seq: tp.Sequence[float]) -> Vertex:
 
 
 def initialize_graph(param: Parameters) -> Graph:
-    g = Graph.make(set(
+    g = Graph(frozenset(
         make_vertex(param.deviation_sequence)
         for _ in range(param.vertex_count)))
     return g
@@ -104,4 +104,4 @@ def _initialize_leaf_communities(
 
 def initialize_communities(param: Parameters, graph: Graph) -> Graph:
     edge_set, partition = _initialize_communities(graph, param)
-    return Graph(graph.vertex_set, edge_set, partition)
+    return Graph(graph.vertex_set, frozenset(edge_set), partition)

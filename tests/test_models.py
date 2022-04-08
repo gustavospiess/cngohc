@@ -8,11 +8,13 @@ import pytest
 
 
 def test_factorty():
-    g = models.Graph.make()
     p = models.Partition()
     v = models.Vertex((0, 1,))
-    g.vertex_set.add(v)
-    g.partition.add(p)
+    g = models.Graph(
+            frozenset((v,)),
+            frozenset(),
+            p
+            )
     p.add(v)
     assert v in p
     assert v in g.partition
@@ -91,18 +93,19 @@ def test_partition_invalid_raw():
 
 
 def test_graph_neighbors():
-    g = models.Graph.make()
     v1 = models.Vertex((1.0, 2.0,))
     v2 = models.Vertex((2.0, 2.0,))
     v3 = models.Vertex((3.0, 2.0,))
     v4 = models.Vertex((4.0, 2.0,))
-    g.edge_set.add((v1, v2,))
-    g.edge_set.add((v1, v3))
-    g.edge_set.add((v1, v4,))
-    g.edge_set.add((v2, v3,))
-    g.edge_set.add((v2, v4,))
-    g.edge_set.add((v3, v4,))
-    g.vertex_set.update((v1, v2, v3, v4,))
+    edge_set = set()
+    edge_set.add((v1, v2,))
+    edge_set.add((v1, v3))
+    edge_set.add((v1, v4,))
+    edge_set.add((v2, v3,))
+    edge_set.add((v2, v4,))
+    edge_set.add((v3, v4,))
+    vertex_set = frozenset((v1, v2, v3, v4,))
+    g = models.Graph(vertex_set, frozenset(edge_set))
 
     assert len(tuple(g.neighbors_of)) == 4
     assert len(tuple(g.neighbors_of[v1])) == 3
@@ -137,14 +140,16 @@ def test_graph_neighbors():
 
 
 def test_graph_save_partition():
-    g = models.Graph.make()
     v1 = models.Vertex((1.0, 2.0,))
     v2 = models.Vertex((2.0, 2.0,))
-    g.vertex_set.add(v1)
-    g.vertex_set.add(v2)
-    g.edge_set.add((v1, v2,))
+    vertex_set = set()
+    vertex_set.add(v1)
+    vertex_set.add(v2)
+    edge_set = set()
+    edge_set.add((v1, v2,))
     p1 = models.Partition((v1, v2,))
-    g.partition.add(p1)
+
+    g = models.Graph(frozenset(vertex_set), frozenset(edge_set), p1)
 
     path = tempfile.gettempprefix()
 
@@ -158,7 +163,7 @@ def test_graph_save_partition():
     assert partition == g.partition
     assert hash(partition) == hash(g.partition)
 
-    g_loaded = models.Graph.make()
+    g_loaded = models.Graph()
     with open(path, 'r') as buf:
         g_loaded = g_loaded.read_partition_from_buffer(buf)
     assert g_loaded.partition == g.partition
@@ -166,12 +171,12 @@ def test_graph_save_partition():
 
 
 def test_graph_save_vertex():
-    g = models.Graph.make()
+    g = models.Graph()
     assert len(g.vertex_set) == 0
+
     v1 = models.Vertex((1.0, 2.0,))
     v2 = models.Vertex((2.0, 2.0,))
-    g.vertex_set.add(v1)
-    g.vertex_set.add(v2)
+    g = models.Graph(frozenset((v1, v2)))
 
     assert len(g.vertex_set) == 2
 
@@ -184,24 +189,26 @@ def test_graph_save_vertex():
     assert lines[0] == '1.0,2.0\n'
     assert lines[1] == '2.0,2.0\n'
 
-    g_loaded = models.Graph.make()
+    g_loaded = models.Graph()
     with open(path, 'r') as buf:
         g_loaded = g_loaded.read_vertex_from_buffer(buf)
     assert g_loaded.vertex_set == g.vertex_set
 
 
 def test_graph_save_edge():
-    g = models.Graph.make()
     v1 = models.Vertex((1.0, 2.0,))
     v2 = models.Vertex((2.0, 2.0,))
     v3 = models.Vertex((3.0, 2.0,))
     v4 = models.Vertex((4.0, 2.0,))
-    g.edge_set.add((v1, v2,))
-    g.edge_set.add((v2, v3,))
-    g.edge_set.add((v3, v1,))
-    g.edge_set.add((v1, v4,))
-    g.edge_set.add((v2, v4,))
-    g.edge_set.add((v3, v4,))
+    edge_set = set()
+    edge_set.add((v1, v2,))
+    edge_set.add((v2, v3,))
+    edge_set.add((v3, v1,))
+    edge_set.add((v1, v4,))
+    edge_set.add((v2, v4,))
+    edge_set.add((v3, v4,))
+
+    g = models.Graph(edge_set=frozenset(edge_set))
 
     path = tempfile.gettempprefix()
     with open(path, 'w') as buf:
@@ -217,7 +224,7 @@ def test_graph_save_edge():
     for l1, l2 in zip(lines, expected_lines):
         assert l1 == l2
 
-    g_loaded = models.Graph.make()
+    g_loaded = models.Graph()
     with open(path, 'r') as buf:
         g_loaded = g_loaded.read_edge_from_buffer(buf)
     assert g_loaded.edge_set == g.edge_set
@@ -229,18 +236,18 @@ def test_graph_save():
     v3 = models.Vertex((3.0, 2.0,))
     v4 = models.Vertex((4.0, 2.0,))
 
-    g = models.Graph.make()
-    g.edge_set.add((v1, v2,))
-    g.edge_set.add((v2, v3,))
-    g.edge_set.add((v3, v1,))
-    g.edge_set.add((v1, v4,))
-    g.edge_set.add((v2, v4,))
-    g.edge_set.add((v3, v4,))
+    edge_set = set()
+    edge_set.add((v1, v2,))
+    edge_set.add((v2, v3,))
+    edge_set.add((v3, v1,))
+    edge_set.add((v1, v4,))
+    edge_set.add((v2, v4,))
+    edge_set.add((v3, v4,))
 
     p1 = models.Partition((v1, v2, v3, v4,))
-    g.partition.add(p1)
+    g = models.Graph(frozenset((v1, v2, v3, v4,)), frozenset(edge_set), p1)
 
-    g_loaded = models.Graph.make()
+    g_loaded = models.Graph()
 
     path = tempfile.gettempprefix()
     with open(path, 'w') as buf:
@@ -406,7 +413,6 @@ def test_compatibility_within_weigh():
 
 
 def test_graph_immutable():
-    g1 = models.Graph.make()
-    g2 = models.Graph.make()
+    g1 = models.Graph()
+    g2 = models.Graph()
     assert g1 == g2
-    g1.vertex_set.add(1)
