@@ -20,7 +20,7 @@ class Parameters(tp.NamedTuple):
     homogeneity_indicator: float = 0.9  # theta
     '''Ratio of vertexes to be added by homogeneity'''
     representative_count: int = 3  # NbRep
-    '''Number oif representatieves of a partition'''
+    '''Number of representatives of a partition'''
     community_count: tp.Tuple[int, ...] = (3, 2,)  # K
     '''
     Sequence of hierarchical communities quantities, the first value indicates
@@ -33,15 +33,15 @@ class Parameters(tp.NamedTuple):
     '''
     max_within_edge: tp.Tuple[int, ...] = (7, 12)  # E_max_wth
     '''
-    Sequence of the max initial edges a vertex will recieve when being added to
+    Sequence of the max initial edges a vertex will receive when being added to
     a community, the first value is the quantity of edges to be added inside
     the first level community the vertex will be in, the second value for the
     second level community and so on.
     This should be a sequence of length equal to the level count of the graph.
     '''
     max_between_edge: int = 3  # E_max_btw
-    '''Maximum quantity of initial edges a vertex will recieve on addition to a
-    community linking it to outside the comunity.'''
+    '''Maximum quantity of initial edges a vertex will receive on addition to a
+    community linking it to outside the community.'''
 
 
 def make_vertex(deviation_seq: tp.Sequence[float]) -> Vertex:
@@ -49,6 +49,11 @@ def make_vertex(deviation_seq: tp.Sequence[float]) -> Vertex:
 
 
 def initialize_graph(param: Parameters) -> Graph:
+    '''
+    This initialization function takes the base parameters and returns a graph
+    with populated with the vertex set.
+    Each vertex is generated according to the `make_vertex` implementation.
+    '''
     g = Graph(frozenset(
         make_vertex(param.deviation_sequence)
         for _ in range(param.vertex_count)))
@@ -58,9 +63,19 @@ def initialize_graph(param: Parameters) -> Graph:
 def _initialize_communities(
         graph: Graph,
         param: Parameters,
-        population: tp.Iterable[Vector] = tuple(),
+        population: tp.FrozenSet[Vector] = frozenset(),
         level: int = 0
         ) -> tp.Tuple[tp.Set[tp.Tuple[Vertex, Vertex]], Partition]:
+    '''
+    Internal function for community initialization.
+
+    It recursively runs a clustering method and initialize the communities.
+    All the vertexes are in leaf communities.
+
+    All the leaf communities are connected components of the graph.
+
+    The return is the set of edges generates, as well as the partitions.
+    '''
 
     if not population:
         return _initialize_communities(graph, param, graph.vertex_set, level)
@@ -68,11 +83,15 @@ def _initialize_communities(
     max_level = len(param.community_count)
     if level == max_level:
         return _initialize_leaf_communities(population, graph, param)
+    comm_cont = param.community_count[level]
 
-    sample_size = param.representative_count ** (max_level-level)
+    sample_size = min(
+            (param.representative_count ** (max_level-level)) * comm_cont,
+            len(population)
+            )
     smp = sample(population, k=sample_size)
 
-    cluster_set = KMedoids(smp, n_clusters=param.community_count[level])
+    cluster_set = KMedoids(smp, n_clusters=comm_cont)
     cluster_set = cluster_set.cap(cluster_set.min_len)
     part = Partition()
     edge_set = set()
@@ -89,6 +108,12 @@ def _initialize_leaf_communities(
         graph: Graph,
         param: Parameters
         ) -> tp.Tuple[tp.Set[tp.Tuple[Vertex, Vertex]], Partition]:
+    '''
+    Internal function for community initialization.
+
+    This is the counter part for the `_initialize_communities` function.
+    This implementation, for leaf communities, generates the edges within.
+    '''
     partition = Partition(Vertex(p) for p in population)
     edge_set: tp.Set[tp.Tuple[Vertex, Vertex]] = set()
     for vertex in partition:
@@ -103,5 +128,12 @@ def _initialize_leaf_communities(
 
 
 def initialize_communities(param: Parameters, graph: Graph) -> Graph:
+    '''
+    This function takes an graph with initialized an initialized vertex set and
+    initialize withing it the communities.
+
+    Internally this function will use a set of recursive functions to populate
+    the initial communities.
+    '''
     edge_set, partition = _initialize_communities(graph, param)
     return Graph(graph.vertex_set, frozenset(edge_set), partition)

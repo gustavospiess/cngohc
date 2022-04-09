@@ -191,6 +191,8 @@ class WeighedPartition(Partition):
     '''
     Partition representation with weigh vertex and compatibility evaluation
     implementation.
+
+    TODO: add representative.
     '''
 
     def __init__(

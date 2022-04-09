@@ -1,16 +1,16 @@
 hogc package
 ============
 
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   hogc.algo
+
 Submodules
 ----------
-
-hogc.cli module
----------------
-
-.. automodule:: hogc.cli
-   :members:
-   :undoc-members:
-   :show-inheritance:
 
 hogc.hogc module
 ----------------
@@ -24,6 +24,14 @@ hogc.models module
 ------------------
 
 .. automodule:: hogc.models
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+hogc.validations module
+-----------------------
+
+.. automodule:: hogc.validations
    :members:
    :undoc-members:
    :show-inheritance:
