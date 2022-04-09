@@ -124,3 +124,10 @@ def test_initialize_communities(
     for vertex in proccessed:
         assert g.partition in g.partitions_of[vertex]
         assert len(set(g.partition) & set(g.partitions_of[vertex])) == 1
+
+    for vertex in proccessed:
+        print(1)
+        print(tuple(g.partitions_of[vertex]))
+        for part in g.partitions_of[vertex]:
+            print(part)
+            assert vertex in part.representative_set

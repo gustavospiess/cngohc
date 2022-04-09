@@ -64,6 +64,9 @@ class Vertex(Vector):
         return cls(float(f) for f in data)
 
 
+_STAR_ARGS = tp.Tuple[tp.Tuple[tp.Any, ...], tp.Dict[str, tp.Any]]
+
+
 PartitionMember = tp.Union[Vertex, 'Partition']
 '''
 Type union for what can compose a Partition.
@@ -83,21 +86,24 @@ class Partition(
 
     It also override the __contains__ method from `set`, so it checks if the
     given value is in itself or in some descendant.
-
-    TODO: make imutable
     '''
+    __slots__ = ['__identifier', '__inner_set']
 
     def __init__(self,
                  members: tp.Iterable[tp.Union[Vertex, 'Partition']] = tuple(),
                  identifier: tp.Optional[int] = None):
         if identifier is None:
             identifier = id(self)
-        self.identifier: int = identifier
+        self.__identifier: int = identifier
         '''
         This is used to force a static hash, if not informed in initialization
         `id(self)` will be used
         '''
-        self.__inner_set: tp.Set[PartitionMember] = set(members)
+        self.__inner_set: tp.FrozenSet[PartitionMember] = frozenset(members)
+
+    @property
+    def identifier(self) -> int:
+        return self.__identifier
 
     def __len__(self) -> int:
         return len(self.__inner_set)
@@ -107,9 +113,6 @@ class Partition(
 
     def __hash__(self) -> int:
         return 7 + 31 * hash(self.identifier)
-
-    def add(self, member: PartitionMember):
-        self.__inner_set.add(member)
 
     def __contains__(self, vl: object) -> bool:
         for member in self:
@@ -156,14 +159,10 @@ class Partition(
         return cls(*args, **kwargs)
 
     @classmethod
-    def _clear_args(
-            cls,
-            *args,
-            **kwargs) -> tp.Tuple[tp.Tuple[tp.Any, ...], tp.Dict[str, tp.Any]]:
+    def _clear_args(cls, *args, **kwargs) -> _STAR_ARGS:
         members: tp.Set[tp.Union[Vertex, 'Partition']] = set()
         if 'identifier' not in kwargs or 'members' not in kwargs:
             raise TypeError('Invalid data structure')
-
         for m in kwargs['members']:
             if isinstance(m, dict):
                 members.add(cls.from_raw(m))
@@ -179,28 +178,33 @@ class WeighedPartition(Partition):
     '''
     Partition representation with weigh vertex and compatibility evaluation
     implementation.
-
-    TODO: add representative.
     '''
+    __slots__ = ['__weigh_vector', '__representative_set']
 
     def __init__(
             self,
             *args,
             weigh_vector: Vector = Vector(),
+            representative_set: tp.FrozenSet[Vertex] = frozenset(),
             **kwargs):
-        self.weigh_vector = weigh_vector
+        self.__weigh_vector = weigh_vector
+        self.__representative_set = representative_set
         '''
         Vector of weighs to consider while calculating the distance /
         compatibility of a pair of Vertexes for the context of this partition.
         '''
         super().__init__(*args, **kwargs)
 
-    @classmethod
-    def _clear_args(
-            cls,
-            *args,
-            **kwargs) -> tp.Tuple[tp.Tuple[tp.Any, ...], tp.Dict[str, tp.Any]]:
+    @property
+    def weigh_vector(self) -> Vector:
+        return self.__weigh_vector
 
+    @property
+    def representative_set(self) -> tp.FrozenSet[Vertex]:
+        return self.__representative_set
+
+    @classmethod
+    def _clear_args(cls, *args, **kwargs) -> _STAR_ARGS:
         if 'weigh_vector' not in kwargs:
             raise TypeError('Invalid data structure')
 
@@ -209,12 +213,6 @@ class WeighedPartition(Partition):
         return super()._clear_args(*args, **kwargs)
 
     def to_raw(self) -> tp.Dict[str, tp.Any]:
-        '''
-        Extract the data into a `Raw` and JSON serializable data structure for
-        saving the data.
-
-        It is optimized for readability and ease of use, not for performance.
-        '''
         base = super().to_raw()
         base['weigh_vector'] = self.weigh_vector
         return base
@@ -358,7 +356,7 @@ class _PartitionsOf(_GraphMapping[Partition]):
                 if (parts is not None):
                     return parts
             elif item == sub:
-                return stack + (sub,)
+                return stack
 
 
 class _NeighborsOf(_GraphMapping[Vertex]):

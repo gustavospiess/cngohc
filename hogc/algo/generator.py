@@ -3,7 +3,7 @@ This module wraps all the methods for the graph generation.
 '''
 
 
-from ..models import Vertex, Vector, Graph, Partition
+from ..models import Vertex, Vector, Graph, WeighedPartition
 from .rand import rand_norm, sample, rand_uni_range
 from .clustering import KMedoids
 
@@ -65,7 +65,7 @@ def _initialize_communities(
         param: Parameters,
         population: tp.FrozenSet[Vector] = frozenset(),
         level: int = 0
-        ) -> tp.Tuple[tp.Set[tp.Tuple[Vertex, Vertex]], Partition]:
+        ) -> tp.Tuple[tp.Set[tp.Tuple[Vertex, Vertex]], WeighedPartition]:
     '''
     Internal function for community initialization.
 
@@ -93,28 +93,28 @@ def _initialize_communities(
 
     cluster_set = KMedoids(smp, n_clusters=comm_cont)
     cluster_set = cluster_set.cap(cluster_set.min_len)
-    part = Partition()
+    part = set()
     edge_set = set()
     for cluster in cluster_set:
         nxt = level + 1
         sub_edge, sub_part = _initialize_communities(graph, param, smp, nxt)
         part.add(sub_part)
         edge_set.update(sub_edge)
-    return edge_set, part
+    return edge_set, WeighedPartition(part, representative_set=frozenset(smp))
 
 
 def _initialize_leaf_communities(
         population: tp.Iterable[Vector],
         graph: Graph,
         param: Parameters
-        ) -> tp.Tuple[tp.Set[tp.Tuple[Vertex, Vertex]], Partition]:
+        ) -> tp.Tuple[tp.Set[tp.Tuple[Vertex, Vertex]], WeighedPartition]:
     '''
     Internal function for community initialization.
 
     This is the counter part for the `_initialize_communities` function.
-    This implementation, for leaf communities, generates the edges within.
     '''
-    partition = Partition(Vertex(p) for p in population)
+    members = frozenset(Vertex(p) for p in population)
+    partition = WeighedPartition(members, representative_set=members)
     edge_set: tp.Set[tp.Tuple[Vertex, Vertex]] = set()
     for vertex in partition:
         vertex_pool = partition - {vertex} - {e[1] for e in edge_set}

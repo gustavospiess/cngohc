@@ -8,14 +8,13 @@ import pytest
 
 
 def test_factorty():
-    p = models.Partition()
     v = models.Vertex((0, 1,))
+    p = models.Partition((v,))
     g = models.Graph(
             frozenset((v,)),
             frozenset(),
             p
             )
-    p.add(v)
     assert v in p
     assert v in g.partition
     assert v in g.vertex_set
@@ -32,11 +31,9 @@ def test_partition_hash():
 
 
 def test_partition_contains():
-    p = models.Partition()
-    p2 = models.Partition()
     v = models.Vertex((1,))
-    p.add(p2)
-    p2.add(v)
+    p2 = models.Partition((v,))
+    p = models.Partition((p2,))
     assert 1 not in p
     assert v in p
     assert v in p2
@@ -45,11 +42,9 @@ def test_partition_contains():
 
 
 def test_partition_json():
-    p = models.Partition()
-    p2 = models.Partition()
     data = models.Vertex((1, 2,))
-    p.add(p2)
-    p2.add(data)
+    p2 = models.Partition((data,))
+    p = models.Partition((p2,))
 
     serial = json.dumps(p.to_raw())
     raw = json.loads(serial)
@@ -60,15 +55,11 @@ def test_partition_json():
 
 
 def test_weighedpartition_json():
-    p = models.WeighedPartition()
-    p2 = models.Partition()
     data = models.Vertex((1, 2,))
-    p.add(data)
-    p2.add(data)
+    p = models.WeighedPartition((data,), weigh_vector=(0, 0))
+    p2 = models.Partition((data,))
 
     assert p.to_raw() != p2.to_raw()
-
-    p.weigh_vector = models.Vector((0, 0))
 
     serial = json.dumps(p.to_raw())
     raw = json.loads(serial)
@@ -392,20 +383,22 @@ def test_inverse_max_inertia_axis_five_dimentions():
 
 
 def test_compatibility_within_weigh():
-    p = models.WeighedPartition()
-    p.weigh_vector = models.Vector((1, 0))
+    p = models.WeighedPartition(
+            weigh_vector=models.Vector((1, 0)))
 
     assert p.compatibility(models.Vertex((1, 0)), models.Vertex((2, 0))) == 1
     assert p.compatibility(models.Vertex((1, 0)), models.Vertex((0, 1))) == 1
     assert p.compatibility(models.Vertex((1, 99)), models.Vertex((0, 1))) == 1
 
-    p.weigh_vector = models.Vector((0.5, 0.5))
+    p = models.WeighedPartition(
+            weigh_vector=models.Vector((0.5, 0.5)))
 
     assert p.compatibility(models.Vertex((1, 0)), models.Vertex((3, 0))) == 2
     assert p.compatibility(models.Vertex((1, 0)), models.Vertex((0, 1))) == 1
     assert p.compatibility(models.Vertex((1, 99)), models.Vertex((0, 1))) > 100
 
-    p.weigh_vector = models.Vector((0.7, 0.3))
+    p = models.WeighedPartition(
+            weigh_vector=models.Vector((0.7, 0.3)))
 
     assert p.compatibility(models.Vertex((1, 0)), models.Vertex((0, 0))) == 0.7
     assert p.compatibility(models.Vertex((0, 1)), models.Vertex((0, 0))) == 0.3

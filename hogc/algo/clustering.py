@@ -5,7 +5,7 @@ functions.
 
 
 from sklearn_extra.cluster import KMedoids as _KMedoids
-from hogc.models import Vector, Vertex, Partition
+from hogc.models import Vector
 
 import typing as tp
 
@@ -27,7 +27,6 @@ class ClusterSet(tp.Protocol, tp.Iterable[Cluster]):
     '''The gravity centers of each cluester'''
     centroids: tp.Iterable[Vector]
     '''The node from each cluster nearest to its gravity center'''
-    partition: Partition
 
     def cap(self, lenght: int) -> 'ClusterSet':
         '''
@@ -79,10 +78,6 @@ class KMedoids(tp.Sequence[Cluster]):
         self._data = data
         self.centers = tuple(c.center for c in self)
         self.centroids = tuple(c.centroid for c in self)
-        self.partition = Partition()
-        for cluster in self:
-            sub_partition = Partition(Vertex(v) for v in cluster)
-            self.partition.add(sub_partition)
 
     @property
     def min_len(self) -> int:

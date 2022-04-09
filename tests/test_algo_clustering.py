@@ -77,8 +77,3 @@ def test_k_medois_vector():
     assert isinstance(k_medoids.centers[1], models.Vector)
     assert all(isinstance(node, models.Vector) for node in k_medoids[0])
     assert all(isinstance(node, models.Vector) for node in k_medoids[0])
-
-    partition = k_medoids.partition
-    assert isinstance(partition, models.Partition)
-    assert all(isinstance(sub_partition, models.Partition)
-               for sub_partition in partition)
