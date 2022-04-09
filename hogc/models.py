@@ -71,18 +71,6 @@ Used for type checking only.
 '''
 
 
-class CompatibilityMeasure(tp.Protocol):
-    def __lt__(self, other: 'CompatibilityMeasure') -> bool:
-        ...
-
-
-_Compatibility = tp.TypeVar(
-        "_Compatibility",
-        CompatibilityMeasure,
-        int, float,
-        covariant=True)
-
-
 class Partition(
         tp.AbstractSet[PartitionMember],
         tp.Hashable):
