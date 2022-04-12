@@ -5,6 +5,7 @@ from json import dump as json_dump, load as json_load
 from csv import reader as csv_reader, writer as csv_writer
 from itertools import chain
 from math import sqrt as square_root
+from itertools import count
 
 import typing as tp
 
@@ -88,12 +89,13 @@ class Partition(
     given value is in itself or in some descendant.
     '''
     __slots__ = ['__identifier', '__inner_set']
+    session_id = count()
 
     def __init__(self,
                  members: tp.Iterable[tp.Union[Vertex, 'Partition']] = tuple(),
                  identifier: tp.Optional[int] = None):
         if identifier is None:
-            identifier = id(self)
+            identifier = next(Partition.session_id)
         self.__identifier: int = identifier
         '''
         This is used to force a static hash, if not informed in initialization
@@ -145,6 +147,16 @@ class Partition(
                 yield from member.depht
             else:
                 yield member
+
+    @property
+    def flat(self) -> tp.Generator['Partition', None, None]:
+        '''
+        Recursive generator for the partitions contained in the hierarchy.
+        '''
+        yield self
+        for member in self:
+            if isinstance(member, Partition):
+                yield from member.flat
 
     @classmethod
     def from_raw(cls, raw: tp.Dict[str, tp.Any]) -> 'Partition':
@@ -217,7 +229,7 @@ class WeighedPartition(Partition):
         base['weigh_vector'] = self.weigh_vector
         return base
 
-    def compatibility(self, representative: Vertex, other: Vertex) -> float:
+    def weighed_distance(self, representative: Vertex, other: Vertex) -> float:
         '''
         Calculates and returns a compatibility measure.
         This measure could be an float getting the square of the euclidian
@@ -280,6 +292,13 @@ class Graph(tp.NamedTuple):
         yeilding every partition the vertex is inside.
         '''
         return _PartitionsOf(self)
+
+    @property
+    def zero_degree_vertex_gen(self) -> tp.Generator[Vertex, None, None]:
+        neighbors_of = self.neighbors_of
+        for vtx in self.vertex_set:
+            if (len(tuple(neighbors_of[vtx]))) == 0:
+                yield vtx
 
     def write_partition_to_buffer(self, buf: tp.IO[str]):
         json_dump(self.partition.to_raw(), buf)

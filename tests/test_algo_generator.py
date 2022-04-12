@@ -131,3 +131,71 @@ def test_initialize_communities(
         for part in g.partitions_of[vertex]:
             print(part)
             assert vertex in part.representative_set
+
+
+def test_batch_generator():
+    p = generator.Parameters(
+            vertex_count=1000,
+            deviation_sequence=(1.0, 3.0),
+            community_count=(3,),
+            homogeneity_indicator=0.0)
+    g = generator.initialize_graph(p)
+    for b in generator.batch_generator(g):
+        assert 0 < len(b) < 1000
+    assert sum(len(b) for b in generator.batch_generator(g)) == 1000
+
+
+def test_chose_partition():
+    p = generator.Parameters(
+            vertex_count=1000,
+            deviation_sequence=(3.0, 3.0),
+            community_count=(3,),
+            homogeneity_indicator=0.0)
+    g = generator.initialize_graph(p)
+
+    partition_edge_set = set()
+    v1 = max(g.vertex_set, key=lambda v: v[0])
+    v2 = min(g.vertex_set, key=lambda v: v[0])
+    v3 = max(g.vertex_set, key=lambda v: v[1])
+    v4 = min(g.vertex_set, key=lambda v: v[1])
+
+    p1 = models.WeighedPartition(
+            v1, weigh_vector=models.Vector((1, 0)), representative_set={v1})
+    p2 = models.WeighedPartition(
+            v2, weigh_vector=models.Vector((1, 0)), representative_set={v2})
+    p3 = models.WeighedPartition(
+            v3, weigh_vector=models.Vector((0, 1)), representative_set={v3})
+    p4 = models.WeighedPartition(
+            v4, weigh_vector=models.Vector((0, 1)), representative_set={v4})
+
+    partition = models.WeighedPartition(
+            {p1, p2, p3, p4},
+            weigh_vector=models.Vector((0.5, 0.5)),
+            representative_set={models.Vertex((9999999, 99999999))})
+
+    vt1 = models.Vertex((v1[0]+0.1, 1))
+    vt2 = models.Vertex((v2[0]+0.1, 1))
+    vt3 = models.Vertex((1, v3[1]+0.1))
+    vt4 = models.Vertex((1, v4[1]+0.1))
+
+    g = models.Graph(
+            frozenset(g.vertex_set | {vt1, vt2, vt3, vt4}),
+            frozenset(g.edge_set | partition_edge_set),
+            partition
+            )
+
+    assert generator.chose_partition(p, g, vt1) == p1
+    assert generator.chose_partition(p, g, vt2) == p2
+    assert generator.chose_partition(p, g, vt3) == p3
+    assert generator.chose_partition(p, g, vt4) == p4
+
+    p = generator.Parameters(
+            vertex_count=1000,
+            deviation_sequence=(3.0, 3.0),
+            community_count=(3,),
+            homogeneity_indicator=1.0)
+    count = Counter(generator.chose_partition(p, g, vt1) for _ in range(2500))
+    assert count[p1] > 450
+    assert count[p2] > 450
+    assert count[p3] > 450
+    assert count[p4] > 450

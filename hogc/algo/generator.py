@@ -4,7 +4,7 @@ This module wraps all the methods for the graph generation.
 
 
 from ..models import Vertex, Vector, Graph, WeighedPartition
-from .rand import rand_norm, sample, rand_uni_range
+from .rand import rand_norm, sample, rand_in_range, rand_threshold, rand_uni
 from .clustering import KMedoids
 
 import typing as tp
@@ -17,7 +17,7 @@ class Parameters(tp.NamedTuple):
     '''Minimum number of edges of the graph'''
     deviation_sequence: tp.Tuple[float, ...] = (1, 2, 3,)  # A
     '''Sequence of deviation values to initialize the vertexes '''
-    homogeneity_indicator: float = 0.9  # theta
+    homogeneity_indicator: float = 0.1  # theta
     '''Ratio of vertexes to be added by homogeneity'''
     representative_count: int = 3  # NbRep
     '''Number of representatives of a partition'''
@@ -121,7 +121,7 @@ def _initialize_leaf_communities(
         max_edge_count = min(len(vertex_pool), param.max_within_edge[-1])
         edge_count = max_edge_count
         if (max_edge_count > 1):
-            edge_count = rand_uni_range(1, max_edge_count)
+            edge_count = rand_in_range(range(1, max_edge_count))
         for other_vertex in sample(vertex_pool, k=edge_count):
             edge_set.add((vertex, other_vertex))  # type: ignore
     return edge_set, partition
@@ -137,3 +137,39 @@ def initialize_communities(param: Parameters, graph: Graph) -> Graph:
     '''
     edge_set, partition = _initialize_communities(graph, param)
     return Graph(graph.vertex_set, frozenset(edge_set), partition)
+
+
+def batch_generator(graph: Graph) -> tp.Generator[tp.Set[Vertex], None, None]:
+    '''
+    Generate successive random sized sets of vertexes from the givem graph.
+
+    The union of all the sets generated is equal to the original vertex set of
+    the graph.
+    '''
+    to_add = set(graph.zero_degree_vertex_gen)
+    while to_add:
+        smp_count = max(1, rand_in_range(range(len(to_add))))
+        smp = sample(to_add, k=smp_count)
+        to_add -= smp
+        yield smp
+
+
+def chose_partition(
+        param: Parameters, graph: Graph, vertex: Vertex) -> WeighedPartition:
+    '''
+    Partition selection fot the batch insertion proccess.
+
+    Givem the parameters, the partition returned may be randomly chosen, or may
+    be the ones minimizing the weighed distance.
+    '''
+    heterogenic = rand_threshold(param.homogeneity_indicator)
+
+    if heterogenic:
+        return rand_uni(tuple(graph.partition.flat))
+
+    return min(
+            graph.partition.flat,
+            key=lambda p: min(
+                p.weighed_distance(vertex, rep)
+                for rep in p.representative_set)
+            )

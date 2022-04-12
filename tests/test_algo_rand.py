@@ -16,10 +16,22 @@ def test_rand_uni():
     assert count['b'] > 450
 
 
-def test_rand_uni_range():
-    count = Counter([rand.rand_uni_range(1, 2) for _ in range(1000)])
+def test_rand_in_range():
+    count = Counter([rand.rand_in_range(range(1, 3)) for _ in range(1000)])
     assert count[1] > 450
     assert count[2] > 450
+
+    count = Counter(
+            [rand.rand_in_range(range(20, 40, 10)) for _ in range(1000)])
+    assert count[20] > 450
+    assert count[30] > 450
+    assert len(count) == 2
+
+
+def test_rand_threshold():
+    count = Counter([rand.rand_threshold(0.5) for _ in range(1000)])
+    assert count[True] > 450
+    assert count[False] > 450
 
 
 def test_rand_sample():
@@ -79,15 +91,17 @@ def test_rand_uni_seed():
     assert count_a == count_b
 
 
-def test_rand_uni_range_seed():
+def test_rand_in_range_seed():
     seed = 'seeded_test'
     r = random.Random()
 
     r.seed(seed)
-    count_a = Counter(rand.rand_uni_range(1, 999, rand=r) for _ in range(1000))
+    count_a = Counter(
+            rand.rand_in_range(range(1, 999), rand=r) for _ in range(1000))
 
     r.seed(seed)
-    count_b = Counter(rand.rand_uni_range(1, 999, rand=r) for _ in range(1000))
+    count_b = Counter(
+            rand.rand_in_range(range(1, 999), rand=r) for _ in range(1000))
 
     assert count_a == count_b
 

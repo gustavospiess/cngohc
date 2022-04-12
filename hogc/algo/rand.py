@@ -32,12 +32,12 @@ def rand_uni(data: tp.Sequence[_T], *, rand: Random) -> _T:
     It should be equivalent to calling `rand_pl` passing a distribution method
     that gives an even probability distribution for every entry.
     '''
-    return rand.choice(data)
+    return rand.sample(data, k=1)[0]
 
 
 @__rand_safe
-def rand_uni_range(minimum: int, maximum: int, *, rand: Random) -> int:
-    return rand.randint(minimum, maximum)
+def rand_in_range(_range: range, *, rand: Random) -> int:
+    return rand.randrange(_range.start, _range.stop, _range.step)
 
 
 @__rand_safe
@@ -96,4 +96,18 @@ def rand_norm(
             deviation: float,
             *,
             rand: Random) -> float:
+    '''
+    Returns a random float according to a normal distribution, with the given
+    mean and deviation.
+    '''
     return rand.normalvariate(mean, deviation)
+
+
+@__rand_safe
+def rand_threshold(threshold: float, *, rand: Random) -> bool:
+    '''
+    Returns a random bool controlled by the threshold.
+
+    For a 75% of the time True, the call would be `rand_threshold(0.75)`
+    '''
+    return rand.uniform(0, 1) < threshold
