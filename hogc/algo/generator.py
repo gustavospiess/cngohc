@@ -3,7 +3,7 @@ This module wraps all the methods for the graph generation.
 '''
 
 
-from ..models import Vertex, Vector, Graph, WeighedPartition
+from ..models import Vertex, Vector, Graph, Partition
 from .rand import rand_norm, sample, rand_in_range, rand_threshold, rand_uni
 from .clustering import KMedoids
 
@@ -65,7 +65,7 @@ def _initialize_communities(
         param: Parameters,
         population: tp.FrozenSet[Vector] = frozenset(),
         level: int = 0
-        ) -> tp.Tuple[tp.Set[tp.Tuple[Vertex, Vertex]], WeighedPartition]:
+        ) -> tp.Tuple[tp.Set[tp.Tuple[Vertex, Vertex]], Partition]:
     '''
     Internal function for community initialization.
 
@@ -100,21 +100,21 @@ def _initialize_communities(
         sub_edge, sub_part = _initialize_communities(graph, param, smp, nxt)
         part.add(sub_part)
         edge_set.update(sub_edge)
-    return edge_set, WeighedPartition(part, representative_set=frozenset(smp))
+    return edge_set, Partition(part, representative_set=frozenset(smp))
 
 
 def _initialize_leaf_communities(
         population: tp.Iterable[Vector],
         graph: Graph,
         param: Parameters
-        ) -> tp.Tuple[tp.Set[tp.Tuple[Vertex, Vertex]], WeighedPartition]:
+        ) -> tp.Tuple[tp.Set[tp.Tuple[Vertex, Vertex]], Partition]:
     '''
     Internal function for community initialization.
 
     This is the counter part for the `_initialize_communities` function.
     '''
     members = frozenset(Vertex(p) for p in population)
-    partition = WeighedPartition(members, representative_set=members)
+    partition = Partition(members, representative_set=members)
     edge_set: tp.Set[tp.Tuple[Vertex, Vertex]] = set()
     for vertex in partition:
         vertex_pool = partition - {vertex} - {e[1] for e in edge_set}
@@ -155,7 +155,7 @@ def batch_generator(graph: Graph) -> tp.Generator[tp.Set[Vertex], None, None]:
 
 
 def chose_partition(
-        param: Parameters, graph: Graph, vertex: Vertex) -> WeighedPartition:
+        param: Parameters, graph: Graph, vertex: Vertex) -> Partition:
     '''
     Partition selection fot the batch insertion proccess.
 

@@ -65,9 +65,6 @@ class Vertex(Vector):
         return cls(float(f) for f in data)
 
 
-_STAR_ARGS = tp.Tuple[tp.Tuple[tp.Any, ...], tp.Dict[str, tp.Any]]
-
-
 PartitionMember = tp.Union[Vertex, 'Partition']
 '''
 Type union for what can compose a Partition.
@@ -88,12 +85,21 @@ class Partition(
     It also override the __contains__ method from `set`, so it checks if the
     given value is in itself or in some descendant.
     '''
-    __slots__ = ['__identifier', '__inner_set']
+    __slots__ = [
+            '__identifier',
+            '__inner_set',
+            '__weigh_vector',
+            '__representative_set']
+
     session_id = count()
 
-    def __init__(self,
-                 members: tp.Iterable[tp.Union[Vertex, 'Partition']] = tuple(),
-                 identifier: tp.Optional[int] = None):
+    def __init__(
+            self,
+            members: tp.Iterable[tp.Union[Vertex, 'Partition']] = tuple(),
+            identifier: tp.Optional[int] = None,
+            *,
+            weigh_vector: Vector = Vector(),
+            representative_set: tp.FrozenSet[Vertex] = frozenset(),):
         if identifier is None:
             identifier = next(Partition.session_id)
         self.__identifier: int = identifier
@@ -102,6 +108,12 @@ class Partition(
         `id(self)` will be used
         '''
         self.__inner_set: tp.FrozenSet[PartitionMember] = frozenset(members)
+        self.__representative_set = representative_set
+        self.__weigh_vector = weigh_vector
+        '''
+        Vector of weighs to consider while calculating the distance /
+        compatibility of a pair of Vertexes for the context of this partition.
+        '''
 
     @property
     def identifier(self) -> int:
@@ -131,9 +143,10 @@ class Partition(
 
         It is optimized for readability and ease of use, not for performance.
         '''
-        return {
-                'identifier': self.identifier,
-                'members': tuple(m.to_raw() for m in self)
+        return {'identifier': self.identifier,
+                'members': tuple(m.to_raw() for m in self),
+                'weigh_vector': self.weigh_vector,
+                'representative_set': tuple(self.__representative_set)
                 }
 
     @property
@@ -167,45 +180,26 @@ class Partition(
         if not isinstance(raw, tp.Mapping):
             raise TypeError('Invalid data structure')
 
-        args, kwargs = cls._clear_args(**raw)
-        return cls(*args, **kwargs)
-
-    @classmethod
-    def _clear_args(cls, *args, **kwargs) -> _STAR_ARGS:
         members: tp.Set[tp.Union[Vertex, 'Partition']] = set()
-        if 'identifier' not in kwargs or 'members' not in kwargs:
+        if 'identifier' not in raw or 'members' not in raw:
             raise TypeError('Invalid data structure')
-        for m in kwargs['members']:
+        for m in raw['members']:
             if isinstance(m, dict):
                 members.add(cls.from_raw(m))
             elif isinstance(m, tp.Iterable):
                 members.add(Vertex(m))
             else:
                 raise TypeError('Invalid data structure')
-        kwargs['members'] = members
-        return args, kwargs
 
+        raw['members'] = frozenset(members)
+        raw['representative_set'] = frozenset(
+                map(Vertex, raw['representative_set']))
 
-class WeighedPartition(Partition):
-    '''
-    Partition representation with weigh vertex and compatibility evaluation
-    implementation.
-    '''
-    __slots__ = ['__weigh_vector', '__representative_set']
+        if 'weigh_vector' not in raw:
+            raise TypeError('Invalid data structure')
+        raw['weigh_vector'] = Vector(raw['weigh_vector'])
 
-    def __init__(
-            self,
-            *args,
-            weigh_vector: Vector = Vector(),
-            representative_set: tp.FrozenSet[Vertex] = frozenset(),
-            **kwargs):
-        self.__weigh_vector = weigh_vector
-        self.__representative_set = representative_set
-        '''
-        Vector of weighs to consider while calculating the distance /
-        compatibility of a pair of Vertexes for the context of this partition.
-        '''
-        super().__init__(*args, **kwargs)
+        return cls(**raw)
 
     @property
     def weigh_vector(self) -> Vector:
@@ -214,20 +208,6 @@ class WeighedPartition(Partition):
     @property
     def representative_set(self) -> tp.FrozenSet[Vertex]:
         return self.__representative_set
-
-    @classmethod
-    def _clear_args(cls, *args, **kwargs) -> _STAR_ARGS:
-        if 'weigh_vector' not in kwargs:
-            raise TypeError('Invalid data structure')
-
-        kwargs['weigh_vector'] = Vector(kwargs['weigh_vector'])
-
-        return super()._clear_args(*args, **kwargs)
-
-    def to_raw(self) -> tp.Dict[str, tp.Any]:
-        base = super().to_raw()
-        base['weigh_vector'] = self.weigh_vector
-        return base
 
     def weighed_distance(self, representative: Vertex, other: Vertex) -> float:
         '''

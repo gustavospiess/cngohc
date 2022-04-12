@@ -56,14 +56,14 @@ def test_partition_json():
 
 def test_weighedpartition_json():
     data = models.Vertex((1, 2,))
-    p = models.WeighedPartition((data,), weigh_vector=(0, 0))
+    p = models.Partition((data,), weigh_vector=(0, 0))
     p2 = models.Partition((data,))
 
     assert p.to_raw() != p2.to_raw()
 
     serial = json.dumps(p.to_raw())
     raw = json.loads(serial)
-    q = models.WeighedPartition.from_raw(raw)
+    q = models.Partition.from_raw(raw)
     assert q == p
     assert hash(p) == hash(q)
     assert p.identifier == q.identifier
@@ -80,7 +80,7 @@ def test_partition_invalid_raw():
     with pytest.raises(TypeError):
         models.Partition.from_raw({'identifier': 0, 'members': [1]})
     with pytest.raises(TypeError):
-        models.WeighedPartition.from_raw({'identifier': 0, 'members': [1]})
+        models.Partition.from_raw({'identifier': 0, 'members': [1]})
 
 
 def test_graph_neighbors():
@@ -316,7 +316,7 @@ def test_inverse_max_inertia_axis_base():
     v15 = models.Vertex((0, 15))
     v20 = models.Vertex((0, 25))
 
-    p = models.WeighedPartition((v10, v15, v20))
+    p = models.Partition((v10, v15, v20))
     axis = p.inverse_max_inertia_axis()
 
     assert axis == models.Vertex((1, 0))
@@ -334,8 +334,8 @@ def test_inverse_max_inertia_axis_noise(noise):
     v10 = models.Vertex((0, 10))
     v15 = models.Vertex((0, 15))
 
-    p = models.WeighedPartition((v10, v15, v20))
-    p_b = models.WeighedPartition((v10, v15, v20_b))
+    p = models.Partition((v10, v15, v20))
+    p_b = models.Partition((v10, v15, v20_b))
     axis = p.inverse_max_inertia_axis()
     axis_b = p_b.inverse_max_inertia_axis()
 
@@ -358,7 +358,7 @@ def test_inverse_max_inertia_axis_corner():
     v2 = models.Vertex((0, 3))
     v3 = models.Vertex((3, 3))
 
-    p = models.WeighedPartition((v1, v2, v3))
+    p = models.Partition((v1, v2, v3))
     axis = p.inverse_max_inertia_axis()
 
     assert axis == models.Vertex((0.5, 0.5))
@@ -376,14 +376,14 @@ def test_inverse_max_inertia_axis_five_dimentions():
     v8 = models.Vertex((1, 1, 1, 0, 1))
     v9 = models.Vertex((1, 1, 1, 1, 0))
 
-    p = models.WeighedPartition((v0, v1, v2, v3, v4, v5, v6, v7, v8, v9))
+    p = models.Partition((v0, v1, v2, v3, v4, v5, v6, v7, v8, v9))
     axis = p.inverse_max_inertia_axis()
 
     assert tuple(map(lambda x: round(x, 9), axis)) == (0.2, 0.2, 0.2, 0.2, 0.2)
 
 
 def test_compatibility_within_weigh():
-    p = models.WeighedPartition(
+    p = models.Partition(
             weigh_vector=models.Vector((1, 0)))
 
     assert p.weighed_distance(
@@ -393,7 +393,7 @@ def test_compatibility_within_weigh():
     assert p.weighed_distance(
             models.Vertex((1, 99)), models.Vertex((0, 1))) == 1
 
-    p = models.WeighedPartition(
+    p = models.Partition(
             weigh_vector=models.Vector((0.5, 0.5)))
 
     assert p.weighed_distance(
@@ -403,7 +403,7 @@ def test_compatibility_within_weigh():
     assert p.weighed_distance(
             models.Vertex((1, 99)), models.Vertex((0, 1))) > 100
 
-    p = models.WeighedPartition(
+    p = models.Partition(
             weigh_vector=models.Vector((0.7, 0.3)))
 
     assert p.weighed_distance(

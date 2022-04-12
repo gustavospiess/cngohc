@@ -159,16 +159,16 @@ def test_chose_partition():
     v3 = max(g.vertex_set, key=lambda v: v[1])
     v4 = min(g.vertex_set, key=lambda v: v[1])
 
-    p1 = models.WeighedPartition(
+    p1 = models.Partition(
             v1, weigh_vector=models.Vector((1, 0)), representative_set={v1})
-    p2 = models.WeighedPartition(
+    p2 = models.Partition(
             v2, weigh_vector=models.Vector((1, 0)), representative_set={v2})
-    p3 = models.WeighedPartition(
+    p3 = models.Partition(
             v3, weigh_vector=models.Vector((0, 1)), representative_set={v3})
-    p4 = models.WeighedPartition(
+    p4 = models.Partition(
             v4, weigh_vector=models.Vector((0, 1)), representative_set={v4})
 
-    partition = models.WeighedPartition(
+    partition = models.Partition(
             {p1, p2, p3, p4},
             weigh_vector=models.Vector((0.5, 0.5)),
             representative_set={models.Vertex((9999999, 99999999))})
