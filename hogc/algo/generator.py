@@ -4,8 +4,9 @@ This module wraps all the methods for the graph generation.
 
 
 from ..models import Vertex, Vector, Graph, Partition
-from .rand import rand_norm, sample, rand_in_range, rand_threshold, rand_uni
 from .clustering import KMedoids
+from .rand import rand_norm, rand_in_range, sample
+from .rand import rand_threshold, rand_pl, rand_edge_within
 
 import typing as tp
 
@@ -15,7 +16,7 @@ class Parameters(tp.NamedTuple):
     '''Number of vertexes of the graph'''
     min_edge_count: int = 300  # MTE
     '''Minimum number of edges of the graph'''
-    deviation_sequence: tp.Tuple[float, ...] = (1, 2, 3,)  # A
+    deviation_sequence: tp.Tuple[float, ...] = (1, 1,)  # A
     '''Sequence of deviation values to initialize the vertexes '''
     homogeneity_indicator: float = 0.1  # theta
     '''Ratio of vertexes to be added by homogeneity'''
@@ -31,13 +32,15 @@ class Parameters(tp.NamedTuple):
     The level_count, quantity of levels in the Graph, will be the length of it,
     and the amount of leaf communities will be the product of all those values.
     '''
-    max_within_edge: tp.Tuple[int, ...] = (7, 12)  # E_max_wth
+    max_within_edge: tp.Tuple[int, ...] = (3, 7, 12)  # E_max_wth
     '''
     Sequence of the max initial edges a vertex will receive when being added to
     a community, the first value is the quantity of edges to be added inside
     the first level community the vertex will be in, the second value for the
     second level community and so on.
-    This should be a sequence of length equal to the level count of the graph.
+    This should be a sequence of length equal to the level count of the graph
+    plus one, as for initialization purposes, the whole graph is considered r
+    community.
     '''
     max_between_edge: int = 3  # E_max_btw
     '''Maximum quantity of initial edges a vertex will receive on addition to a
@@ -82,7 +85,7 @@ def _initialize_communities(
 
     max_level = len(param.community_count)
     if level == max_level:
-        return _initialize_leaf_communities(population, graph, param)
+        return _initialize_leaf_communities(population, graph, param, level)
     comm_cont = param.community_count[level]
 
     sample_size = min(
@@ -100,13 +103,17 @@ def _initialize_communities(
         sub_edge, sub_part = _initialize_communities(graph, param, smp, nxt)
         part.add(sub_part)
         edge_set.update(sub_edge)
-    return edge_set, Partition(part, representative_set=frozenset(smp))
+    return edge_set, Partition(
+            part,
+            level=level,
+            representative_set=frozenset(Vertex(s) for s in smp))
 
 
 def _initialize_leaf_communities(
         population: tp.Iterable[Vector],
         graph: Graph,
-        param: Parameters
+        param: Parameters,
+        level: int
         ) -> tp.Tuple[tp.Set[tp.Tuple[Vertex, Vertex]], Partition]:
     '''
     Internal function for community initialization.
@@ -114,7 +121,7 @@ def _initialize_leaf_communities(
     This is the counter part for the `_initialize_communities` function.
     '''
     members = frozenset(Vertex(p) for p in population)
-    partition = Partition(members, representative_set=members)
+    partition = Partition(members, level=level, representative_set=members)
     edge_set: tp.Set[tp.Tuple[Vertex, Vertex]] = set()
     for vertex in partition:
         vertex_pool = partition - {vertex} - {e[1] for e in edge_set}
@@ -154,8 +161,10 @@ def batch_generator(graph: Graph) -> tp.Generator[tp.Set[Vertex], None, None]:
         yield smp
 
 
-def chose_partition(
-        param: Parameters, graph: Graph, vertex: Vertex) -> Partition:
+def chose_partitions(
+        param: Parameters,
+        graph: Graph,
+        vertex: Vertex) -> tp.FrozenSet[Partition]:
     '''
     Partition selection fot the batch insertion proccess.
 
@@ -164,12 +173,42 @@ def chose_partition(
     '''
     heterogenic = rand_threshold(param.homogeneity_indicator)
 
+    possible: tp.Tuple[Partition, ...]
     if heterogenic:
-        return rand_uni(tuple(graph.partition.flat))
+        possible = tuple(graph.partition.flat)
 
-    return min(
-            graph.partition.flat,
-            key=lambda p: min(
-                p.weighed_distance(vertex, rep)
-                for rep in p.representative_set)
-            )
+    else:
+        possible = tuple(sorted(
+                graph.partition.flat,
+                key=lambda p: min(
+                    p.weighed_distance(vertex, rep)
+                    for rep in p.representative_set)
+                ))
+
+    return frozenset(rand_pl(possible) for _ in range(len(possible)//2))
+
+
+def edge_insertion_within(
+        param: Parameters,
+        graph: Graph,
+        vertex: Vertex,
+        partition: Partition,
+        level: int = 0
+        ) -> tp.FrozenSet[tp.Tuple[Vertex, Vertex]]:
+    '''
+    TODO: doc
+    '''
+    part_members = set(partition.depht)
+    max_count = min(len(part_members), param.max_within_edge[level])
+    edges_within = rand_pl(tuple(i for i in range(1, max_count)))
+
+    neighbors_of = graph.neighbors_of
+
+    def degree(v: Vertex):
+        return len(tuple(neighbors_of[v]))
+
+    neighbor_set: tp.Set[Vertex] = set()
+    for _ in range(edges_within):
+        other = rand_edge_within(part_members-neighbor_set, degree)
+        neighbor_set.add(other)
+    return frozenset((vertex, n) for n in neighbor_set)

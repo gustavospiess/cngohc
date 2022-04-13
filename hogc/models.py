@@ -87,6 +87,7 @@ class Partition(
     '''
     __slots__ = [
             '__identifier',
+            '__level',
             '__inner_set',
             '__weigh_vector',
             '__representative_set']
@@ -97,6 +98,7 @@ class Partition(
             self,
             members: tp.Iterable[tp.Union[Vertex, 'Partition']] = tuple(),
             identifier: tp.Optional[int] = None,
+            level: int = 0,
             *,
             weigh_vector: Vector = Vector(),
             representative_set: tp.FrozenSet[Vertex] = frozenset(),):
@@ -106,6 +108,10 @@ class Partition(
         '''
         This is used to force a static hash, if not informed in initialization
         `id(self)` will be used
+        '''
+        self.__level = level
+        '''
+        TODO: doc
         '''
         self.__inner_set: tp.FrozenSet[PartitionMember] = frozenset(members)
         self.__representative_set = representative_set
@@ -118,6 +124,10 @@ class Partition(
     @property
     def identifier(self) -> int:
         return self.__identifier
+
+    @property
+    def level(self) -> int:
+        return self.__level
 
     def __len__(self) -> int:
         return len(self.__inner_set)
@@ -135,19 +145,6 @@ class Partition(
             if isinstance(member, Partition) and vl in member:
                 return True
         return False
-
-    def to_raw(self) -> tp.Dict[str, tp.Any]:
-        '''
-        Extract the data into a `Raw` and JSON serializable data structure for
-        saving the data.
-
-        It is optimized for readability and ease of use, not for performance.
-        '''
-        return {'identifier': self.identifier,
-                'members': tuple(m.to_raw() for m in self),
-                'weigh_vector': self.weigh_vector,
-                'representative_set': tuple(self.__representative_set)
-                }
 
     @property
     def depht(self) -> tp.Generator[Vertex, None, None]:
@@ -170,6 +167,20 @@ class Partition(
         for member in self:
             if isinstance(member, Partition):
                 yield from member.flat
+
+    def to_raw(self) -> tp.Dict[str, tp.Any]:
+        '''
+        Extract the data into a `Raw` and JSON serializable data structure for
+        saving the data.
+
+        It is optimized for readability and ease of use, not for performance.
+        '''
+        return {'identifier': self.identifier,
+                'members': tuple(m.to_raw() for m in self),
+                'weigh_vector': self.weigh_vector,
+                'representative_set': tuple(self.__representative_set),
+                'level': self.level
+                }
 
     @classmethod
     def from_raw(cls, raw: tp.Dict[str, tp.Any]) -> 'Partition':
@@ -196,6 +207,8 @@ class Partition(
                 map(Vertex, raw['representative_set']))
 
         if 'weigh_vector' not in raw:
+            raise TypeError('Invalid data structure')
+        if 'level' not in raw:
             raise TypeError('Invalid data structure')
         raw['weigh_vector'] = Vector(raw['weigh_vector'])
 
@@ -343,6 +356,7 @@ class _GraphMapping(
 class _PartitionsOf(_GraphMapping[Partition]):
     '''Graph mapping for vertex communities'''
     def __getitem__(self, item: Vertex) -> tp.Generator[Partition, None, None]:
+        assert item in self.graph.partition
         yield from self.__recursive_gen(item, (self.graph.partition,))
 
     def __recursive_gen(
@@ -352,10 +366,11 @@ class _PartitionsOf(_GraphMapping[Partition]):
         for sub in stack[-1]:
             if isinstance(sub, Partition):
                 parts = self.__recursive_gen(item, stack + (sub,))
-                if (parts is not None):
+                if (parts):
                     return parts
             elif item == sub:
                 return stack
+        return tuple()
 
 
 class _NeighborsOf(_GraphMapping[Vertex]):

@@ -91,6 +91,25 @@ def rand_pl(
 
 
 @__rand_safe
+def rand_edge_within(
+        data: tp.Set[_T],
+        degree: tp.Callable[[_T], int],
+        *,
+        rand: Random) -> _T:
+    '''
+    TODO doc and test
+    '''
+    t_data = tuple(data)
+    total_degree = sum(degree(v) for v in data)
+    weights = tuple(degree(t)/total_degree for t in data)
+
+    def dist(_):
+        return weights
+
+    return rand_pl(t_data, dist=dist, rand=rand)
+
+
+@__rand_safe
 def rand_norm(
             mean: float,
             deviation: float,

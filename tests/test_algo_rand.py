@@ -39,7 +39,7 @@ def test_rand_sample():
     count = Counter(tuple(sorted(rand.sample(data, k=2))) for _ in range(1000))
 
     for group in itertools.combinations(data, 2):
-        assert count[group] > 300
+        assert count[group] > 290
 
 
 def test_power_law():

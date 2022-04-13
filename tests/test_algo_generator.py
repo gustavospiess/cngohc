@@ -184,18 +184,56 @@ def test_chose_partition():
             partition
             )
 
-    assert generator.chose_partition(p, g, vt1) == p1
-    assert generator.chose_partition(p, g, vt2) == p2
-    assert generator.chose_partition(p, g, vt3) == p3
-    assert generator.chose_partition(p, g, vt4) == p4
+    count = Counter()
+    for _ in range(2000):
+        count[p1 in generator.chose_partitions(p, g, vt1)] += 1
+        count[p2 in generator.chose_partitions(p, g, vt2)] += 1
+        count[p3 in generator.chose_partitions(p, g, vt3)] += 1
+        count[p4 in generator.chose_partitions(p, g, vt4)] += 1
+
+    print(count)
+    print(count[True] / count[False])
+    assert 11 > count[True] / count[False] > 9
+
+    count = Counter(
+            generator.chose_partitions(p, g, vt1) for _ in range(2000))
+
+    assert count[frozenset({p1})] > 900
+    assert sum(
+            count[k]
+            for k in count
+            if p1 in k and len(k) >= 2) > 450
+    assert sum(
+            count[k]
+            for k in count
+            if p1 not in k and len(k) >= 2) < 200
+    assert sum(
+            count[k]
+            for k in count
+            if p1 not in k and len(k) == 1) < 160
 
     p = generator.Parameters(
             vertex_count=1000,
             deviation_sequence=(3.0, 3.0),
             community_count=(3,),
             homogeneity_indicator=1.0)
-    count = Counter(generator.chose_partition(p, g, vt1) for _ in range(2500))
-    assert count[p1] > 450
-    assert count[p2] > 450
-    assert count[p3] > 450
-    assert count[p4] > 450
+    count = Counter(
+            len(generator.chose_partitions(p, g, vt1)) for _ in range(2500))
+    assert count[1] > count[2] > count[3]
+
+
+def test_community_inclusion():
+    p = generator.Parameters(
+            deviation_sequence=(10,),
+            )
+    g = generator.initialize_graph(p)
+    g = generator.initialize_communities(p, g)
+    for part in g.partition.flat:
+        level = part.level
+        for v in g.vertex_set:
+            edge_set = generator.edge_insertion_within(p, g, v, part, level)
+            assert len(edge_set) > 0
+            for edge in edge_set:
+                assert v in edge
+                other = edge[0] if v == edge[1] else edge[1]
+                assert other in part
