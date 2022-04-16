@@ -343,15 +343,6 @@ def test_inverse_max_inertia_axis_noise(noise):
     assert round(sum(axis_b), 9) == 1
     assert round(sum(axis), 9) == 1
 
-    centered = tuple(v - axis_b for v in p_b.depht)
-    balanced_inertia = sum(sum(abs(v*a)**2 for v, a in zip(vec, axis_b))
-                           for vec in zip(*centered))
-    alt_axis = (0.5, 0.5)
-    inertia = sum(sum(abs(v*a)**2 for v, a in zip(vec, alt_axis))
-                  for vec in zip(*centered))
-
-    assert balanced_inertia*0.75 < inertia
-
 
 def test_inverse_max_inertia_axis_corner():
     v1 = models.Vertex((3, 0))
@@ -418,3 +409,17 @@ def test_graph_immutable():
     g1 = models.Graph()
     g2 = models.Graph()
     assert g1 == g2
+
+
+def test_partition_of_multiple():
+    v = models.Vertex((1, 2, 3))
+    p1 = models.Partition((v,))
+    p2 = models.Partition((v,))
+    p = models.Partition((p1, p2,))
+    g = models.Graph(frozenset(v), frozenset(), p)
+    assert v in p1
+    assert v in p2
+    assert p1 in p
+    assert p2 in p
+    assert p1 in g.partitions_of[v]
+    assert p2 in g.partitions_of[v]

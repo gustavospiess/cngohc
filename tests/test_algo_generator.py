@@ -97,12 +97,9 @@ def test_initialize_communities(
     g = generator.initialize_communities(p, g)
 
     assert len(g.partition) == community_count[0]
-
-    def partition_depht(part, n=0):
-        yield part, n
-        for sub in part:
-            if isinstance(sub, models.Partition):
-                yield from partition_depht(sub, n+1)
+    for part in g.partition.flat:
+        for vertex in part.representative_set:
+            assert g.degree_of[vertex] > 0
 
     for expected_level in range(1, len(community_count)+1):
         expected = reduce(
@@ -110,8 +107,9 @@ def test_initialize_communities(
                 community_count[:expected_level],
                 1)
         communities_of_level = tuple(
-                part for part, level in partition_depht(g.partition)
-                if level == expected_level)
+                part for part in g.partition.flat
+                if part.level == expected_level)
+        print(expected_level)
         assert len(communities_of_level) == expected
 
     proccessed = tuple(g.partition.depht)
@@ -122,14 +120,7 @@ def test_initialize_communities(
             assert neighbor in proccessed
 
     for vertex in proccessed:
-        assert g.partition in g.partitions_of[vertex]
-        assert len(set(g.partition) & set(g.partitions_of[vertex])) == 1
-
-    for vertex in proccessed:
-        print(1)
-        print(tuple(g.partitions_of[vertex]))
         for part in g.partitions_of[vertex]:
-            print(part)
             assert vertex in part.representative_set
 
 
@@ -191,8 +182,6 @@ def test_chose_partition():
         count[p3 in generator.chose_partitions(p, g, vt3)] += 1
         count[p4 in generator.chose_partitions(p, g, vt4)] += 1
 
-    print(count)
-    print(count[True] / count[False])
     assert 11 > count[True] / count[False] > 9
 
     count = Counter(
@@ -222,18 +211,38 @@ def test_chose_partition():
     assert count[1] > count[2] > count[3]
 
 
-def test_community_inclusion():
+def test_edge_insertion_within():
     p = generator.Parameters(
             deviation_sequence=(10,),
             )
     g = generator.initialize_graph(p)
     g = generator.initialize_communities(p, g)
     for part in g.partition.flat:
-        level = part.level
         for v in g.vertex_set:
-            edge_set = generator.edge_insertion_within(p, g, v, part, level)
+            edge_set = generator.edge_insertion_within(p, g, v, part)
             assert len(edge_set) > 0
             for edge in edge_set:
                 assert v in edge
                 other = edge[0] if v == edge[1] else edge[1]
                 assert other in part
+
+
+def test_edge_insertion_between():
+    p = generator.Parameters(
+            deviation_sequence=(10, 10,),
+            )
+    g = generator.initialize_graph(p)
+    g = generator.initialize_communities(p, g)
+
+    unprocessed = {v for v in g.vertex_set if g.degree_of[v] == 0}
+
+    for part in g.partition.flat:
+        ignor = set(part.flat)
+        for v in unprocessed:
+            limit = len(generator.edge_insertion_within(p, g, v, part))
+            edge_set = generator.edge_insertion_between(p, g, v, ignor, limit)
+            assert limit >= len(edge_set) >= 0
+            for edge in edge_set:
+                assert v in edge
+                other = edge[0] if v == edge[1] else edge[1]
+                assert len(tuple(g.neighbors_of[other])) > 0

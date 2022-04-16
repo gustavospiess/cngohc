@@ -6,7 +6,9 @@ This module wraps all the methods for the graph generation.
 from ..models import Vertex, Vector, Graph, Partition
 from .clustering import KMedoids
 from .rand import rand_norm, rand_in_range, sample
-from .rand import rand_threshold, rand_pl, rand_edge_within
+from .rand import rand_threshold, rand_pl, rand_edge_within, rand_edge_between
+
+from itertools import chain, repeat
 
 import typing as tp
 
@@ -106,7 +108,7 @@ def _initialize_communities(
     return edge_set, Partition(
             part,
             level=level,
-            representative_set=frozenset(Vertex(s) for s in smp))
+            representative_set=frozenset(Vertex(s) for s in chain(*edge_set)))
 
 
 def _initialize_leaf_communities(
@@ -153,7 +155,7 @@ def batch_generator(graph: Graph) -> tp.Generator[tp.Set[Vertex], None, None]:
     The union of all the sets generated is equal to the original vertex set of
     the graph.
     '''
-    to_add = set(graph.zero_degree_vertex_gen)
+    to_add = set(graph.zero_degree_vertex)
     while to_add:
         smp_count = max(1, rand_in_range(range(len(to_add))))
         smp = sample(to_add, k=smp_count)
@@ -193,22 +195,56 @@ def edge_insertion_within(
         graph: Graph,
         vertex: Vertex,
         partition: Partition,
-        level: int = 0
+        ) -> tp.FrozenSet[tp.Tuple[Vertex, Vertex]]:
+    '''
+    Edge generator for the introducing a new member into a community.
+
+    The number of edges is a randomly generated according to a power law.
+    The edge is betwen the given vertex and a random member of the community
+    choosen randomly with the ´rand_edge_within´.
+    '''
+    level: int = partition.level
+    vertex_pool = set(partition.depht)
+    max_count = min(len(vertex_pool), param.max_within_edge[level])
+    edges_within = rand_pl(tuple(i for i in range(1, max_count)))
+
+    degree = graph.degree_of.__getitem__
+
+    neighbor_set: tp.Set[Vertex] = set()
+    for _ in range(edges_within):
+        other = rand_edge_within(vertex_pool, degree)
+        vertex_pool.remove(other)
+        neighbor_set.add(other)
+    return frozenset((vertex, n) for n in neighbor_set)
+
+
+def edge_insertion_between(
+        param: Parameters,
+        graph: Graph,
+        vertex: Vertex,
+        ignored: tp.Set[Partition],
+        limit: int,
         ) -> tp.FrozenSet[tp.Tuple[Vertex, Vertex]]:
     '''
     TODO: doc
     '''
-    part_members = set(partition.depht)
-    max_count = min(len(part_members), param.max_within_edge[level])
-    edges_within = rand_pl(tuple(i for i in range(1, max_count)))
 
-    neighbors_of = graph.neighbors_of
+    partition_pool = graph.partition.flat - ignored
+    vertex_pool: tp.Set[tp.Tuple[Vertex, Partition]] = set(chain(*tuple(
+            zip(p.representative_set, repeat(p)) for p in partition_pool)))
 
-    def degree(v: Vertex):
-        return len(tuple(neighbors_of[v]))
+    max_count = min(limit, param.max_between_edge, len(vertex_pool))
+    if max_count == 0:
+        return frozenset()
+
+    edges_between = rand_pl(tuple(i for i in range(1, max_count+1)))
 
     neighbor_set: tp.Set[Vertex] = set()
-    for _ in range(edges_within):
-        other = rand_edge_within(part_members-neighbor_set, degree)
-        neighbor_set.add(other)
-    return frozenset((vertex, n) for n in neighbor_set)
+    while len(neighbor_set) < edges_between:
+        other = rand_edge_between(
+                vertex_pool,
+                lambda pair: pair[1].weighed_distance(vertex, pair[0]))
+        vertex_pool.remove(other)
+        neighbor_set.add(other[0])
+
+    return frozenset((neighbor, vertex,) for neighbor in neighbor_set)

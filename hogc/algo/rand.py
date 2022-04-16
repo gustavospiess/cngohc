@@ -97,16 +97,30 @@ def rand_edge_within(
         *,
         rand: Random) -> _T:
     '''
-    TODO doc and test
+    Given a set and a function to map it into a integer named data and degree
+    respectively, this function returns a random member of the set with the
+    probability distribution equals to the degree of the item over the sum of
+    all degrees.
     '''
     t_data = tuple(data)
     total_degree = sum(degree(v) for v in data)
-    weights = tuple(degree(t)/total_degree for t in data)
+    weights = tuple(degree(v)/total_degree for v in data)
+    return rand.choices(t_data, weights=weights, k=1)[0]
 
-    def dist(_):
-        return weights
 
-    return rand_pl(t_data, dist=dist, rand=rand)
+@__rand_safe
+def rand_edge_between(
+        data: tp.Set[_T],
+        distance: tp.Callable[[_T], float],
+        *,
+        rand: Random) -> _T:
+    '''
+    TODO: doc
+    '''
+    t_data = tuple(data)
+    total_degree = sum(1/distance(v) for v in data)
+    weights = tuple((1/distance(v))/total_degree for v in data)
+    return rand.choices(t_data, weights=weights, k=1)[0]
 
 
 @__rand_safe

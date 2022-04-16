@@ -3,11 +3,39 @@
 
 from json import dump as json_dump, load as json_load
 from csv import reader as csv_reader, writer as csv_writer
-from itertools import chain
+
+from itertools import chain, count
+from functools import lru_cache, wraps
+from collections import Counter
 from math import sqrt as square_root
-from itertools import count
 
 import typing as tp
+_T = tp.TypeVar('_T')
+
+
+# TODO: move otherwhere
+def _unchain(
+        data: tp.Iterable[_T]) -> tp.Generator[tp.Tuple[_T, _T], None, None]:
+    '''
+    Generator to unchain an iterable constructed of pairs.
+
+    It is to be the inverse of `functools.chain(*data)` where `data` is a list
+    of tuples.
+    '''
+    it = iter(data)
+    while True:
+        try:
+            yield (next(it), next(it))
+        except (StopIteration):
+            return
+
+
+def cached_generator(gen):
+    @lru_cache
+    @wraps(gen)
+    def set_wraped(*args, **kwargs):
+        return frozenset(gen(*args, **kwargs))
+    return set_wraped
 
 
 class Vector(tp.Tuple[float, ...]):
@@ -96,7 +124,7 @@ class Partition(
 
     def __init__(
             self,
-            members: tp.Iterable[tp.Union[Vertex, 'Partition']] = tuple(),
+            members: tp.Iterable[PartitionMember] = tuple(),
             identifier: tp.Optional[int] = None,
             level: int = 0,
             *,
@@ -111,11 +139,11 @@ class Partition(
         '''
         self.__level = level
         '''
-        TODO: doc
+        Internal definition of level, zero meaning the intance is a root.
         '''
         self.__inner_set: tp.FrozenSet[PartitionMember] = frozenset(members)
         self.__representative_set = representative_set
-        self.__weigh_vector = weigh_vector
+        self.__weigh_vector = weigh_vector or self.inverse_max_inertia_axis()
         '''
         Vector of weighs to consider while calculating the distance /
         compatibility of a pair of Vertexes for the context of this partition.
@@ -136,7 +164,10 @@ class Partition(
         return iter(self.__inner_set)
 
     def __hash__(self) -> int:
-        return 7 + 31 * hash(self.identifier)
+        return 7 + 31 * hash(self.identifier) + 27 * hash(self.level)
+
+    def __repr__(self) -> str:
+        return f'Partition@{self.identifier}'
 
     def __contains__(self, vl: object) -> bool:
         for member in self:
@@ -148,6 +179,10 @@ class Partition(
 
     @property
     def depht(self) -> tp.Generator[Vertex, None, None]:
+        return self.__depht()
+
+    @cached_generator
+    def __depht(self) -> tp.Generator[Vertex, None, None]:
         '''
         Generator method for traversing the Partition and its sub partitions
         and yield the Vertex.
@@ -159,7 +194,11 @@ class Partition(
                 yield member
 
     @property
-    def flat(self) -> tp.Generator['Partition', None, None]:
+    def flat(self) -> tp.FrozenSet['Partition']:
+        return self.__flat()
+
+    @cached_generator
+    def __flat(self) -> tp.Generator['Partition', None, None]:
         '''
         Recursive generator for the partitions contained in the hierarchy.
         '''
@@ -234,6 +273,7 @@ class Partition(
                 in zip(representative, other, self.weigh_vector)
                 )
 
+    @lru_cache
     def inverse_max_inertia_axis(self) -> Vector:
         '''
         Calculates and returns a Vector indicating the least relevant axis in
@@ -247,10 +287,12 @@ class Partition(
         depht = tuple(self.depht)
         center = Vector.avg(depht)
         diffs = tuple(d - center for d in depht)
+        if len(center) == 1 or len(diffs) <= 1:
+            return Vector((1,))
         local_inertia = (tuple(d**2 for d in v) for v in diffs)
         inertia = tuple(sum(axis) for axis in zip(*local_inertia))
         normal_inertia = (axis/sum(inertia) for axis in inertia)
-        inverted = Vector(1 - axis for axis in normal_inertia)
+        inverted = tuple(1 - axis for axis in normal_inertia)
         return Vector(i/sum(inverted) for i in inverted)
 
 
@@ -269,8 +311,7 @@ class Graph(tp.NamedTuple):
     partition: Partition = Partition()
 
     @property
-    def neighbors_of(
-            self) -> tp.Mapping[Vertex, tp.Generator[Vertex, None, None]]:
+    def neighbors_of(self) -> '_NeighborsOf':
         '''
         Mapping property of the graph that returns a generator of vertexes
         next to the index.
@@ -278,8 +319,7 @@ class Graph(tp.NamedTuple):
         return _NeighborsOf(self)
 
     @property
-    def partitions_of(
-            self) -> tp.Mapping[Vertex, tp.Generator[Partition, None, None]]:
+    def partitions_of(self) -> '_PartitionsOf':
         '''
         Mapping property of the graph that returns a generator of partitions,
         yeilding every partition the vertex is inside.
@@ -287,11 +327,12 @@ class Graph(tp.NamedTuple):
         return _PartitionsOf(self)
 
     @property
-    def zero_degree_vertex_gen(self) -> tp.Generator[Vertex, None, None]:
-        neighbors_of = self.neighbors_of
-        for vtx in self.vertex_set:
-            if (len(tuple(neighbors_of[vtx]))) == 0:
-                yield vtx
+    def degree_of(self) -> '_DegreeOf':
+        return _DegreeOf(self)
+
+    @property
+    def zero_degree_vertex(self) -> tp.Tuple[Vertex, ...]:
+        return tuple(v for v in self.vertex_set if self.degree_of[v] == 0)
 
     def write_partition_to_buffer(self, buf: tp.IO[str]):
         json_dump(self.partition.to_raw(), buf)
@@ -328,11 +369,8 @@ class Graph(tp.NamedTuple):
         return res
 
 
-_T = tp.TypeVar('_T')
-
-
 class _GraphMapping(
-        tp.Mapping[Vertex, tp.Generator[_T, None, None]],
+        tp.Mapping[Vertex, _T],
         tp.Generic[_T]):
     '''
     Abstract map of properties in a graph.
@@ -352,30 +390,46 @@ class _GraphMapping(
     def __len__(self) -> int:
         return len(self.graph.vertex_set)
 
+    def __hash__(self) -> int:
+        return 23 + 97 * id(self)
 
-class _PartitionsOf(_GraphMapping[Partition]):
-    '''Graph mapping for vertex communities'''
-    def __getitem__(self, item: Vertex) -> tp.Generator[Partition, None, None]:
-        assert item in self.graph.partition
-        yield from self.__recursive_gen(item, (self.graph.partition,))
-
+    @cached_generator
     def __recursive_gen(
             self,
             item: Vertex,
             stack: tp.Tuple[Partition, ...] = tuple()):
         for sub in stack[-1]:
             if isinstance(sub, Partition):
-                parts = self.__recursive_gen(item, stack + (sub,))
-                if (parts):
-                    return parts
+                part = self.__recursive_gen(item, stack + (sub,))
+                if part:
+                    return part
             elif item == sub:
                 return stack
         return tuple()
 
 
-class _NeighborsOf(_GraphMapping[Vertex]):
+class _PartitionsOf(_GraphMapping[tp.Iterable[Partition]]):
+    '''Graph mapping for vertex communities'''
+    def __getitem__(self, item: Vertex) -> tp.Iterable[Partition]:
+        it = self.__recursive_gen(item, (self.graph.partition,))
+        return it
+
+    @cached_generator
+    def __recursive_gen(
+            self,
+            item: Vertex,
+            stack: tp.Tuple[Partition, ...] = tuple()):
+        for sub in stack[-1]:
+            if isinstance(sub, Partition):
+                yield from self.__recursive_gen(item, stack + (sub,))
+            elif item == sub:
+                yield from stack
+
+
+class _NeighborsOf(_GraphMapping[tp.Iterable[Vertex]]):
     '''Graph mapping for vertex neibors'''
-    def __getitem__(self, item: Vertex) -> tp.Generator[Vertex, None, None]:
+    @cached_generator
+    def __getitem__(self, item: Vertex) -> tp.Iterable[Vertex]:
         for edge in self.graph.edge_set:
             if item == edge[0]:
                 yield edge[1]
@@ -383,19 +437,13 @@ class _NeighborsOf(_GraphMapping[Vertex]):
                 yield edge[0]
 
 
-T = tp.TypeVar('T')
+class _DegreeOf(_GraphMapping[int]):
+    '''Graph mapping for vertex neibors'''
+    def __getitem__(self, item: Vertex) -> int:
+        return self.__counter()[item]
 
-
-def _unchain(data: tp.Iterable[T]) -> tp.Generator[tp.Tuple[T, T], None, None]:
-    '''
-    Generator to unchain an iterable constructed of pairs.
-
-    It is to be the inverse of `functools.chain(*data)` where `data` is a list
-    of tuples.
-    '''
-    it = iter(data)
-    while True:
-        try:
-            yield (next(it), next(it))
-        except (StopIteration):
-            return
+    @lru_cache
+    def __counter(self) -> tp.Counter[Vertex]:
+        a_to_b = Counter(e[0] for e in self.graph.edge_set)
+        b_to_a = Counter(e[1] for e in self.graph.edge_set if e[0] != e[1])
+        return a_to_b + b_to_a
