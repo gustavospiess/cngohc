@@ -100,9 +100,7 @@ Used for type checking only.
 '''
 
 
-class Partition(
-        tp.AbstractSet[PartitionMember],
-        tp.Hashable):
+class Partition(tp.FrozenSet[PartitionMember]):
     '''
     Representation of a graph partition.
 
@@ -116,11 +114,15 @@ class Partition(
     __slots__ = [
             '__identifier',
             '__level',
-            '__inner_set',
             '__weigh_vector',
             '__representative_set']
 
     session_id = count()
+
+    def __new__(
+            cls, members: tp.Iterable[PartitionMember] = tuple(),
+            *args, **kwargs):
+        return super().__new__(cls, members)  # type: ignore
 
     def __init__(
             self,
@@ -130,6 +132,7 @@ class Partition(
             *,
             weigh_vector: Vector = Vector(),
             representative_set: tp.FrozenSet[Vertex] = frozenset(),):
+        super
         if identifier is None:
             identifier = next(Partition.session_id)
         self.__identifier: int = identifier
@@ -141,7 +144,6 @@ class Partition(
         '''
         Internal definition of level, zero meaning the intance is a root.
         '''
-        self.__inner_set: tp.FrozenSet[PartitionMember] = frozenset(members)
         self.__representative_set = representative_set
         self.__weigh_vector = weigh_vector or self.inverse_max_inertia_axis()
         '''
@@ -157,17 +159,8 @@ class Partition(
     def level(self) -> int:
         return self.__level
 
-    def __len__(self) -> int:
-        return len(self.__inner_set)
-
-    def __iter__(self) -> tp.Iterator[PartitionMember]:
-        return iter(self.__inner_set)
-
     def __hash__(self) -> int:
-        return 7 + 31 * hash(self.identifier) + 27 * hash(self.level)
-
-    def __repr__(self) -> str:
-        return f'Partition@{self.identifier}'
+        return super().__hash__() + 31 * hash(self.identifier)
 
     def __contains__(self, vl: object) -> bool:
         for member in self:
@@ -178,7 +171,7 @@ class Partition(
         return False
 
     @property
-    def depht(self) -> tp.Generator[Vertex, None, None]:
+    def depht(self) -> tp.FrozenSet[Vertex]:
         return self.__depht()
 
     @cached_generator
