@@ -6,6 +6,7 @@ from hogc.algo import generator
 from hogc import models
 from collections import Counter
 from functools import reduce
+from random import sample
 
 import pytest
 
@@ -139,7 +140,7 @@ def test_batch_generator():
 def test_chose_partition():
     p = generator.Parameters(
             vertex_count=1000,
-            deviation_sequence=(3.0, 3.0),
+            deviation_sequence=(3.0, 3.0,),
             community_count=(3,),
             homogeneity_indicator=0.0)
     g = generator.initialize_graph(p)
@@ -150,16 +151,30 @@ def test_chose_partition():
     v3 = max(g.vertex_set, key=lambda v: v[1])
     v4 = min(g.vertex_set, key=lambda v: v[1])
 
-    p1 = models.Partition(
-            v1, weigh_vector=models.Vector((1, 0)), representative_set={v1})
-    p2 = models.Partition(
-            v2, weigh_vector=models.Vector((1, 0)), representative_set={v2})
-    p3 = models.Partition(
-            v3, weigh_vector=models.Vector((0, 1)), representative_set={v3})
-    p4 = models.Partition(
-            v4, weigh_vector=models.Vector((0, 1)), representative_set={v4})
+    class PartitionMock(models.Partition):
 
-    partition = models.Partition(
+        def __init__(self, *args, weigh_vector, **kwargs):
+            self._weigh_vector = weigh_vector
+            super().__init__(*args, **kwargs)
+
+        @property
+        def weigh_vector(self):
+            return self._weigh_vector
+
+    p1 = PartitionMock(
+            frozenset((v1,)),
+            weigh_vector=models.Vector((1, 0)), representative_set={v1})
+    p2 = PartitionMock(
+            frozenset((v2,)),
+            weigh_vector=models.Vector((1, 0)), representative_set={v2})
+    p3 = PartitionMock(
+            frozenset((v3,)),
+            weigh_vector=models.Vector((0, 1)), representative_set={v3})
+    p4 = PartitionMock(
+            frozenset((v4,)),
+            weigh_vector=models.Vector((0, 1)), representative_set={v4})
+
+    partition = PartitionMock(
             {p1, p2, p3, p4},
             weigh_vector=models.Vector((0.5, 0.5)),
             representative_set={models.Vertex((9999999, 99999999))})
@@ -182,7 +197,7 @@ def test_chose_partition():
         count[p3 in generator.chose_partitions(p, g, vt3)] += 1
         count[p4 in generator.chose_partitions(p, g, vt4)] += 1
 
-    assert 11 > count[True] / count[False] > 9
+    assert count[True] > count[False]
 
     count = Counter(
             generator.chose_partitions(p, g, vt1) for _ in range(2000))
@@ -236,9 +251,9 @@ def test_edge_insertion_between():
 
     unprocessed = {v for v in g.vertex_set if g.degree_of[v] == 0}
 
-    for part in g.partition.flat:
+    for part in sample(g.partition.flat, k=3):
         ignor = set(part.flat)
-        for v in unprocessed:
+        for v in sample(unprocessed, k=30):
             limit = len(generator.edge_insertion_within(p, g, v, part))
             edge_set = generator.edge_insertion_between(p, g, v, ignor, limit)
             assert limit >= len(edge_set) >= 0

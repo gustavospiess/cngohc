@@ -178,7 +178,6 @@ def chose_partitions(
     possible: tp.Tuple[Partition, ...]
     if heterogenic:
         possible = tuple(graph.partition.flat)
-
     else:
         possible = tuple(sorted(
                 graph.partition.flat,
@@ -246,5 +245,4 @@ def edge_insertion_between(
                 lambda pair: pair[1].weighed_distance(vertex, pair[0]))
         vertex_pool.remove(other)
         neighbor_set.add(other[0])
-
     return frozenset((neighbor, vertex,) for neighbor in neighbor_set)

@@ -5,37 +5,15 @@ from json import dump as json_dump, load as json_load
 from csv import reader as csv_reader, writer as csv_writer
 
 from itertools import chain, count
-from functools import lru_cache, wraps
+from functools import lru_cache
 from collections import Counter
 from math import sqrt as square_root
 
+from .utils import unchain, cached_generator
+
+
 import typing as tp
 _T = tp.TypeVar('_T')
-
-
-# TODO: move otherwhere
-def _unchain(
-        data: tp.Iterable[_T]) -> tp.Generator[tp.Tuple[_T, _T], None, None]:
-    '''
-    Generator to unchain an iterable constructed of pairs.
-
-    It is to be the inverse of `functools.chain(*data)` where `data` is a list
-    of tuples.
-    '''
-    it = iter(data)
-    while True:
-        try:
-            yield (next(it), next(it))
-        except (StopIteration):
-            return
-
-
-def cached_generator(gen):
-    @lru_cache
-    @wraps(gen)
-    def set_wraped(*args, **kwargs):
-        return frozenset(gen(*args, **kwargs))
-    return set_wraped
 
 
 class Vector(tp.Tuple[float, ...]):
@@ -114,7 +92,6 @@ class Partition(tp.FrozenSet[PartitionMember]):
     __slots__ = [
             '__identifier',
             '__level',
-            '__weigh_vector',
             '__representative_set']
 
     session_id = count()
@@ -130,9 +107,8 @@ class Partition(tp.FrozenSet[PartitionMember]):
             identifier: tp.Optional[int] = None,
             level: int = 0,
             *,
-            weigh_vector: Vector = Vector(),
-            representative_set: tp.FrozenSet[Vertex] = frozenset(),):
-        super
+            representative_set: tp.Iterable[Vertex] = tuple(),):
+
         if identifier is None:
             identifier = next(Partition.session_id)
         self.__identifier: int = identifier
@@ -144,8 +120,7 @@ class Partition(tp.FrozenSet[PartitionMember]):
         '''
         Internal definition of level, zero meaning the intance is a root.
         '''
-        self.__representative_set = representative_set
-        self.__weigh_vector = weigh_vector or self.inverse_max_inertia_axis()
+        self.__representative_set = frozenset(representative_set)
         '''
         Vector of weighs to consider while calculating the distance /
         compatibility of a pair of Vertexes for the context of this partition.
@@ -159,8 +134,17 @@ class Partition(tp.FrozenSet[PartitionMember]):
     def level(self) -> int:
         return self.__level
 
+    @property
+    def weigh_vector(self) -> Vector:
+        return self.inverse_max_inertia_axis()
+
+    @property
+    def representative_set(self) -> tp.FrozenSet[Vertex]:
+        return self.__representative_set
+
     def __hash__(self) -> int:
-        return super().__hash__() + 31 * hash(self.identifier)
+        fields = (self.level, self.identifier, self.representative_set)
+        return super().__hash__() + 31 * hash(fields)
 
     def __contains__(self, vl: object) -> bool:
         for member in self:
@@ -209,7 +193,6 @@ class Partition(tp.FrozenSet[PartitionMember]):
         '''
         return {'identifier': self.identifier,
                 'members': tuple(m.to_raw() for m in self),
-                'weigh_vector': self.weigh_vector,
                 'representative_set': tuple(self.__representative_set),
                 'level': self.level
                 }
@@ -235,24 +218,16 @@ class Partition(tp.FrozenSet[PartitionMember]):
                 raise TypeError('Invalid data structure')
 
         raw['members'] = frozenset(members)
+
+        if 'representative_set' not in raw:
+            raise TypeError('Invalid data structure')
         raw['representative_set'] = frozenset(
                 map(Vertex, raw['representative_set']))
 
-        if 'weigh_vector' not in raw:
-            raise TypeError('Invalid data structure')
         if 'level' not in raw:
             raise TypeError('Invalid data structure')
-        raw['weigh_vector'] = Vector(raw['weigh_vector'])
 
         return cls(**raw)
-
-    @property
-    def weigh_vector(self) -> Vector:
-        return self.__weigh_vector
-
-    @property
-    def representative_set(self) -> tp.FrozenSet[Vertex]:
-        return self.__representative_set
 
     def weighed_distance(self, representative: Vertex, other: Vertex) -> float:
         '''
@@ -266,7 +241,6 @@ class Partition(tp.FrozenSet[PartitionMember]):
                 in zip(representative, other, self.weigh_vector)
                 )
 
-    @lru_cache
     def inverse_max_inertia_axis(self) -> Vector:
         '''
         Calculates and returns a Vector indicating the least relevant axis in
@@ -352,9 +326,9 @@ class Graph(tp.NamedTuple):
                 )
 
     def read_edge_from_buffer(self, buf: tp.Iterable[tp.Text]):
-        unchain = _unchain(csv_reader(buf))
         edge_set = frozenset(
-                (Vertex.from_raw(p), Vertex.from_raw(q)) for p, q in unchain)
+                (Vertex.from_raw(p), Vertex.from_raw(q))
+                for p, q in unchain(csv_reader(buf)))
         res = Graph(
                 vertex_set=self.vertex_set,
                 edge_set=edge_set,
@@ -386,20 +360,6 @@ class _GraphMapping(
     def __hash__(self) -> int:
         return 23 + 97 * id(self)
 
-    @cached_generator
-    def __recursive_gen(
-            self,
-            item: Vertex,
-            stack: tp.Tuple[Partition, ...] = tuple()):
-        for sub in stack[-1]:
-            if isinstance(sub, Partition):
-                part = self.__recursive_gen(item, stack + (sub,))
-                if part:
-                    return part
-            elif item == sub:
-                return stack
-        return tuple()
-
 
 class _PartitionsOf(_GraphMapping[tp.Iterable[Partition]]):
     '''Graph mapping for vertex communities'''
@@ -415,7 +375,7 @@ class _PartitionsOf(_GraphMapping[tp.Iterable[Partition]]):
         for sub in stack[-1]:
             if isinstance(sub, Partition):
                 yield from self.__recursive_gen(item, stack + (sub,))
-            elif item == sub:
+            if item == sub:
                 yield from stack
 
 
