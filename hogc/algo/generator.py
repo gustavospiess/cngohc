@@ -5,7 +5,7 @@ This module wraps all the methods for the graph generation.
 
 from ..models import Vertex, Vector, Graph, Partition
 from .clustering import KMedoids
-from .rand import rand_norm, rand_in_range, sample
+from .rand import rand_norm, rand_in_range, sample, shuffle
 from .rand import rand_threshold, rand_pl, rand_edge_within, rand_edge_between
 
 from itertools import chain, repeat
@@ -246,3 +246,18 @@ def edge_insertion_between(
         vertex_pool.remove(other)
         neighbor_set.add(other[0])
     return frozenset((neighbor, vertex,) for neighbor in neighbor_set)
+
+
+T = tp.TypeVar('T')
+EdgeSet = tp.FrozenSet[tp.Tuple[T, T]]
+Triplets = tp.FrozenSet[T]
+
+
+def find_triples(edge_set: EdgeSet) -> tp.Generator[Triplets, None, None]:
+    for edge_a in shuffle(edge_set):
+        for edge_b in shuffle(edge_set):
+            if edge_a[0] in edge_b and edge_a[1] in edge_b:
+                continue  # same edge
+            if edge_a[0] not in edge_b and edge_a[1] not in edge_b:
+                continue  # no shared vertex
+            yield frozenset((*edge_a, *edge_b))

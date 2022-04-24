@@ -261,3 +261,12 @@ def test_edge_insertion_between():
                 assert v in edge
                 other = edge[0] if v == edge[1] else edge[1]
                 assert len(tuple(g.neighbors_of[other])) > 0
+
+
+def test_find_triples():
+    data = frozenset({(1, 2), (2, 3), (3, 4), (1, 4)})
+    triples = tuple(generator.find_triples(data))
+    assert frozenset({1, 2, 3}) in triples
+    assert frozenset({2, 3, 4}) in triples
+    assert frozenset({3, 4, 1}) in triples
+    assert frozenset({4, 1, 2}) in triples

@@ -5,6 +5,7 @@ This module is a collection of random functions
 
 from random import Random
 from functools import wraps, lru_cache as cached
+from collections import deque
 
 import typing as tp
 
@@ -144,3 +145,24 @@ def rand_threshold(threshold: float, *, rand: Random) -> bool:
     For a 75% of the time True, the call would be `rand_threshold(0.75)`
     '''
     return rand.uniform(0, 1) < threshold
+
+
+@__rand_safe
+def shuffle(data: tp.Set[_T], *, rand: Random) -> tp.Generator[_T, None, None]:
+    it = iter(data)
+    buffer_stack: tp.Deque[_T] = deque()
+    pending = len(data)
+    while True:
+        idx = rand_in_range(range(pending), rand=rand)
+        while idx > len(buffer_stack) - 1:
+            buffer_stack.append(next(it))
+        yield buffer_stack[idx]
+        del buffer_stack[idx]
+        pending = pending - 1
+        if pending == len(buffer_stack):
+            rand.shuffle(buffer_stack)
+            yield from buffer_stack
+            break
+        if pending <= 1:
+            yield from it
+            break
