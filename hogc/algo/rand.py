@@ -88,6 +88,10 @@ def rand_pl(
     The default power law used is the `power_law_distribution`, but others can
     be chosen.
     '''
+    if len(data) == 1:
+        return data[0]
+    if len(data) == 0:
+        return None
     return rand.choices(data, weights=dist(len(data)), k=1)[0]
 
 
@@ -109,19 +113,24 @@ def rand_edge_within(
     return rand.choices(t_data, weights=weights, k=1)[0]
 
 
+@cached
+def rand_edge_between_weigths(data, other):
+    def distance(vertex, part):
+        return part.weighed_distance(vertex, other)
+    total_degree = sum(1/distance(*v) for v in data)
+    weights = tuple((1/distance(*v))/total_degree for v in data)
+    return weights
+
+
 @__rand_safe
-def rand_edge_between(
-        data: tp.Set[_T],
-        distance: tp.Callable[[_T], float],
-        *,
-        rand: Random) -> _T:
+def rand_edge_between(data, other, lenth, *, rand: Random):
     '''
     TODO: doc
     '''
     t_data = tuple(data)
-    total_degree = sum(1/distance(v) for v in data)
-    weights = tuple((1/distance(v))/total_degree for v in data)
-    return rand.choices(t_data, weights=weights, k=1)[0]
+    weights = rand_edge_between_weigths(data, other)
+    r = frozenset(p[0] for p in rand.choices(t_data, weights=weights, k=lenth))
+    return r
 
 
 @__rand_safe
@@ -147,11 +156,17 @@ def rand_threshold(threshold: float, *, rand: Random) -> bool:
     return rand.uniform(0, 1) < threshold
 
 
+shuffle = DEFAULT_RANDOM.shuffle
+
+
 @__rand_safe
-def shuffle(data: tp.Set[_T], *, rand: Random) -> tp.Generator[_T, None, None]:
+def __shuffle(
+        data: tp.Iterable[_T],
+        size: int,
+        *, rand: Random) -> tp.Generator[_T, None, None]:
     it = iter(data)
     buffer_stack: tp.Deque[_T] = deque()
-    pending = len(data)
+    pending = size
     while True:
         idx = rand_in_range(range(pending), rand=rand)
         while idx > len(buffer_stack) - 1:

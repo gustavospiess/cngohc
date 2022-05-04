@@ -6,10 +6,11 @@ from csv import reader as csv_reader, writer as csv_writer
 
 from itertools import chain, count
 from functools import lru_cache
-from collections import Counter
+from collections import Counter, defaultdict
 from math import sqrt as square_root
 
 from .utils import unchain, cached_generator
+from .algo.rand import sample
 
 
 import typing as tp
@@ -69,6 +70,9 @@ class Vertex(Vector):
     def from_raw(
             cls, data: tp.Iterable[tp.Union[tp.Text, int, float]]) -> 'Vertex':
         return cls(float(f) for f in data)
+
+
+Edge = tp.Tuple[Vertex, Vertex]
 
 
 PartitionMember = tp.Union[Vertex, 'Partition']
@@ -174,6 +178,17 @@ class Partition(tp.FrozenSet[PartitionMember]):
     def flat(self) -> tp.FrozenSet['Partition']:
         return self.__flat()
 
+    @property
+    def by_id(self) -> tp.Dict[int, 'Partition']:
+        return {p.identifier: p for p in self.flat}
+
+    @property
+    def by_level(self) -> tp.Dict[int, tp.FrozenSet['Partition']]:
+        d = defaultdict(list)
+        for member in self.flat:
+            d[member.level].append(member)
+        return {level: frozenset(d[level]) for level in d}
+
     @cached_generator
     def __flat(self) -> tp.Generator['Partition', None, None]:
         '''
@@ -241,6 +256,7 @@ class Partition(tp.FrozenSet[PartitionMember]):
                 in zip(representative, other, self.weigh_vector)
                 )
 
+    @lru_cache
     def inverse_max_inertia_axis(self) -> Vector:
         '''
         Calculates and returns a Vector indicating the least relevant axis in
@@ -263,6 +279,52 @@ class Partition(tp.FrozenSet[PartitionMember]):
         return Vector(i/sum(inverted) for i in inverted)
 
 
+class PartitionBuilder:
+    '''
+    Builder pattern constructor of Partition instances for adding vertexes into
+    partitions.
+    '''
+    def __init__(self, base_partition: Partition, qt_rep: int):
+        self.base_partition: Partition = base_partition
+        self.qt_rep = qt_rep
+        self.vertex_mapping: tp.Mapping[int, tp.Set[Vertex]] = defaultdict(set)
+        '''
+        Vertex map, for each integer identifier keeps a set of Vertex being
+        added
+        '''
+
+    def add(self, partition: Partition, vertex: Vertex) -> 'PartitionBuilder':
+        self.vertex_mapping[partition.identifier].add(vertex)
+        return self
+
+    def add_all(
+            self,
+            partitions: tp.Iterable[Partition],
+            vertex: Vertex) -> 'PartitionBuilder':
+        for p in partitions:
+            self.add(p, vertex)
+        return self
+
+    def __build(self, part: Partition) -> Partition:
+        identifier = part.identifier
+        level = part.level
+
+        members = (
+                *set(v for v in part if isinstance(v, Vertex)),
+                *self.vertex_mapping[identifier],
+                *set(self.__build(p) for p in part if isinstance(p, Partition))
+                )
+
+        representative_set = sample(members, k=min(len(members), self.qt_rep))
+
+        return Partition(
+                members, identifier, level,
+                representative_set=representative_set)
+
+    def build(self) -> Partition:
+        return self.__build(self.base_partition)
+
+
 class Graph(tp.NamedTuple):
     '''
     Representation of a mutable graph.
@@ -274,7 +336,7 @@ class Graph(tp.NamedTuple):
     '''
 
     vertex_set: tp.FrozenSet[Vertex] = frozenset()
-    edge_set: tp.FrozenSet[tp.Tuple[Vertex, Vertex]] = frozenset()
+    edge_set: tp.FrozenSet[Edge] = frozenset()
     partition: Partition = Partition()
 
     @property
@@ -296,6 +358,10 @@ class Graph(tp.NamedTuple):
     @property
     def degree_of(self) -> '_DegreeOf':
         return _DegreeOf(self)
+
+    @property
+    def edges_of_part(self) -> '_EdgesOfPart':
+        return _EdgesOfPart(self)
 
     @property
     def zero_degree_vertex(self) -> tp.Tuple[Vertex, ...]:
@@ -388,6 +454,15 @@ class _NeighborsOf(_GraphMapping[tp.Iterable[Vertex]]):
                 yield edge[1]
             elif item == edge[1]:
                 yield edge[0]
+
+
+class _EdgesOfPart(_GraphMapping[int]):
+    '''Graph mapping for vertex neibors'''
+    def __getitem__(self, item: Partition) -> tp.FrozenSet[Edge]:
+        return frozenset(
+                e
+                for e in self.graph.edge_set
+                if e[0] in item and e[1] in item)
 
 
 class _DegreeOf(_GraphMapping[int]):

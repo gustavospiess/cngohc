@@ -127,19 +127,19 @@ def test_initialize_communities(
 
 def test_batch_generator():
     p = generator.Parameters(
-            vertex_count=1000,
+            vertex_count=6000,
             deviation_sequence=(1.0, 3.0),
             community_count=(3,),
             homogeneity_indicator=0.0)
     g = generator.initialize_graph(p)
     for b in generator.batch_generator(g):
-        assert 0 < len(b) < 1000
-    assert sum(len(b) for b in generator.batch_generator(g)) == 1000
+        assert 0 < len(b) < 2000
+    assert sum(len(b) for b in generator.batch_generator(g)) == 6000
 
 
 def test_chose_partition():
     p = generator.Parameters(
-            vertex_count=1000,
+            vertex_count=2000,
             deviation_sequence=(3.0, 3.0,),
             community_count=(3,),
             homogeneity_indicator=0.0)
@@ -264,9 +264,52 @@ def test_edge_insertion_between():
 
 
 def test_find_triples():
-    data = frozenset({(1, 2), (2, 3), (3, 4), (1, 4)})
+    data = frozenset({
+        (1, 2), (2, 3), (3, 4), (1, 4),
+        (10, 11), (11, 12), (10, 12)})
     triples = tuple(generator.find_triples(data))
     assert frozenset({1, 2, 3}) in triples
     assert frozenset({2, 3, 4}) in triples
     assert frozenset({3, 4, 1}) in triples
     assert frozenset({4, 1, 2}) in triples
+    print(triples)
+    assert len(triples) == 4
+
+
+def find_connected_components(g: models.Graph):
+    forest = set()
+    for edge in g.edge_set:
+        a_set = frozenset(edge[0])
+        b_set = frozenset(edge[1])
+        for comp in forest:
+            if edge[0] in comp:
+                a_set = comp
+            if edge[1] in comp:
+                b_set = comp
+        if a_set != b_set:
+            if a_set in forest:
+                forest.remove(a_set)
+            if b_set in forest:
+                forest.remove(b_set)
+            forest.add(a_set | b_set)
+        return forest
+
+
+def test_generator():
+    p = generator.Parameters(
+            vertex_count=120,
+            min_edge_count=2_000,
+            deviation_sequence=(1.0, 2.5, 5.5),
+            homogeneity_indicator=0.95,
+            representative_count=10,
+            community_count=(3, 4, 2),
+            max_within_edge=(1, 2, 3, 4),
+            max_between_edge=20)
+    g = generator.generator(p)
+
+    assert len(g.vertex_set) == p.vertex_count
+    assert len(set(g.zero_degree_vertex)) == 0
+    assert len(find_connected_components(g)) == 1
+    for vertex in g.vertex_set:
+        assert len(tuple(g.partitions_of[vertex])) > 0
+    assert len(g.edge_set) == p.min_edge_count

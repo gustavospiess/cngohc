@@ -3,12 +3,12 @@ This module wraps all the methods for the graph generation.
 '''
 
 
-from ..models import Vertex, Vector, Graph, Partition
+from ..models import Vertex, Vector, Graph, Partition, PartitionBuilder
 from .clustering import KMedoids
 from .rand import rand_norm, rand_in_range, sample, shuffle
 from .rand import rand_threshold, rand_pl, rand_edge_within, rand_edge_between
 
-from itertools import chain, repeat
+from itertools import chain, repeat, combinations
 
 import typing as tp
 
@@ -150,17 +150,23 @@ def initialize_communities(param: Parameters, graph: Graph) -> Graph:
 
 def batch_generator(graph: Graph) -> tp.Generator[tp.Set[Vertex], None, None]:
     '''
-    Generate successive random sized sets of vertexes from the givem graph.
-
-    The union of all the sets generated is equal to the original vertex set of
-    the graph.
+    TODO: doc
     '''
     to_add = set(graph.zero_degree_vertex)
-    while to_add:
-        smp_count = max(1, rand_in_range(range(len(to_add))))
-        smp = sample(to_add, k=smp_count)
-        to_add -= smp
-        yield smp
+    sample_size = 1 + (len(graph.partition.flat) // 2)
+    while len(to_add) > sample_size and sample_size < 1000:
+        sampled_data = sample(to_add, k=sample_size)
+        to_add -= sampled_data
+        yield sampled_data
+        sample_size = min(sample_size*2, len(to_add))
+    while len(to_add) > 1000:
+        sample_size = rand_in_range(range(
+            min(1000, len(to_add)),
+            min(2000, len(to_add))))
+        sampled_data = sample(to_add, k=sample_size)
+        to_add -= sampled_data
+        yield sampled_data
+    yield to_add
 
 
 def chose_partitions(
@@ -205,7 +211,7 @@ def edge_insertion_within(
     level: int = partition.level
     vertex_pool = set(partition.depht)
     max_count = min(len(vertex_pool), param.max_within_edge[level])
-    edges_within = rand_pl(tuple(i for i in range(1, max_count)))
+    edges_within = rand_pl(tuple(i for i in range(1, max_count+1)))
 
     degree = graph.degree_of.__getitem__
 
@@ -229,7 +235,7 @@ def edge_insertion_between(
     '''
 
     partition_pool = graph.partition.flat - ignored
-    vertex_pool: tp.Set[tp.Tuple[Vertex, Partition]] = set(chain(*tuple(
+    vertex_pool = frozenset(chain(*tuple(
             zip(p.representative_set, repeat(p)) for p in partition_pool)))
 
     max_count = min(limit, param.max_between_edge, len(vertex_pool))
@@ -238,26 +244,115 @@ def edge_insertion_between(
 
     edges_between = rand_pl(tuple(i for i in range(1, max_count+1)))
 
-    neighbor_set: tp.Set[Vertex] = set()
-    while len(neighbor_set) < edges_between:
-        other = rand_edge_between(
-                vertex_pool,
-                lambda pair: pair[1].weighed_distance(vertex, pair[0]))
-        vertex_pool.remove(other)
-        neighbor_set.add(other[0])
+    neighbor_set = rand_edge_between(vertex_pool, vertex, edges_between)
     return frozenset((neighbor, vertex,) for neighbor in neighbor_set)
 
 
 T = tp.TypeVar('T')
 EdgeSet = tp.FrozenSet[tp.Tuple[T, T]]
-Triplets = tp.FrozenSet[T]
+Triplet = tp.FrozenSet[T]
 
 
-def find_triples(edge_set: EdgeSet) -> tp.Generator[Triplets, None, None]:
-    for edge_a in shuffle(edge_set):
-        for edge_b in shuffle(edge_set):
-            if edge_a[0] in edge_b and edge_a[1] in edge_b:
-                continue  # same edge
-            if edge_a[0] not in edge_b and edge_a[1] not in edge_b:
-                continue  # no shared vertex
-            yield frozenset((*edge_a, *edge_b))
+class Triplet(tp.FrozenSet[Vertex]):
+    def __new__(cls, a_to_b, b_to_c):
+        instance = super().__new__(cls, {*a_to_b, *b_to_c})
+        instance.missing_edge = tuple((a_to_b | b_to_c)-(a_to_b & b_to_c))
+        instance.missing_edge_i = tuple(reversed(instance.missing_edge))
+        return instance
+
+
+TripletGen = tp.Generator[Triplet, None, None]
+
+
+def find_triples(edge_set: EdgeSet) -> TripletGen:
+    for edge_a, edge_b in combinations(edge_set, 2):
+        if edge_a[0] in edge_b and edge_a[1] in edge_b:
+            continue  # they're the same
+        if edge_a[0] not in edge_b and edge_a[1] not in edge_b:
+            continue  # no shared vertex
+        t = Triplet(set(edge_a), set(edge_b))
+        if t.missing_edge not in edge_set and t.missing_edge_i not in edge_set:
+            yield t
+
+
+def super_choose(generators: tp.List[TripletGen]) -> TripletGen:
+    while len(generators) > 0:
+        for idx in range(len(generators)):
+            try:
+                yield next(generators[idx])
+            except StopIteration:
+                del generators[idx]
+                shuffle(generators)
+                break
+
+
+def final_edge_generator(graph):
+    by_level = graph.partition.by_level
+    triplet_gen = iter(tuple())
+    for level in reversed(sorted(by_level)):
+        triplet_gen = chain(triplet_gen, super_choose([
+            find_triples(graph.edges_of_part[part])
+            for part in by_level[level]
+            ]))
+    for tri in triplet_gen:
+        yield tri.missing_edge
+
+
+def final_edge_insertino(graph, qtd):
+    new_edges = set()
+    edge_generator = final_edge_generator(graph)
+    while len(new_edges) < qtd:
+        pending_qtd = qtd - len(new_edges)
+        t = [e for e, i in zip(edge_generator, range(pending_qtd))]
+        new_edges.update(t)
+        if len(t) != pending_qtd:
+            return new_edges
+    return new_edges
+
+
+def generator(param: Parameters):
+    vertex_generation = initialize_graph(param)
+    community_generation = initialize_communities(param, vertex_generation)
+
+    def introduce_vertex(vertex: Vertex):
+        partition_set = chose_partitions(param, rolling_graph, vertex)
+        vertex_neighboors = set()
+        for part in partition_set:
+            ed = edge_insertion_within(param, rolling_graph, vertex, part)
+            vertex_neighboors.update(ed)
+        ed = edge_insertion_between(
+                param,
+                rolling_graph,
+                vertex,
+                partition_set,
+                len(vertex_neighboors))
+        vertex_neighboors.update(ed)
+        return (frozenset(vertex_neighboors), partition_set)
+
+    rolling_graph = community_generation
+    new_edges = set()
+    for batch in batch_generator(community_generation):
+        part_builder = PartitionBuilder(
+                rolling_graph.partition,
+                param.representative_count)
+        for vertex in batch:
+            vertex_neighboors, partition_set = introduce_vertex(vertex)
+            new_edges.update(vertex_neighboors)
+            part_builder.add_all(partition_set, vertex)
+        new_partition = part_builder.build()
+        rolling_graph = Graph(
+                rolling_graph.vertex_set,
+                frozenset(rolling_graph.edge_set | new_edges),
+                new_partition
+                )
+    while len(rolling_graph.edge_set) < param.min_edge_count:
+        assert tuple() not in rolling_graph.edge_set
+        final_edges = final_edge_insertino(
+                rolling_graph,
+                param.min_edge_count - len(rolling_graph.edge_set))
+        rolling_graph = Graph(
+                rolling_graph.vertex_set,
+                frozenset(rolling_graph.edge_set | final_edges),
+                new_partition
+                )
+    return rolling_graph
