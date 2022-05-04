@@ -113,23 +113,27 @@ def rand_edge_within(
 
 
 @cached
-def rand_edge_between_weigths(data, other):
+def edge_between_weigths(data, other):
     def distance(vertex, part):
         return part.weighed_distance(vertex, other)
     total_degree = sum(1/distance(*v) for v in data)
-    weights = tuple((1/distance(*v))/total_degree for v in data)
+    weights = tuple(1/distance(*v)/total_degree for v in data)
     return weights
 
 
 @__rand_safe
 def rand_edge_between(data, other, lenth, *, rand: Random):
     '''
-    TODO: doc
+    Given a set of pairs of representatives and the partition represented by
+    them, an vertex, and the quantity of edges to build, this returns a frozen
+    set of representatives to become linket to the provided vertex.
     '''
+    if (lenth == 0):
+        return frozenset()
     t_data = tuple(data)
-    weights = rand_edge_between_weigths(data, other)
-    r = frozenset(p[0] for p in rand.choices(t_data, weights=weights, k=lenth))
-    return r
+    weights = edge_between_weigths(data, other)
+    return frozenset(
+            p[0] for p in rand.choices(t_data, weights=weights, k=lenth))
 
 
 @__rand_safe

@@ -150,7 +150,15 @@ def initialize_communities(param: Parameters, graph: Graph) -> Graph:
 
 def batch_generator(graph: Graph) -> tp.Generator[tp.Set[Vertex], None, None]:
     '''
-    TODO: doc
+    Given a graph with a number of zero degree vertexes, it yields sets of
+    those vertexes, without repeating, and eventually yielding every one.
+
+    The size of this batches are defined as growing vallues, initially with
+    1 plus half the number of communities, and doubleling it untill pass 1_000.
+    when it passes 1_000, the batch size will be randombly choosen uniformly
+    between 1_000 and 2_000.
+
+    The last batch will be the padding, having a size ranging from zero to 999.
     '''
     to_add = set(graph.zero_degree_vertex)
     sample_size = 1 + (len(graph.partition.flat) // 2)
@@ -231,7 +239,11 @@ def edge_insertion_between(
         limit: int,
         ) -> tp.FrozenSet[tp.Tuple[Vertex, Vertex]]:
     '''
-    TODO: doc
+    Edge generator for linking an vertex into communities it do not belong.
+
+    The number of edges is a randomly generated according to a power law.
+    The edge is betwen the given vertex and a random community representative
+    choosen with the ´rand_edge_between´.
     '''
 
     partition_pool = graph.partition.flat - ignored
@@ -239,44 +251,28 @@ def edge_insertion_between(
             zip(p.representative_set, repeat(p)) for p in partition_pool)))
 
     max_count = min(limit, param.max_between_edge, len(vertex_pool))
-    edges_between = rand_pl(tuple(i for i in range(1, max_count+1)))
+    edges_between = rand_pl(tuple(i for i in range(0, max_count+1)))
 
     neighbor_set = rand_edge_between(vertex_pool, vertex, edges_between)
     return frozenset((neighbor, vertex,) for neighbor in neighbor_set)
 
 
-T = tp.TypeVar('T')
-EdgeSet = tp.FrozenSet[tp.Tuple[T, T]]
-
-
-class Triplet():
-    # TODO: refactor it
-    def __init__(self, a_to_b, b_to_c):
-        self.a_to_b = a_to_b
-        self.b_to_c = b_to_c
-        self.c_to_a = tuple((a_to_b | b_to_c)-(a_to_b & b_to_c))
-        self.a_to_c = tuple(reversed(self.c_to_a))
-
-    @property
-    def missing_edge(self):
-        return self.c_to_a
-
-
-TripletGen = tp.Generator[Triplet, None, None]
-
-
-def find_triples(edge_set: EdgeSet) -> TripletGen:
+def find_triples(edge_set: tp.FrozenSet[Edge]) -> tp.Iterator[Edge]:
     for edge_a, edge_b in combinations(edge_set, 2):
         if edge_a[0] in edge_b and edge_a[1] in edge_b:
             continue  # they're the same
         if edge_a[0] not in edge_b and edge_a[1] not in edge_b:
             continue  # no shared vertex
-        t = Triplet(set(edge_a), set(edge_b))
-        if t.a_to_c not in edge_set and t.c_to_a not in edge_set:
-            yield t
+        edge_c = (
+                edge_a[0] if edge_a[1] in edge_b else edge_a[1],
+                edge_b[0] if edge_b[1] in edge_a else edge_b[1],
+                )
+        edge_c_inversed = tuple(reversed(edge_c))
+        if edge_c not in edge_set and edge_c_inversed not in edge_set:
+            yield edge_c
 
 
-def super_choose(generators: tp.List[TripletGen]) -> TripletGen:
+def super_choose(generators: tp.List[tp.Iterator[Edge]]) -> tp.Iterator[Edge]:
     while len(generators) > 0:
         for idx in range(len(generators)):
             try:
@@ -296,7 +292,7 @@ def final_edge_generator(graph):
             for part in by_level[level]
             ]))
     for tri in triplet_gen:
-        yield tri.missing_edge
+        yield tri
 
 
 def final_edge_insertino(graph, qtd):

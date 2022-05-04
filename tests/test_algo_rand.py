@@ -74,7 +74,7 @@ def test_rand_norm():
 
     count = Counter([int(rand.rand_norm(0, 10)) for _ in range(1000)])
 
-    assert 1000 * 0.12 > count[0] > 1000 * 0.06
+    assert 1000 * 0.12 > count[0] > 1000 * 0.05
 
 
 def test_rand_uni_seed():
