@@ -9,6 +9,7 @@ from functools import reduce
 from random import sample
 
 import pytest
+import typing as tp
 
 
 def test_generate_zero():
@@ -263,24 +264,24 @@ def test_edge_insertion_between():
                 assert len(tuple(g.neighbors_of[other])) > 0
 
 
-def test_find_triples():
-    data = frozenset({
-        (1, 2), (2, 3), (3, 4), (1, 4),
-        (10, 11), (11, 12), (10, 12)})
-    triples = tuple(generator.find_triples(data))
-    assert frozenset({1, 2, 3}) in triples
-    assert frozenset({2, 3, 4}) in triples
-    assert frozenset({3, 4, 1}) in triples
-    assert frozenset({4, 1, 2}) in triples
-    print(triples)
-    assert len(triples) == 4
+# def test_find_triples():
+#     data = frozenset({
+#         (1, 2), (2, 3), (3, 4), (1, 4),
+#         (10, 11), (11, 12), (10, 12)})
+#     triples = tuple(generator.find_triples(data))
+#     assert frozenset({1, 2, 3}) in triples
+#     assert frozenset({2, 3, 4}) in triples
+#     assert frozenset({3, 4, 1}) in triples
+#     assert frozenset({4, 1, 2}) in triples
+#     print(triples)
+#     assert len(triples) == 4
 
 
 def find_connected_components(g: models.Graph):
-    forest = set()
+    forest: tp.Set[tp.FrozenSet[models.Vertex]] = set()
     for edge in g.edge_set:
-        a_set = frozenset(edge[0])
-        b_set = frozenset(edge[1])
+        a_set: tp.FrozenSet[models.Vertex] = frozenset({edge[0]})
+        b_set: tp.FrozenSet[models.Vertex] = frozenset({edge[1]})
         for comp in forest:
             if edge[0] in comp:
                 a_set = comp

@@ -3,7 +3,7 @@ This module wraps all the methods for the graph generation.
 '''
 
 
-from ..models import Vertex, Vector, Graph, Partition, PartitionBuilder
+from ..models import Vertex, Vector, Graph, Partition, PartitionBuilder, Edge
 from .clustering import KMedoids
 from .rand import rand_norm, rand_in_range, sample, shuffle
 from .rand import rand_threshold, rand_pl, rand_edge_within, rand_edge_between
@@ -227,7 +227,7 @@ def edge_insertion_between(
         param: Parameters,
         graph: Graph,
         vertex: Vertex,
-        ignored: tp.Set[Partition],
+        ignored: tp.AbstractSet[Partition],
         limit: int,
         ) -> tp.FrozenSet[tp.Tuple[Vertex, Vertex]]:
     '''
@@ -239,9 +239,6 @@ def edge_insertion_between(
             zip(p.representative_set, repeat(p)) for p in partition_pool)))
 
     max_count = min(limit, param.max_between_edge, len(vertex_pool))
-    if max_count == 0:
-        return frozenset()
-
     edges_between = rand_pl(tuple(i for i in range(1, max_count+1)))
 
     neighbor_set = rand_edge_between(vertex_pool, vertex, edges_between)
@@ -250,15 +247,19 @@ def edge_insertion_between(
 
 T = tp.TypeVar('T')
 EdgeSet = tp.FrozenSet[tp.Tuple[T, T]]
-Triplet = tp.FrozenSet[T]
 
 
-class Triplet(tp.FrozenSet[Vertex]):
-    def __new__(cls, a_to_b, b_to_c):
-        instance = super().__new__(cls, {*a_to_b, *b_to_c})
-        instance.missing_edge = tuple((a_to_b | b_to_c)-(a_to_b & b_to_c))
-        instance.missing_edge_i = tuple(reversed(instance.missing_edge))
-        return instance
+class Triplet():
+    # TODO: refactor it
+    def __init__(self, a_to_b, b_to_c):
+        self.a_to_b = a_to_b
+        self.b_to_c = b_to_c
+        self.c_to_a = tuple((a_to_b | b_to_c)-(a_to_b & b_to_c))
+        self.a_to_c = tuple(reversed(self.c_to_a))
+
+    @property
+    def missing_edge(self):
+        return self.c_to_a
 
 
 TripletGen = tp.Generator[Triplet, None, None]
@@ -271,7 +272,7 @@ def find_triples(edge_set: EdgeSet) -> TripletGen:
         if edge_a[0] not in edge_b and edge_a[1] not in edge_b:
             continue  # no shared vertex
         t = Triplet(set(edge_a), set(edge_b))
-        if t.missing_edge not in edge_set and t.missing_edge_i not in edge_set:
+        if t.a_to_c not in edge_set and t.c_to_a not in edge_set:
             yield t
 
 
@@ -316,7 +317,7 @@ def generator(param: Parameters):
 
     def introduce_vertex(vertex: Vertex):
         partition_set = chose_partitions(param, rolling_graph, vertex)
-        vertex_neighboors = set()
+        vertex_neighboors: tp.Set[Edge] = set()
         for part in partition_set:
             ed = edge_insertion_within(param, rolling_graph, vertex, part)
             vertex_neighboors.update(ed)

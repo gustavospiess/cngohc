@@ -15,6 +15,7 @@ from .algo.rand import sample
 
 import typing as tp
 _T = tp.TypeVar('_T')
+_F = tp.TypeVar('_F')
 
 
 class Vector(tp.Tuple[float, ...]):
@@ -179,10 +180,6 @@ class Partition(tp.FrozenSet[PartitionMember]):
         return self.__flat()
 
     @property
-    def by_id(self) -> tp.Dict[int, 'Partition']:
-        return {p.identifier: p for p in self.flat}
-
-    @property
     def by_level(self) -> tp.Dict[int, tp.FrozenSet['Partition']]:
         d = defaultdict(list)
         for member in self.flat:
@@ -309,11 +306,11 @@ class PartitionBuilder:
         identifier = part.identifier
         level = part.level
 
-        members = (
-                *set(v for v in part if isinstance(v, Vertex)),
+        members: tp.List[PartitionMember] = [
+                *(v for v in part if isinstance(v, Vertex)),
                 *self.vertex_mapping[identifier],
-                *set(self.__build(p) for p in part if isinstance(p, Partition))
-                )
+                *(self.__build(p) for p in part if isinstance(p, Partition)),
+                ]
 
         representative_set = sample(members, k=min(len(members), self.qt_rep))
 
@@ -403,11 +400,8 @@ class Graph(tp.NamedTuple):
 
 
 class _GraphMapping(
-        tp.Mapping[Vertex, _T],
-        tp.Generic[_T]):
-    '''
-    Abstract map of properties in a graph.
-    '''
+        tp.Mapping[_F, _T],
+        tp.Generic[_F, _T]):
     __slots__ = ['__graph']
 
     def __init__(self, graph: Graph):
@@ -417,17 +411,34 @@ class _GraphMapping(
     def graph(self) -> Graph:
         return self.__graph
 
+    def __hash__(self) -> int:
+        return 23 + 97 * id(self)
+
+
+class _EdgesOfPart(_GraphMapping[Partition, tp.FrozenSet[Edge]]):
+    '''Graph mapping for vertex neibors'''
+    def __getitem__(self, item: Partition) -> tp.FrozenSet[Edge]:
+        return frozenset(
+                e
+                for e in self.graph.edge_set
+                if e[0] in item and e[1] in item)
+
+    def __iter__(self) -> tp.Iterator[Partition]:
+        return iter(self.graph.partition.flat)
+
+    def __len__(self) -> int:
+        return len(self.graph.partition.flat)
+
+
+class _VertexGraphMapping(_GraphMapping[Vertex, _T], tp.Generic[_T]):
     def __iter__(self) -> tp.Iterator[Vertex]:
         return iter(self.graph.vertex_set)
 
     def __len__(self) -> int:
         return len(self.graph.vertex_set)
 
-    def __hash__(self) -> int:
-        return 23 + 97 * id(self)
 
-
-class _PartitionsOf(_GraphMapping[tp.Iterable[Partition]]):
+class _PartitionsOf(_VertexGraphMapping[tp.Iterable[Partition]]):
     '''Graph mapping for vertex communities'''
     def __getitem__(self, item: Vertex) -> tp.Iterable[Partition]:
         it = self.__recursive_gen(item, (self.graph.partition,))
@@ -445,7 +456,7 @@ class _PartitionsOf(_GraphMapping[tp.Iterable[Partition]]):
                 yield from stack
 
 
-class _NeighborsOf(_GraphMapping[tp.Iterable[Vertex]]):
+class _NeighborsOf(_VertexGraphMapping[tp.Iterable[Vertex]]):
     '''Graph mapping for vertex neibors'''
     @cached_generator
     def __getitem__(self, item: Vertex) -> tp.Iterable[Vertex]:
@@ -456,16 +467,7 @@ class _NeighborsOf(_GraphMapping[tp.Iterable[Vertex]]):
                 yield edge[0]
 
 
-class _EdgesOfPart(_GraphMapping[int]):
-    '''Graph mapping for vertex neibors'''
-    def __getitem__(self, item: Partition) -> tp.FrozenSet[Edge]:
-        return frozenset(
-                e
-                for e in self.graph.edge_set
-                if e[0] in item and e[1] in item)
-
-
-class _DegreeOf(_GraphMapping[int]):
+class _DegreeOf(_VertexGraphMapping[int]):
     '''Graph mapping for vertex neibors'''
     def __getitem__(self, item: Vertex) -> int:
         return self.__counter()[item]

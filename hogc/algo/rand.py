@@ -5,7 +5,6 @@ This module is a collection of random functions
 
 from random import Random
 from functools import wraps, lru_cache as cached
-from collections import deque
 
 import typing as tp
 
@@ -91,7 +90,7 @@ def rand_pl(
     if len(data) == 1:
         return data[0]
     if len(data) == 0:
-        return None
+        raise ValueError()
     return rand.choices(data, weights=dist(len(data)), k=1)[0]
 
 
@@ -156,28 +155,8 @@ def rand_threshold(threshold: float, *, rand: Random) -> bool:
     return rand.uniform(0, 1) < threshold
 
 
-shuffle = DEFAULT_RANDOM.shuffle
-
-
 @__rand_safe
-def __shuffle(
-        data: tp.Iterable[_T],
-        size: int,
-        *, rand: Random) -> tp.Generator[_T, None, None]:
-    it = iter(data)
-    buffer_stack: tp.Deque[_T] = deque()
-    pending = size
-    while True:
-        idx = rand_in_range(range(pending), rand=rand)
-        while idx > len(buffer_stack) - 1:
-            buffer_stack.append(next(it))
-        yield buffer_stack[idx]
-        del buffer_stack[idx]
-        pending = pending - 1
-        if pending == len(buffer_stack):
-            rand.shuffle(buffer_stack)
-            yield from buffer_stack
-            break
-        if pending <= 1:
-            yield from it
-            break
+def shuffle(
+        data: tp.List[_T],
+        *, rand: Random):
+    rand.shuffle(data)
