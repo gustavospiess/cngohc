@@ -3,8 +3,10 @@
 
 from hogc import models
 import json
+import pickle
 import tempfile
 import pytest
+import multiprocessing
 
 
 def test_vector_utils():
@@ -55,10 +57,14 @@ def test_partition_tree():
     assert p in p.flat
 
 
+def dummy(x):
+    return x
+
+
 def test_weighedpartition_json():
     data = models.Vertex((1, 2,))
-    p = models.Partition((data,))
-    p2 = models.Partition((data,))
+    p = models.Partition((data,), identifier=0)
+    p2 = models.Partition((data,), identifier=1)
 
     assert p.to_raw() != p2.to_raw()
 
@@ -69,6 +75,13 @@ def test_weighedpartition_json():
     assert hash(p) == hash(q)
     assert p.identifier == q.identifier
     assert p.weigh_vector == q.weigh_vector
+
+    dat = pickle.dumps(q)
+    q2 = pickle.loads(dat)
+    assert q == q2
+
+    with multiprocessing.Pool(1) as p:
+        assert p.map(dummy, [q2])[0] == q
 
 
 def test_graph_neighbors():

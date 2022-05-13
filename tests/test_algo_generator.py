@@ -1,5 +1,5 @@
 '''
-Tests for `hogc.algo.generator` module.
+Tests aaaaaaafor `hogc.algo.generator` module.
 '''
 
 from hogc.algo import generator
@@ -134,97 +134,8 @@ def test_batch_generator():
             homogeneity_indicator=0.0)
     g = generator.initialize_graph(p)
     for b in generator.batch_generator(g):
-        assert 0 < len(b) < 2000
+        assert 1 <= len(b) <= 2048
     assert sum(len(b) for b in generator.batch_generator(g)) == 6000
-
-
-def test_chose_partition():
-    p = generator.Parameters(
-            vertex_count=2000,
-            deviation_sequence=(3.0, 3.0,),
-            community_count=(3,),
-            homogeneity_indicator=0.0)
-    g = generator.initialize_graph(p)
-
-    partition_edge_set = set()
-    v1 = max(g.vertex_set, key=lambda v: v[0])
-    v2 = min(g.vertex_set, key=lambda v: v[0])
-    v3 = max(g.vertex_set, key=lambda v: v[1])
-    v4 = min(g.vertex_set, key=lambda v: v[1])
-
-    class PartitionMock(models.Partition):
-
-        def __init__(self, *args, weigh_vector, **kwargs):
-            self._weigh_vector = weigh_vector
-            super().__init__(*args, **kwargs)
-
-        @property
-        def weigh_vector(self):
-            return self._weigh_vector
-
-    p1 = PartitionMock(
-            frozenset((v1,)),
-            weigh_vector=models.Vector((1, 0)), representative_set={v1})
-    p2 = PartitionMock(
-            frozenset((v2,)),
-            weigh_vector=models.Vector((1, 0)), representative_set={v2})
-    p3 = PartitionMock(
-            frozenset((v3,)),
-            weigh_vector=models.Vector((0, 1)), representative_set={v3})
-    p4 = PartitionMock(
-            frozenset((v4,)),
-            weigh_vector=models.Vector((0, 1)), representative_set={v4})
-
-    partition = PartitionMock(
-            {p1, p2, p3, p4},
-            weigh_vector=models.Vector((0.5, 0.5)),
-            representative_set={models.Vertex((9999999, 99999999))})
-
-    vt1 = models.Vertex((v1[0]+0.1, 1))
-    vt2 = models.Vertex((v2[0]+0.1, 1))
-    vt3 = models.Vertex((1, v3[1]+0.1))
-    vt4 = models.Vertex((1, v4[1]+0.1))
-
-    g = models.Graph(
-            frozenset(g.vertex_set | {vt1, vt2, vt3, vt4}),
-            frozenset(g.edge_set | partition_edge_set),
-            partition
-            )
-
-    count = Counter()
-    for _ in range(2000):
-        count[p1 in generator.chose_partitions(p, g, vt1)] += 1
-        count[p2 in generator.chose_partitions(p, g, vt2)] += 1
-        count[p3 in generator.chose_partitions(p, g, vt3)] += 1
-        count[p4 in generator.chose_partitions(p, g, vt4)] += 1
-
-    assert count[True] > count[False]
-
-    count = Counter(
-            generator.chose_partitions(p, g, vt1) for _ in range(2000))
-
-    assert count[frozenset({p1})] > 900
-    assert sum(
-            count[k]
-            for k in count
-            if p1 in k and len(k) >= 2) > 450
-    assert sum(
-            count[k]
-            for k in count
-            if p1 not in k and len(k) >= 2) < 200
-    assert sum(
-            count[k]
-            for k in count
-            if p1 not in k and len(k) == 1) < 160
-
-    p = generator.Parameters(
-            vertex_count=1000,
-            deviation_sequence=(3.0, 3.0),
-            community_count=(3,),
-            homogeneity_indicator=1.0)
-    count = Counter(
-            len(generator.chose_partitions(p, g, vt1)) for _ in range(2500))
-    assert count[1] > count[2] > count[3]
 
 
 def test_edge_insertion_within():
@@ -264,19 +175,6 @@ def test_edge_insertion_between():
                 assert len(tuple(g.neighbors_of[other])) > 0
 
 
-# def test_find_triples():
-#     data = frozenset({
-#         (1, 2), (2, 3), (3, 4), (1, 4),
-#         (10, 11), (11, 12), (10, 12)})
-#     triples = tuple(generator.find_triples(data))
-#     assert frozenset({1, 2, 3}) in triples
-#     assert frozenset({2, 3, 4}) in triples
-#     assert frozenset({3, 4, 1}) in triples
-#     assert frozenset({4, 1, 2}) in triples
-#     print(triples)
-#     assert len(triples) == 4
-
-
 def find_connected_components(g: models.Graph):
     forest: tp.Set[tp.FrozenSet[models.Vertex]] = set()
     for edge in g.edge_set:
@@ -298,19 +196,18 @@ def find_connected_components(g: models.Graph):
 
 def test_generator():
     p = generator.Parameters(
-            vertex_count=120,
-            min_edge_count=2_000,
-            deviation_sequence=(1.0, 2.5, 5.5),
+            vertex_count=1_500,
+            min_edge_count=4_000,
+            deviation_sequence=(1.0, 2.5),
             homogeneity_indicator=0.95,
             representative_count=10,
-            community_count=(3, 4, 2),
-            max_within_edge=(1, 2, 3, 4),
+            community_count=(2, 3, 4),
+            max_within_edge=(1, 5, 10, 30),
             max_between_edge=20)
     g = generator.generator(p)
-
     assert len(g.vertex_set) == p.vertex_count
     assert len(set(g.zero_degree_vertex)) == 0
     assert len(find_connected_components(g)) == 1
     for vertex in g.vertex_set:
         assert len(tuple(g.partitions_of[vertex])) > 0
-    assert len(g.edge_set) == p.min_edge_count
+    assert len(g.edge_set) >= p.min_edge_count

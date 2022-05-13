@@ -4,7 +4,7 @@
 from json import dump as json_dump, load as json_load
 from csv import reader as csv_reader, writer as csv_writer
 
-from itertools import chain, count
+from itertools import chain
 from functools import lru_cache
 from collections import Counter, defaultdict
 from math import sqrt as square_root
@@ -99,8 +99,6 @@ class Partition(tp.FrozenSet[PartitionMember]):
             '__level',
             '__representative_set']
 
-    session_id = count()
-
     def __new__(
             cls, members: tp.Iterable[PartitionMember] = tuple(),
             *args, **kwargs):
@@ -109,13 +107,11 @@ class Partition(tp.FrozenSet[PartitionMember]):
     def __init__(
             self,
             members: tp.Iterable[PartitionMember] = tuple(),
-            identifier: tp.Optional[int] = None,
+            identifier: tp.Optional[int] = -1,
             level: int = 0,
             *,
             representative_set: tp.Iterable[Vertex] = tuple(),):
 
-        if identifier is None:
-            identifier = next(Partition.session_id)
         self.__identifier: int = identifier
         '''
         This is used to force a static hash, if not informed in initialization
@@ -312,7 +308,10 @@ class PartitionBuilder:
                 *(self.__build(p) for p in part if isinstance(p, Partition)),
                 ]
 
-        representative_set = sample(members, k=min(len(members), self.qt_rep))
+        possible_representatives = tuple(part.depht)
+        representative_set = sample(
+                possible_representatives,
+                k=min(len(members), self.qt_rep))
 
         return Partition(
                 members, identifier, level,
@@ -418,16 +417,35 @@ class _GraphMapping(
 class _EdgesOfPart(_GraphMapping[Partition, tp.FrozenSet[Edge]]):
     '''Graph mapping for vertex neibors'''
     def __getitem__(self, item: Partition) -> tp.FrozenSet[Edge]:
-        return frozenset(
-                e
-                for e in self.graph.edge_set
-                if e[0] in item and e[1] in item)
+        return _EdgesOfPartCol(self.graph.edge_set, item)
 
     def __iter__(self) -> tp.Iterator[Partition]:
         return iter(self.graph.partition.flat)
 
     def __len__(self) -> int:
         return len(self.graph.partition.flat)
+
+
+class _EdgesOfPartCol(tp.Collection[Edge]):
+    def __init__(self, edge_set: tp.AbstractSet[Edge], partition: Partition):
+        self.__edge_set = edge_set
+        self.__partition = partition
+
+    @lru_cache
+    def __len__(self) -> int:
+        # terrible performance, but it should not be used anyways
+        return sum(
+                1
+                for e in self.__edge_set
+                if e[0] in self.__partition or e[1] in self.__partition)
+
+    def __iter__(self) -> tp.Iterator[Edge]:
+        for edge in self.__edge_set:
+            if edge[0] in self.__partition or edge[1] in self.__partition:
+                yield edge
+
+    def __contains__(self, edge: Edge) -> bool:
+        return edge[0] in self.__partition or edge[1] in self.__partition
 
 
 class _VertexGraphMapping(_GraphMapping[Vertex, _T], tp.Generic[_T]):
