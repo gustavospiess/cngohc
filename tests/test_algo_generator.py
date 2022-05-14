@@ -144,8 +144,8 @@ def test_edge_insertion_within():
             )
     g = generator.initialize_graph(p)
     g = generator.initialize_communities(p, g)
-    for part in g.partition.flat:
-        for v in g.vertex_set:
+    for part in sample(g.partition.flat, k=3):
+        for v in sample(g.vertex_set, k=10):
             edge_set = generator.edge_insertion_within(p, g, v, part)
             assert len(edge_set) > 0
             for edge in edge_set:
@@ -194,6 +194,7 @@ def find_connected_components(g: models.Graph):
         return forest
 
 
+@pytest.mark.slow
 def test_generator():
     p = generator.Parameters(
             vertex_count=1_500,
@@ -208,6 +209,26 @@ def test_generator():
     assert len(g.vertex_set) == p.vertex_count
     assert len(set(g.zero_degree_vertex)) == 0
     assert len(find_connected_components(g)) == 1
-    for vertex in g.vertex_set:
+    for vertex in sample(g.vertex_set, k=100):
+        assert len(tuple(g.partitions_of[vertex])) > 0
+    assert len(g.edge_set) >= p.min_edge_count
+
+
+@pytest.mark.slow
+def test_generator_b():
+    p = generator.Parameters(
+            vertex_count=10_500,
+            min_edge_count=4_000,
+            deviation_sequence=(1.0, 2.5),
+            homogeneity_indicator=0.95,
+            representative_count=10,
+            community_count=(4,),
+            max_within_edge=(1, 30),
+            max_between_edge=20)
+    g = generator.generator(p)
+    assert len(g.vertex_set) == p.vertex_count
+    assert len(set(g.zero_degree_vertex)) == 0
+    assert len(find_connected_components(g)) == 1
+    for vertex in sample(g.vertex_set, k=100):
         assert len(tuple(g.partitions_of[vertex])) > 0
     assert len(g.edge_set) >= p.min_edge_count

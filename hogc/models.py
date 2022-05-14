@@ -107,7 +107,7 @@ class Partition(tp.FrozenSet[PartitionMember]):
     def __init__(
             self,
             members: tp.Iterable[PartitionMember] = tuple(),
-            identifier: tp.Optional[int] = -1,
+            identifier: int = 0,
             level: int = 0,
             *,
             representative_set: tp.Iterable[Vertex] = tuple(),):
@@ -414,9 +414,9 @@ class _GraphMapping(
         return 23 + 97 * id(self)
 
 
-class _EdgesOfPart(_GraphMapping[Partition, tp.FrozenSet[Edge]]):
+class _EdgesOfPart(_GraphMapping[Partition, '_EdgesOfPartCol']):
     '''Graph mapping for vertex neibors'''
-    def __getitem__(self, item: Partition) -> tp.FrozenSet[Edge]:
+    def __getitem__(self, item: Partition) -> '_EdgesOfPartCol':
         return _EdgesOfPartCol(self.graph.edge_set, item)
 
     def __iter__(self) -> tp.Iterator[Partition]:
@@ -431,7 +431,6 @@ class _EdgesOfPartCol(tp.Collection[Edge]):
         self.__edge_set = edge_set
         self.__partition = partition
 
-    @lru_cache
     def __len__(self) -> int:
         # terrible performance, but it should not be used anyways
         return sum(
@@ -444,7 +443,7 @@ class _EdgesOfPartCol(tp.Collection[Edge]):
             if edge[0] in self.__partition or edge[1] in self.__partition:
                 yield edge
 
-    def __contains__(self, edge: Edge) -> bool:
+    def __contains__(self, edge: tp.Any) -> bool:
         return edge[0] in self.__partition or edge[1] in self.__partition
 
 

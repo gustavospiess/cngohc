@@ -9,8 +9,7 @@ from .rand import rand_norm, rand_in_range, sample, shuffle
 from .rand import rand_threshold, rand_pl, rand_edge_within, rand_edge_between
 
 from itertools import chain, repeat, combinations, count
-from functools import partial
-from multiprocessing import Pool, Value
+from multiprocessing import Pool
 
 import typing as tp
 
@@ -131,7 +130,11 @@ def _initialize_leaf_communities(
     This is the counter part for the `_initialize_communities` function.
     '''
     members = frozenset(Vertex(p) for p in population)
-    partition = Partition(members, identifier=next(id_count), level=level, representative_set=members)
+    partition = Partition(
+            members,
+            identifier=next(id_count),
+            level=level,
+            representative_set=members)
     edge_set: tp.Set[tp.Tuple[Vertex, Vertex]] = set()
     for vertex in partition:
         vertex_pool = partition - {vertex} - {e[1] for e in edge_set}
@@ -198,7 +201,7 @@ def chose_partitions(
     '''
     heterogenic = rand_threshold(param.homogeneity_indicator)
 
-    possible: tp.Tuple[Partition, ...]
+    possible: tp.Sequence[Partition]
     if heterogenic:
         possible = list(graph.partition.flat)
         shuffle(possible)
@@ -322,63 +325,67 @@ def final_edge_insertino(graph, qtd):
 
 
 def introduce_vertex(vertex: Vertex):
-    partition_set = chose_partitions(__p, __g, vertex)
+    if __parameters is None or __rolling_graph is None:
+        raise ValueError('invalid state call')
+    partition_set = chose_partitions(__parameters, __rolling_graph, vertex)
     vertex_neighboors: tp.Set[Edge] = set()
     for part in partition_set:
-        ed = edge_insertion_within(__p, __g, vertex, part)
+        ed = edge_insertion_within(__parameters, __rolling_graph, vertex, part)
         vertex_neighboors.update(ed)
     ed = edge_insertion_between(
-            __p,
-            __g,
+            __parameters,
+            __rolling_graph,
             vertex,
             partition_set,
             len(vertex_neighboors))
     vertex_neighboors.update(ed)
-    return (frozenset(vertex_neighboors), tuple(p.identifier for p in partition_set), vertex)
+    return (frozenset(vertex_neighboors),
+            tuple(p.identifier for p in partition_set),
+            vertex)
 
 
-__g = None
-__p = None
+__rolling_graph: tp.Optional[Graph] = None
+'''TODO: Doc this'''
+__parameters: tp.Optional[Parameters] = None
+'''TODO: Doc this'''
 
 
 def generator(param: Parameters):
     tot = 0
 
-    global __p
-    __p = param
-    global __g
-    __g = initialize_communities(param, initialize_graph(param))
+    global __parameters
+    __parameters = param
+    global __rolling_graph
+    __rolling_graph = initialize_communities(param, initialize_graph(param))
 
     new_edges = set()
-    for batch in batch_generator(__g):
-        print('.', 0)
-        proccessed_batch = None
+    for batch in batch_generator(__rolling_graph):
         with Pool() as p:
             proccess_batch = p.imap_unordered(introduce_vertex, batch)
-            part_builder = PartitionBuilder( __g.partition, param.representative_count)
+            part_builder = PartitionBuilder(
+                    __rolling_graph.partition, param.representative_count)
             for vertex_neighboors, partition_ids, vertex in proccess_batch:
-                partition_set = {p for p in __g.partition.flat if p.identifier in partition_ids}
+                partition_set = {
+                        partition
+                        for partition in __rolling_graph.partition.flat
+                        if partition.identifier in partition_ids}
                 new_edges.update(vertex_neighboors)
                 part_builder.add_all(partition_set, vertex)
-            __g = Graph(
-                    __g.vertex_set,
-                    frozenset(__g.edge_set | new_edges),
+            __rolling_graph = Graph(
+                    __rolling_graph.vertex_set,
+                    frozenset(__rolling_graph.edge_set | new_edges),
                     part_builder.build()
                     )
             tot += len(batch)
 
-    print('.', 1)
-    while len(__g.edge_set) < param.min_edge_count:
-        print('.', 2)
-        proccessed_batch = None
+    while len(__rolling_graph.edge_set) < param.min_edge_count:
         final_edges = final_edge_insertino(
-                __g,
-                param.min_edge_count - len(__g.edge_set))
-        __g = Graph(
-                __g.vertex_set,
-                frozenset(__g.edge_set | final_edges),
-                __g.partition
+                __rolling_graph,
+                param.min_edge_count - len(__rolling_graph.edge_set))
+        __rolling_graph = Graph(
+                __rolling_graph.vertex_set,
+                frozenset(__rolling_graph.edge_set | final_edges),
+                __rolling_graph.partition
                 )
-    print('.', 3)
 
-    return __g
+    return __rolling_graph
