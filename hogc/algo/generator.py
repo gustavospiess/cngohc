@@ -345,9 +345,27 @@ def introduce_vertex(vertex: Vertex):
 
 
 __rolling_graph: tp.Optional[Graph] = None
-'''TODO: Doc this'''
+'''
+Module wide variable to control the graph for parallelism
+
+It should be read only in most of the code, being written into only with the
+generator function.
+
+Being a global variable not being overridden (and the class being immutable) in
+a Linux environment, the data do not need to be replicated, being shared
+between the jobs. In other environments, it may be replicated.
+'''
 __parameters: tp.Optional[Parameters] = None
-'''TODO: Doc this'''
+'''
+Module wide variable to control the parameters for parallelism
+
+It should be read only in most of the code, being written into only with the
+generator function.
+
+Being a global variable not being overridden (and the class being immutable) in
+a Linux environment, the data do not need to be replicated, being shared
+between the jobs. In other environments, it may be replicated.
+'''
 
 
 def generator(param: Parameters):
