@@ -51,8 +51,14 @@ lint: ## check style with flake8
 	flake8 hogc tests
 	mypy -p hogc -p tests
 
-test: ## run tests quickly with the default Python
+test-fast: ## run tests quickly with the default Python
 	pytest
+
+test: ## run tests quickly with the default Python
+	pytest --slow
+
+test-slow: ## run tests quickly with the default Python
+	pytest -m slow --slow
 
 test-all: ## run tests on every Python version with tox
 	tox
