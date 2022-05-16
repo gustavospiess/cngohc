@@ -228,7 +228,6 @@ def test_generator_b():
     g = generator.generator(p)
     assert len(g.vertex_set) == p.vertex_count
     assert len(set(g.zero_degree_vertex)) == 0
-    assert len(find_connected_components(g)) == 1
     for vertex in sample(g.vertex_set, k=100):
         assert len(tuple(g.partitions_of[vertex])) > 0
     assert len(g.edge_set) >= p.min_edge_count
