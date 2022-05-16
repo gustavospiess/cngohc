@@ -1,7 +1,7 @@
-hogc
-====
+cngohc
+======
 
 .. toctree::
    :maxdepth: 4
 
-   hogc
+   cngohc

@@ -3,14 +3,14 @@ Hierarchical Overlapping Graph Communities
 ==========================================
 
 
-.. image:: https://img.shields.io/pypi/v/hogc.svg
-        :target: https://pypi.python.org/pypi/hogc
+.. image:: https://img.shields.io/pypi/v/cngohc.svg
+        :target: https://pypi.python.org/pypi/cngohc
 
-.. image:: https://img.shields.io/travis/gustavospiess/hogc.svg
-        :target: https://travis-ci.com/gustavospiess/hogc
+.. image:: https://img.shields.io/travis/gustavospiess/cngohc.svg
+        :target: https://travis-ci.com/gustavospiess/cngohc
 
-.. image:: https://readthedocs.org/projects/hogc/badge/?version=latest
-        :target: https://hogc.readthedocs.io/en/latest/?version=latest
+.. image:: https://readthedocs.org/projects/cngohc/badge/?version=latest
+        :target: https://cngohc.readthedocs.io/en/latest/?version=latest
         :alt: Documentation Status
 
 
@@ -20,7 +20,7 @@ TODO
 
 
 * Free software: MIT license
-* Documentation: https://hogc.readthedocs.io.
+* Documentation: https://cngohc.readthedocs.io.
 
 
 Features

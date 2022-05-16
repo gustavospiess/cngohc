@@ -12,7 +12,7 @@ To install Hierarchical Overlapping Graph Communities, run this command in your 
 
 .. code-block:: console
 
-    $ pip install hogc
+    $ pip install cngohc
 
 This is the preferred method to install Hierarchical Overlapping Graph Communities, as it will always install the most recent stable release.
 
@@ -32,13 +32,13 @@ You can either clone the public repository:
 
 .. code-block:: console
 
-    $ git clone git://github.com/gustavospiess/hogc
+    $ git clone git://github.com/gustavospiess/cngohc
 
 Or download the `tarball`_:
 
 .. code-block:: console
 
-    $ curl -OJL https://github.com/gustavospiess/hogc/tarball/master
+    $ curl -OJL https://github.com/gustavospiess/cngohc/tarball/master
 
 Once you have a copy of the source, you can install it with:
 
@@ -47,5 +47,5 @@ Once you have a copy of the source, you can install it with:
     $ python setup.py install
 
 
-.. _Github repo: https://github.com/gustavospiess/hogc
-.. _tarball: https://github.com/gustavospiess/hogc/tarball/master
+.. _Github repo: https://github.com/gustavospiess/cngohc
+.. _tarball: https://github.com/gustavospiess/cngohc/tarball/master

@@ -1,4 +1,4 @@
-from hogc import utils
+from cngohc import utils
 from itertools import chain, count
 import pytest
 

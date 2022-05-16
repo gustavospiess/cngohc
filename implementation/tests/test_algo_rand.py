@@ -1,7 +1,7 @@
-'''Tests for `hogc.algo.rand` module.'''
+'''Tests for `cngohc.algo.rand` module.'''
 
 
-from hogc.algo import rand
+from cngohc.algo import rand
 from collections import Counter
 
 

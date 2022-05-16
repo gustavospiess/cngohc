@@ -5,7 +5,7 @@ functions.
 
 
 from sklearn_extra.cluster import KMedoids as _KMedoids
-from hogc.models import Vector
+from cngohc.models import Vector
 
 import typing as tp
 

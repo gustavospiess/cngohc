@@ -1,1 +1,1 @@
-"""Unit test package for hogc."""
+"""Unit test package for cngohc."""

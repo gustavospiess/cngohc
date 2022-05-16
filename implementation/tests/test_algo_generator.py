@@ -1,9 +1,9 @@
 '''
-Tests aaaaaaafor `hogc.algo.generator` module.
+Tests aaaaaaafor `cngohc.algo.generator` module.
 '''
 
-from hogc.algo import generator
-from hogc import models
+from cngohc.algo import generator
+from cngohc import models
 from collections import Counter
 from functools import reduce
 from random import sample

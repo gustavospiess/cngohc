@@ -1,7 +1,7 @@
-'''Tests for `hogc.models` module.'''
+'''Tests for `cngohc.models` module.'''
 
 
-from hogc import models
+from cngohc import models
 import json
 import pickle
 import tempfile

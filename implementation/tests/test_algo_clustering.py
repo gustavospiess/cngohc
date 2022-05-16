@@ -1,8 +1,8 @@
-'''Tests for `hogc.algo.clustering` module.'''
+'''Tests for `cngohc.algo.clustering` module.'''
 
 
-from hogc.algo import clustering
-from hogc import models
+from cngohc.algo import clustering
+from cngohc import models
 import numpy as np
 
 import pytest

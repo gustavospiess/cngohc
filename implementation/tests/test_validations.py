@@ -1,8 +1,8 @@
 '''tests for confirming the correct behavior of the validations algorithms'''
 
 
-from hogc import validations
-from hogc import models
+from cngohc import validations
+from cngohc import models
 
 import pytest
 
