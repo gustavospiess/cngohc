@@ -10,6 +10,8 @@ from .rand import rand_threshold, rand_pl, rand_edge_within, rand_edge_between
 
 from itertools import chain, repeat, combinations, count
 from multiprocessing import Pool
+from math import sqrt, ceil
+from time import time
 
 import typing as tp
 
@@ -21,7 +23,7 @@ class Parameters(tp.NamedTuple):
     '''Minimum number of edges of the graph'''
     deviation_sequence: tp.Tuple[float, ...] = (1, 1,)  # A
     '''Sequence of deviation values to initialize the vertexes '''
-    homogeneity_indicator: float = 0.1  # theta
+    homogeneity_indicator: float = 0  # theta
     '''Ratio of vertexes to be added by homogeneity'''
     representative_count: int = 3  # NbRep
     '''Number of representatives of a partition'''
@@ -35,14 +37,14 @@ class Parameters(tp.NamedTuple):
     The level_count, quantity of levels in the Graph, will be the length of it,
     and the amount of leaf communities will be the product of all those values.
     '''
-    max_within_edge: tp.Tuple[int, ...] = (3, 7, 12)  # E_max_wth
+    max_within_edge: tp.Tuple[int, ...] = (1, 3, 6, 10, 15, 21, 28)  # E_max_wth
     '''
     Sequence of the max initial edges a vertex will receive when being added to
     a community, the first value is the quantity of edges to be added inside
     the first level community the vertex will be in, the second value for the
     second level community and so on.
     This should be a sequence of length equal to the level count of the graph
-    plus one, as for initialization purposes, the whole graph is considered r
+    plus one, as for initialization purposes, the whole graph is considered a
     community.
     '''
     max_between_edge: int = 3  # E_max_btw
@@ -189,7 +191,7 @@ def batch_generator(graph: Graph) -> tp.Generator[tp.Set[Vertex], None, None]:
     yield to_add
 
 
-def chose_partitions(
+def chose_partitions(  # TODO rename to choose
         param: Parameters,
         graph: Graph,
         vertex: Vertex) -> tp.FrozenSet[Partition]:
@@ -209,12 +211,26 @@ def chose_partitions(
     else:
         possible = tuple(sorted(
                 graph.partition.flat,
-                key=lambda p: min(
-                    p.weighed_distance(vertex, rep)
-                    for rep in p.representative_set)
+                reverse=True,
+                key=lambda p: min(p.weighed_distance(vertex, rep) for rep in p.representative_set))
+                )
+
+        possible = (
+                (p, sum(p.weighed_distance(vertex, rep) for rep in p.representative_set))
+                for p in graph.partition.flat
+                )
+
+        possible = sorted(
+                possible,
+                key=lambda pt: pt[1]
+                )
+
+        possible = tuple(map(
+                lambda pt: pt[0],
+                possible
                 ))
 
-    quantity = rand_pl(tuple(i for i in range(1, len(possible)//2)))
+    quantity = rand_pl(tuple(i for i in range(1, ceil(sqrt(len(possible))))))
     return frozenset(rand_pl(possible) for _ in range(quantity))
 
 
@@ -369,7 +385,7 @@ between the jobs. In other environments, it may be replicated.
 
 
 def generator(param: Parameters):
-    tot = 0
+    initial_time = time()
 
     global __parameters
     __parameters = param
@@ -377,9 +393,14 @@ def generator(param: Parameters):
     __rolling_graph = initialize_communities(param, initialize_graph(param))
 
     new_edges = set()
+
+    count = 0
     for batch in batch_generator(__rolling_graph):
+        print(f'{round(time()-initial_time, 3)}; {count}/{param.vertex_count}; {100*count/param.vertex_count}%')
+        count += len(batch)
         with Pool() as p:
             proccess_batch = p.imap_unordered(introduce_vertex, batch)
+            # proccess_batch = map(introduce_vertex, batch)
             part_builder = PartitionBuilder(
                     __rolling_graph.partition, param.representative_count)
             for vertex_neighboors, partition_ids, vertex in proccess_batch:
@@ -394,7 +415,6 @@ def generator(param: Parameters):
                     frozenset(__rolling_graph.edge_set | new_edges),
                     part_builder.build()
                     )
-            tot += len(batch)
 
     while len(__rolling_graph.edge_set) < param.min_edge_count:
         final_edges = final_edge_insertino(

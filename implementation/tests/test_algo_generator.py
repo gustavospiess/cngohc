@@ -176,6 +176,7 @@ def test_edge_insertion_between():
 
 
 def find_connected_components(g: models.Graph):
+    '''Move to validations'''
     forest: tp.Set[tp.FrozenSet[models.Vertex]] = set()
     for edge in g.edge_set:
         a_set: tp.FrozenSet[models.Vertex] = frozenset({edge[0]})

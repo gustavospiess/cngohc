@@ -309,9 +309,14 @@ class PartitionBuilder:
                 ]
 
         possible_representatives = tuple(part.depht)
-        representative_set = sample(
-                possible_representatives,
-                k=min(len(members), self.qt_rep))
+        center = Vector.avg(possible_representatives)
+        possible_representatives = tuple(sorted(
+                part.depht,
+                key=lambda v: abs(v-center)))
+        # representative_set = sample(
+        #         possible_representatives,
+        #         k=min(len(members), self.qt_rep))
+        representative_set = possible_representatives[:self.qt_rep]
 
         return Partition(
                 members, identifier, level,
