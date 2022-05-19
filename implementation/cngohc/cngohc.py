@@ -3,6 +3,8 @@
 
 import click
 from os import path
+from random import shuffle
+from collections import Counter
 
 
 import networkx as nx
@@ -11,10 +13,10 @@ import matplotlib.pyplot as plt
 
 from .algo.generator import Parameters, generator
 from .algo import rand
-from .models import Graph
+from .models import Graph, Vertex
 
 
-from .validations import connectivity, relative_inertia
+from .validations import connectivity, relative_inertia, shens_modularity, diameter as _diameter
 
 
 def long_docstring(docs: str) -> str:
@@ -54,14 +56,39 @@ def check(ctx):
 
 @check.command()
 @click.pass_context
-def every_community_is_connected(ctx):
+def connectivity(ctx):
     connectivity(ctx.obj['graph'])
 
 
 @check.command()
 @click.pass_context
-def relative_inertia_is_lower(ctx):
+def inertia(ctx):
     relative_inertia(ctx.obj['graph'])
+
+
+@check.command()
+@click.pass_context
+def modularity(ctx):
+    shens_modularity(ctx.obj['graph'])
+
+
+@check.command()
+@click.pass_context
+def diameter(ctx):
+    _diameter(ctx.obj['graph'])
+
+
+@check.command()
+@click.pass_context
+def edge_distribution(ctx):
+    graph = ctx.obj['graph']
+    degree = graph.degree_of
+    c = Counter(degree[v] for v in graph.vertex_set)
+    x = [k for k in sorted(c)]
+    y = [c[y] for y in x]
+    plt.bar(x, y)
+    plt.grid()
+    plt.show()
 
 
 @check.command()
@@ -71,37 +98,37 @@ def view(ctx):
 
     nx_graph = nx.Graph()
     nx_graph.add_edges_from(graph.edge_set)
-    # nx.draw(nx_graph, pos={n: tuple(d*10 for d in n) for n in graph.vertex_set})
-    nx.draw(nx_graph, pos=nx.spring_layout(nx_graph, iterations=1000))
-    # nx.draw(nx_graph, pos=nx.nx_pydot.graphviz_layout(nx_graph, prog='neato'))
+
+    position = {n: tuple(d*10 for d in n) for n in graph.vertex_set}
+
+    colors =[
+            '#7FFFFF', '#00FFFF', '#FF7FFF', '#7F7FFF', '#007FFF', '#FF00FF', '#7F00FF', '#0000FF',
+            '#FFFF7F', '#7FFF7F', '#00FF7F', '#FF7F7F', '#7F7F7F', '#007F7F', '#FF007F', '#7F007F', '#00007F',
+            '#FFFF00', '#7FFF00', '#00FF00', '#FF7F00', '#7F7F00', '#007F00', '#FF0000', '#7F0000',
+            ]
+    shuffle(colors)
+
+    part_color = {p: c for p, c in zip(graph.partition.flat, colors)}
+
+    shared_nodes = [
+            v
+            for v in graph.vertex_set
+            if len(graph.leaf_partitions_of[v]) > 1]
+    for p in sorted(graph.partition.flat, key=lambda p: p.level * -1):
+        nodes = list(n for n in p if isinstance(n, Vertex))
+        if len(nodes) == 0:
+            continue
+        nx.draw_networkx_nodes(nx_graph, position, nodes, node_color=part_color[p])
+        plt.plot([0,0],[-40,40],lw=3, color='black')
+        plt.plot([-40,40],[0,0],lw=3, color='black')
+        plt.show()
+    for p in sorted(graph.partition.flat, key=lambda p: p.level * -1):
+        nodes = list(n for n in p if isinstance(n, Vertex) and n not in shared_nodes)
+        nx.draw_networkx_nodes(nx_graph, position, nodes, node_color=part_color[p])
+    nx.draw_networkx_nodes(nx_graph, position, shared_nodes, node_color='#000000')
+    plt.plot([0,0],[-40,40],lw=3, color='black')
+    plt.plot([-40,40],[0,0],lw=3, color='black')
     plt.show()
-
-    # comunity_graph = nx.Graph()
-    # community_set = set(c for c in graph.partition.flat if c != graph.partition)
-    # for community in community_set:
-    #     for community_b in community_set:
-    #         if community_b != community:
-    #             new_node = 100000 * max(community.identifier, community_b.identifier) + min(community.identifier, community_b.identifier)
-    #             comunity_graph.add_edge(
-    #                     community.identifier,
-    #                     new_node,
-    #                     weight=len(set(community.depht) & set(community_b.depht)))
-    #             comunity_graph.add_edge(
-    #                     community_b.identifier,
-    #                     new_node,
-    #                     weight=len(set(community.depht) & set(community_b.depht)))
-    # nx.draw(comunity_graph, pos=nx.nx_pydot.graphviz_layout(comunity_graph, prog='neato'))
-    # nx.draw(comunity_graph)
-    # nx.draw(comunity_graph, pos=nx.bipartite_layout(comunity_graph, graph.partition.flat))
-    # nx.draw(comunity_graph, pos=nx.spring_layout(comunity_graph, iterations=1000))
-    # plt.show()
-
-    # nx_bi_graph = nx.Graph()
-    # for vertex in graph.vertex_set:
-    #     for community in graph.partitions_of[vertex]:
-    #         nx_bi_graph.add_edge(vertex, community)
-    # nx.draw(nx_bi_graph, pos=nx.bipartite_layout(nx_bi_graph, graph.vertex_set))
-    # plt.show()
 
 
 @main.command()

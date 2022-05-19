@@ -76,6 +76,10 @@ class Vertex(Vector):
 Edge = tp.Tuple[Vertex, Vertex]
 
 
+def edge_set(edges: tp.Collection[Edge]) -> tp.FrozenSet[Edge]:
+    return frozenset(tuple(sorted(e)) for e in edges)
+
+
 PartitionMember = tp.Union[Vertex, 'Partition']
 '''
 Type union for what can compose a Partition.
@@ -357,6 +361,11 @@ class Graph(tp.NamedTuple):
         return _PartitionsOf(self)
 
     @property
+    def leaf_partitions_of(self) -> '_LeafPartitionsOf':
+        '''TODO'''
+        return _LeafPartitionsOf(self)
+
+    @property
     def degree_of(self) -> '_DegreeOf':
         return _DegreeOf(self)
 
@@ -420,7 +429,7 @@ class _GraphMapping(
 
 
 class _EdgesOfPart(_GraphMapping[Partition, '_EdgesOfPartCol']):
-    '''Graph mapping for vertex neibors'''
+    '''TODO'''
     def __getitem__(self, item: Partition) -> '_EdgesOfPartCol':
         return _EdgesOfPartCol(self.graph.edge_set, item)
 
@@ -436,20 +445,19 @@ class _EdgesOfPartCol(tp.Collection[Edge]):
         self.__edge_set = edge_set
         self.__partition = partition
 
+    @lru_cache
     def __len__(self) -> int:
         # terrible performance, but it should not be used anyways
-        return sum(
-                1
-                for e in self.__edge_set
-                if e[0] in self.__partition or e[1] in self.__partition)
+        s = sum(1 for e in self)
+        return s
 
     def __iter__(self) -> tp.Iterator[Edge]:
         for edge in self.__edge_set:
-            if edge[0] in self.__partition or edge[1] in self.__partition:
+            if edge in self:
                 yield edge
 
     def __contains__(self, edge: tp.Any) -> bool:
-        return edge[0] in self.__partition or edge[1] in self.__partition
+        return all(v in self.__partition for v in edge)
 
 
 class _VertexGraphMapping(_GraphMapping[Vertex, _T], tp.Generic[_T]):
@@ -478,15 +486,56 @@ class _PartitionsOf(_VertexGraphMapping[tp.Iterable[Partition]]):
                 yield from stack
 
 
+class _LeafPartitionsOf(_VertexGraphMapping[tp.Iterable[Partition]]):
+    '''Graph mapping for vertex communities'''
+    def __getitem__(self, item: Vertex) -> tp.Iterable[Partition]:
+        it = self.__recursive_gen(item, (self.graph.partition,))
+        return it
+
+    @cached_generator
+    def __recursive_gen(
+            self,
+            item: Vertex,
+            com: Partition = None):
+        for sub in com:
+            if isinstance(sub, Partition):
+                yield from self.__recursive_gen(item, sub)
+            if item == sub:
+                yield com
+
+
 class _NeighborsOf(_VertexGraphMapping[tp.Iterable[Vertex]]):
     '''Graph mapping for vertex neibors'''
+    @lru_cache
+    def __getitem__(self, item: Vertex):
+        return _AdjacencyCol(self.graph, item)
+
+
+class _AdjacencyCol(tp.Collection[Vertex]):
+    __slots__ = ['__graph', '__vertex', '__cache']
+    def __init__(self, graph, vertex):
+        self.__graph = graph
+        self.__vertex = vertex
+        self.__cache = None
+
+    def __len__(self) -> int:
+        len(self.__generator)
+
     @cached_generator
-    def __getitem__(self, item: Vertex) -> tp.Iterable[Vertex]:
-        for edge in self.graph.edge_set:
-            if item == edge[0]:
+    def __generator(self) -> tp.Iterable[Vertex]:
+        for edge in self.__graph.edge_set:
+            if self.__vertex == edge[0]:
                 yield edge[1]
-            elif item == edge[1]:
+            elif self.__vertex == edge[1]:
                 yield edge[0]
+
+    def __iter__(self) -> tp.Iterator[Vertex]:
+        return self.__generator()
+
+    def __contains__(self, vertex: Vertex) -> bool:
+        return (
+            ((vertex, self.__vertex) in self.__graph.edge_set) or
+            ((self.__vertex, vertex) in self.__graph.edge_set))
 
 
 class _DegreeOf(_VertexGraphMapping[int]):

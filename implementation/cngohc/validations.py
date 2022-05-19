@@ -4,6 +4,9 @@ from .models import Vector, Graph, Vertex
 
 
 from pprint import pprint
+from multiprocessing import Pool
+from time import time
+import networkx as nx
 
 
 import typing as tp
@@ -52,7 +55,7 @@ def connectivity(graph: Graph):
         assert len(comp_set) == 1
 
 
-def relative_inertia(graph):
+def relative_inertia(graph: Graph):
     '''TODO'''
     g_center = Vector.avg(graph.vertex_set)
     p_center = {p:Vector.avg(p.depht) for p in graph.partition.flat}
@@ -68,3 +71,78 @@ def relative_inertia(graph):
     pprint(inertia_by_level)
     pprint(qtd_by_level)
     pprint({l: inertia_by_level[l]/qtd_by_level[l] for l in qtd_by_level})
+
+
+def modularity_part(data):
+    global __graph
+    global __partition_qt_of
+    global __degree_of
+    global __degree_sum
+    global __neighbors
+
+    community, pairs = data
+    s = 0
+    for vertex_a, vertex_b in pairs:
+        degree_a = __degree_of[vertex_a]
+        degree_b = __degree_of[vertex_b]
+        adjacency = 1 if vertex_a in __neighbors[vertex_b] else 0
+        s += (
+                (adjacency - ((degree_a*degree_b)/__degree_sum))
+                /
+                (__partition_qt_of[vertex_a]*__partition_qt_of[vertex_b]))
+    return s
+
+
+__graph = None
+__degree_of = None
+__partition_qt_of = None
+__degree_sum: int = 0
+
+
+def shens_modularity(graph: Graph):
+    '''TODO'''
+    global __graph
+    __graph = graph
+    global __degree_of
+    __degree_of = __graph.degree_of
+    global __partition_qt_of
+    __partition_qt_of = {
+            p: len(graph.partitions_of[p])-1 for p in graph.partition.depht}
+    global __degree_sum
+    __degree_sum = 2*len(graph.edge_set)
+    global __neighbors
+    __neighbors = __graph.neighbors_of
+
+    community_set = tuple(sorted(
+            (p for p in graph.partition.flat),
+            key=lambda p: p.level * -1))
+
+    # edges_of_part = {p: len(graph.edges_of_part[p]) for p in graph.partition.flat}
+    # for community in graph.partition.flat:
+    #     print(f'{community.level=}')
+    #     print(f'{edges_of_part[community]=}')
+    #     print(f'{100*edges_of_part[community]/(len(community.depht)*(len(community.depht)-1)/2)=}')
+    #     print(f'{len(community.depht)=}')
+
+    mod = 0
+    mod_b = 0
+    for community in community_set:
+        generator = (
+                (community, tuple((vertex_a, vertex_b) for vertex_a in community.depht))
+                for vertex_b in community.depht)
+        with Pool() as p:
+            _map = p.imap_unordered(modularity_part, generator)
+            # _map = map(modularity_part, generator)
+            _mod = sum(_map)/(__degree_sum)
+            mod += _mod
+            print(
+                    round(_mod, 5),
+                    community.level,
+                    round(mod, 5))
+
+
+def diameter(graph: Graph):
+    nx_graph = nx.Graph()
+    nx_graph.add_edges_from(graph.edge_set)
+    d = nx.diameter(nx_graph)
+    print(d)

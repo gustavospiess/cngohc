@@ -3,7 +3,7 @@ This module wraps all the methods for the graph generation.
 '''
 
 
-from ..models import Vertex, Vector, Graph, Partition, PartitionBuilder, Edge
+from ..models import Vertex, Vector, Graph, Partition, PartitionBuilder, Edge, edge_set
 from .clustering import KMedoids
 from .rand import rand_norm, rand_in_range, sample, shuffle
 from .rand import rand_threshold, rand_pl, rand_edge_within, rand_edge_between
@@ -19,7 +19,7 @@ import typing as tp
 class Parameters(tp.NamedTuple):
     vertex_count: int = 1000  # N
     '''Number of vertexes of the graph'''
-    min_edge_count: int = 300  # MTE
+    min_edge_count: int = 30000  # MTE
     '''Minimum number of edges of the graph'''
     deviation_sequence: tp.Tuple[float, ...] = (1, 1,)  # A
     '''Sequence of deviation values to initialize the vertexes '''
@@ -27,7 +27,7 @@ class Parameters(tp.NamedTuple):
     '''Ratio of vertexes to be added by homogeneity'''
     representative_count: int = 3  # NbRep
     '''Number of representatives of a partition'''
-    community_count: tp.Tuple[int, ...] = (3, 2,)  # K
+    community_count: tp.Tuple[int, ...] = (6, 2,)  # K
     '''
     Sequence of hierarchical communities quantities, the first value indicates
     how many communities will be created at the root of the graph, the second
@@ -37,7 +37,7 @@ class Parameters(tp.NamedTuple):
     The level_count, quantity of levels in the Graph, will be the length of it,
     and the amount of leaf communities will be the product of all those values.
     '''
-    max_within_edge: tp.Tuple[int, ...] = (1, 3, 6, 10, 15, 21, 28)  # E_max_wth
+    max_within_edge: tp.Tuple[int, ...] = (1, 1, 2, 1000, 600)  # E_max_wth
     '''
     Sequence of the max initial edges a vertex will receive when being added to
     a community, the first value is the quantity of edges to be added inside
@@ -208,37 +208,47 @@ def chose_partitions(  # TODO rename to choose
         possible = list(graph.partition.flat)
         shuffle(possible)
         possible = tuple(possible)
-    else:
-        possible = tuple(sorted(
-                graph.partition.flat,
-                reverse=True,
-                key=lambda p: min(p.weighed_distance(vertex, rep) for rep in p.representative_set))
-                )
+        return frozenset({rand_pl(possible)})
 
-        possible = (
-                (p, sum(p.weighed_distance(vertex, rep) for rep in p.representative_set))
-                for p in graph.partition.flat
-                )
+    possible = (
+            (p, min(
+                    p.weighed_distance(vertex, rep)
+                    for rep in p.representative_set)#/(p.level+1)
+                    )
+            for p in graph.partition.flat
+            )
 
-        possible = sorted(
-                possible,
-                key=lambda pt: pt[1]
-                )
+    possible = sorted(
+            possible,
+            key=lambda pt: pt[1]
+            )
 
-        possible = tuple(map(
-                lambda pt: pt[0],
-                possible
-                ))
+    possible = tuple(map(
+            lambda pt: pt[0],
+            possible
+            ))
 
-    quantity = rand_pl(tuple(i for i in range(1, ceil(sqrt(len(possible))))))
-    return frozenset(rand_pl(possible) for _ in range(quantity))
+    main = rand_pl(possible)
+    max_level = len(param.community_count)
+    if main.level == max_level:
+        return frozenset({main})
 
+    community_a, community_b = main, main
+    while community_a.level != max_level:
+        possible_a = tuple(c for c in community_a if c in community_a)
+        community_a = rand_pl(possible_a)
+    community_b = community_a
+    while community_a.level != max_level:
+        possible_a = tuple(c for c in community_a if c in community_a and c != community_b)
+        community_a = rand_pl(possible_a)
+    return frozenset({community_a, community_b})
 
 def edge_insertion_within(
         param: Parameters,
         graph: Graph,
         vertex: Vertex,
         partition: Partition,
+        over_lap: bool
         ) -> tp.FrozenSet[tp.Tuple[Vertex, Vertex]]:
     '''
     Edge generator for the introducing a new member into a community.
@@ -249,13 +259,15 @@ def edge_insertion_within(
     '''
     level: int = partition.level
     vertex_pool = set(partition.depht)
-    max_count = min(len(vertex_pool), param.max_within_edge[level])
-    edges_within = rand_pl(tuple(i for i in range(1, max_count+1)))
-
+    max_count = min(len(vertex_pool), param.max_within_edge[level])+1
+    if over_lap:
+        max_count = ceil(sqrt(max_count))
+    min_count = 1 #if not over_lap else max_count // 2
+    edges_within = rand_pl(tuple(i for i in range(min_count+1, max_count+1)))-1
     degree = graph.degree_of.__getitem__
 
     neighbor_set: tp.Set[Vertex] = set()
-    for _ in range(edges_within):
+    while len(neighbor_set) < edges_within:
         other = rand_edge_within(vertex_pool, degree)
         vertex_pool.remove(other)
         neighbor_set.add(other)
@@ -288,18 +300,20 @@ def edge_insertion_between(
     return frozenset((neighbor, vertex,) for neighbor in neighbor_set)
 
 
-def find_triples(edge_set: tp.AbstractSet[Edge]) -> tp.Iterator[Edge]:
+def find_triples(
+        edge_set: tp.AbstractSet[Edge],
+        already_found: tp.Collection[Edge]) -> tp.Iterator[Edge]:
     for edge_a, edge_b in combinations(edge_set, 2):
         if edge_a[0] in edge_b and edge_a[1] in edge_b:
             continue  # they're the same
         if edge_a[0] not in edge_b and edge_a[1] not in edge_b:
             continue  # no shared vertex
-        edge_c = (
+        edge_c = tuple(sorted((
                 edge_a[0] if edge_a[1] in edge_b else edge_a[1],
                 edge_b[0] if edge_b[1] in edge_a else edge_b[1],
-                )
+                )))
         edge_c_inversed = tuple(reversed(edge_c))
-        if edge_c not in edge_set and edge_c_inversed not in edge_set:
+        if edge_c not in already_found and edge_c_inversed not in already_found:
             yield edge_c
 
 
@@ -314,22 +328,20 @@ def super_choose(generators: tp.List[tp.Iterator[Edge]]) -> tp.Iterator[Edge]:
                 break
 
 
-def final_edge_generator(graph):
+def final_edge_generator(graph, level):
     by_level = graph.partition.by_level
-    triplet_gen = iter(tuple())
-    for level in reversed(sorted(by_level)):
-        triplet_gen = chain(triplet_gen, super_choose([
-            find_triples(graph.edges_of_part[part])
+
+    gen = super_choose([
+            find_triples(graph.edges_of_part[part], graph.edge_set)
             for part in by_level[level]
-            ]))
-    for tri in triplet_gen:
-        if tri not in graph.edge_set:
-            yield tri
+            ])
+    for tri in gen:
+        yield tri
+            
 
-
-def final_edge_insertino(graph, qtd):
+def final_edge_insertino(graph, qtd, level):
     new_edges = set()
-    edge_generator = final_edge_generator(graph)
+    edge_generator = final_edge_generator(graph, level)
     while len(new_edges) < qtd:
         pending_qtd = qtd - len(new_edges)
 
@@ -346,7 +358,12 @@ def introduce_vertex(vertex: Vertex):
     partition_set = chose_partitions(__parameters, __rolling_graph, vertex)
     vertex_neighboors: tp.Set[Edge] = set()
     for part in partition_set:
-        ed = edge_insertion_within(__parameters, __rolling_graph, vertex, part)
+        ed = edge_insertion_within(
+                __parameters,
+                __rolling_graph,
+                vertex,
+                part,
+                len(partition_set)>1)
         vertex_neighboors.update(ed)
     ed = edge_insertion_between(
             __parameters,
@@ -397,7 +414,6 @@ def generator(param: Parameters):
     count = 0
     for batch in batch_generator(__rolling_graph):
         print(f'{round(time()-initial_time, 3)}; {count}/{param.vertex_count}; {100*count/param.vertex_count}%')
-        count += len(batch)
         with Pool() as p:
             proccess_batch = p.imap_unordered(introduce_vertex, batch)
             # proccess_batch = map(introduce_vertex, batch)
@@ -412,18 +428,36 @@ def generator(param: Parameters):
                 part_builder.add_all(partition_set, vertex)
             __rolling_graph = Graph(
                     __rolling_graph.vertex_set,
-                    frozenset(__rolling_graph.edge_set | new_edges),
+                    edge_set(__rolling_graph.edge_set | new_edges),
                     part_builder.build()
                     )
+        count += len(batch)
 
+    # final edge insertion
+
+    print(f'{round(time()-initial_time, 3)}; {count}/{param.vertex_count}; {100*count/param.vertex_count}%')
+
+    fei_level = len(__parameters.community_count)
+    fei_control = False
     while len(__rolling_graph.edge_set) < param.min_edge_count:
+        print(f'{round(time()-initial_time, 3)}; {len(__rolling_graph.edge_set)}/{param.min_edge_count}; {len(__rolling_graph.edge_set)/param.min_edge_count*100}%; {fei_level}')
         final_edges = final_edge_insertino(
                 __rolling_graph,
-                param.min_edge_count - len(__rolling_graph.edge_set))
+                param.min_edge_count - len(__rolling_graph.edge_set),
+                fei_level)
+
+        fei_control = all(
+                len(__rolling_graph.edges_of_part[c]) == len(c.depht)*(len(c.depht)-1)/2
+                for c in __rolling_graph.partition.flat
+                if c.level == fei_level)
+        if fei_control:
+            fei_level -= 1
+
         __rolling_graph = Graph(
                 __rolling_graph.vertex_set,
-                frozenset(__rolling_graph.edge_set | final_edges),
+                edge_set(__rolling_graph.edge_set | final_edges),
                 __rolling_graph.partition
                 )
+    print(f'{round(time()-initial_time, 3)}; {len(__rolling_graph.edge_set)}/{param.min_edge_count}; {len(__rolling_graph.edge_set)/param.min_edge_count*100}%')
 
     return __rolling_graph
