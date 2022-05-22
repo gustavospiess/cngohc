@@ -1,5 +1,5 @@
 %% abtex2-modelo-artigo.tex, v<VERSION> laurocesar
-%% Copyright 2012-<COPYRIGHT_YEAR> by abnTeX2 group at http://www.abntex.net.br/ 
+%% Copyright 2012-<COPYRIGHT_YEAR> by abnTeX2 group at http://www.abntex.net.br/
 %%
 %% This work may be distributed and/or modified under the
 %% conditions of the LaTeX Project Public License, either version 1.3
@@ -10,9 +10,9 @@
 %% version 2005/12/01 or later.
 %%
 %% This work has the LPPL maintenance status `maintained'.
-%% 
+%%
 %% The Current Maintainer of this work is the abnTeX2 team, led
-%% by Lauro César Araujo. Further information are available on 
+%% by Lauro César Araujo. Further information are available on
 %% http://www.abntex.net.br/
 %%
 %% This work consists of the files abntex2-modelo-artigo.tex and
@@ -22,27 +22,27 @@
 % ------------------------------------------------------------------------
 % ------------------------------------------------------------------------
 % abnTeX2: Modelo de Artigo Acadêmico em conformidade com
-% ABNT NBR 6022:2018: Informação e documentação - Artigo em publicação 
+% ABNT NBR 6022:2018: Informação e documentação - Artigo em publicação
 % periódica científica - Apresentação
 % ------------------------------------------------------------------------
 % ------------------------------------------------------------------------
 
 \documentclass[
-	% -- opções da classe memoir --
-	article,			% indica que é um artigo acadêmico
-	11pt,				% tamanho da fonte
-	oneside,			% para impressão apenas no recto. Oposto a twoside
-	a4paper,			% tamanho do papel. 
-	% -- opções da classe abntex2 --
-	%chapter=TITLE,		% títulos de capítulos convertidos em letras maiúsculas
-	%section=TITLE,		% títulos de seções convertidos em letras maiúsculas
-	%subsection=TITLE,	% títulos de subseções convertidos em letras maiúsculas
-	%subsubsection=TITLE % títulos de subsubseções convertidos em letras maiúsculas
-	% -- opções do pacote babel --
-	english,			% idioma adicional para hifenização
-	brazil,				% o último idioma é o principal do documento
-	sumario=tradicional
-	]{abntex2}
+    % -- opções da classe memoir --
+    % article,            % indica que é um artigo acadêmico
+    11pt,               % tamanho da fonte
+    oneside,            % para impressão apenas no recto. Oposto a twoside
+    a4paper,            % tamanho do papel.
+    % -- opções da classe abntex2 --
+    chapter=TITLE,     % títulos de capítulos convertidos em letras maiúsculas
+    section=TITLE,     % títulos de seções convertidos em letras maiúsculas
+    % subsection=TITLE,  % títulos de subseções convertidos em letras maiúsculas
+    %subsubsection=TITLE % títulos de subsubseções convertidos em letras maiúsculas
+    % -- opções do pacote babel --
+    english,            % idioma adicional para hifenização
+    brazil,             % o último idioma é o principal do documento
+    sumario=tradicional
+    ]{abntex2}
 
 
 % ---
@@ -50,29 +50,32 @@
 % ---
 
 % ---
-% Pacotes fundamentais 
+% Pacotes fundamentais
 % ---
-\usepackage{lmodern}			% Usa a fonte Latin Modern
-\usepackage[T1]{fontenc}		% Selecao de codigos de fonte.
-\usepackage[utf8]{inputenc}		% Codificacao do documento (conversão automática dos acentos)
-\usepackage{indentfirst}		% Indenta o primeiro parágrafo de cada seção.
-\usepackage{nomencl} 			% Lista de simbolos
-\usepackage{color}				% Controle das cores
-\usepackage{graphicx}			% Inclusão de gráficos
-\usepackage{microtype} 			% para melhorias de justificação
+\usepackage{lmodern}            % Usa a fonte Latin Modern
+\usepackage[T1]{fontenc}        % Selecao de codigos de fonte.
+\usepackage[utf8]{inputenc}     % Codificacao do documento (conversão automática dos acentos)
+\usepackage{indentfirst}        % Indenta o primeiro parágrafo de cada seção.
+\usepackage{nomencl}            % Lista de simbolos
+\usepackage{color}              % Controle das cores
+\usepackage{graphicx}           % Inclusão de gráficos
+\usepackage{microtype}          % para melhorias de justificação
+\usepackage{setspace}
+\usepackage{tocloft}
+\usepackage{enumitem}
 % ---
-		
+
 % ---
 % Pacotes adicionais, usados apenas no âmbito do Modelo Canônico do abnteX2
 % ---
-\usepackage{lipsum}				% para geração de dummy text
+\usepackage{lipsum}             % para geração de dummy text
 % ---
-		
+
 % ---
 % Pacotes de citações
 % ---
-\usepackage[brazilian,hyperpageref]{backref}	 % Paginas com as citações na bibl
-\usepackage[alf]{abntex2cite}	% Citações padrão ABNT
+\usepackage[brazilian,hyperpageref]{backref}     % Paginas com as citações na bibl
+\usepackage[alf]{abntex2cite}   % Citações padrão ABNT
 % ---
 
 % ---
@@ -83,24 +86,52 @@
 \renewcommand{\backref}{}
 % Define os textos da citação
 \renewcommand*{\backrefalt}[4]{
-	\ifcase #1 %
-		Nenhuma citação no texto.%
-	\or
-		Citado na página #2.%
-	\else
-		Citado #1 vezes nas páginas #2.%
-	\fi}%
+    \ifcase #1 %
+        Nenhuma citação no texto.%
+    \or
+        Citado na página #2.%
+    \else
+        Citado #1 vezes nas páginas #2.%
+    \fi}%
 % ---
+
+% ---
+% Pacotes de utilidades, para legibilidade
+% ---
+\usepackage{subfiles}
+% ---
+
+% ---
+% Configurações do abntex
+% ---
+\renewcommand{\ABNTEXchapterfont}{\rmfamily}
+\renewcommand{\ABNTEXchapterfontsize}{\normalsize \bfseries} % solução deselegantes, mas funcional pra deixar o titulo das sessões em negrito
+\renewcommand{\ABNTEXsectionfontsize}{\normalsize}
+
+
+\addto\captionsbrazil{
+\renewcommand{\listfigurename}{Lista de Figuras}
+}
+% ---
+
 
 % --- Informações de dados para CAPA e FOLHA DE ROSTO ---
 \titulo{Geração de redes complexas com comunidades sobrepostas e comunidades hierárquicas}
 \tituloestrangeiro{Complex network generation with overlapping communities and hierarchical communities}
-
 \autor{Gustavo Henrique Spiess}
-\orientador{Aurelio Faustino Hoppe}
-
-\local{Blumenau - SC, Brasil}
+\local{Blumenau}
 \data{2022}
+\orientador{Aurelio Faustino Hoppe}
+\instituicao{%
+    Universidade regional de Blumenau 
+    \protect \\
+    Centro de ciências exatas e naturais 
+    \protect \\
+    Curso de ciência da computação -- Bacharelado}
+\tipotrabalho{Monografia}
+\preambulo{
+Geração de redes complexas
+}
 % ---
 
 % ---
@@ -112,21 +143,142 @@
 % informações do PDF
 \makeatletter
 \hypersetup{
-     	%pagebackref=true,
-		pdftitle={\@title}, 
-		pdfauthor={\@author},
-    	pdfsubject={Geração de redes complexas},
-	    pdfcreator={LaTeX with abnTeX2},
-		pdfkeywords={Redes complexas}{Geração de redes complexas}{Comunidades}{Comunidades sobrepostas}{Comunidades hierárquicas}, 
-		colorlinks=true,       		% false: boxed links; true: colored links
-    	linkcolor=blue,          	% color of internal links
-    	citecolor=blue,        		% color of links to bibliography
-    	filecolor=magenta,      		% color of file links
-		urlcolor=blue,
-		bookmarksdepth=4
+        %pagebackref=true,
+        pdftitle={\@title},
+        pdfauthor={\@author},
+        pdfsubject={\imprimirpreambulo},
+        pdfcreator={LaTeX with abnTeX2},
+        pdfkeywords={Redes complexas}{Geração de redes complexas}{Comunidades}{Comunidades sobrepostas}{Comunidades hierárquicas},
+        colorlinks=true,            % false: boxed links; true: colored links
+        linkcolor=blue,             % color of internal links
+        citecolor=blue,             % color of links to bibliography
+        filecolor=magenta,              % color of file links
+        urlcolor=blue,
+        bookmarksdepth=4
 }
 \makeatother
-% --- 
+
+% ---
+% Redefinição de comandos para adequar ao formato requerido
+% ---
+\makeatletter
+\renewcommand{\imprimircapa}{
+
+    \DoubleSpacing
+
+    \begin{centering}
+
+        {\bfseries \MakeUppercase{\imprimirinstituicao}\par}
+    
+        \vspace*{\fill} \vspace*{\fill} \vspace*{\fill} \vspace*{\fill}
+        \vspace*{\fill} \vspace*{\fill} \vspace*{\fill}
+    
+        {\bfseries\LARGE\MakeUppercase{\imprimirtitulo}}\\
+    
+        \vspace*{\fill}
+
+        \begin{flushright}
+            \bfseries \MakeUppercase{\imprimirautor}
+        \end{flushright}   
+
+        \vspace*{\fill} \vspace*{\fill} \vspace*{\fill} \vspace*{\fill}
+        \vspace*{\fill} \vspace*{\fill}
+
+        \SingleSpace
+
+        {\bfseries \MakeUppercase{\imprimirlocal} \\ \MakeUppercase{\imprimirdata} }
+        \vspace*{\fill}
+
+    \end{centering}
+    \pagebreak
+}
+\makeatother
+
+% ---
+
+\makeatletter
+\renewcommand{\imprimirfolhaderosto}{
+
+    \SingleSpace
+    \begin{centering}
+
+        {\bfseries \MakeUppercase{\imprimirautor}\par}
+    
+        \vspace*{\fill} \vspace*{\fill}
+    
+        {\bfseries\LARGE\MakeUppercase{\imprimirtitulo}}\\
+    
+        \vspace*{\fill}
+
+        \begin{flushright}
+            \parbox{0.5\textwidth}{%
+                Trabalho de Conclusão de Curso apresentado ao curso de graduação em Ciências da Computação no Centro de de Ciências Exatas e Naturais da Universidade Regional de Blumenau como requisito parcial para a obtenção de grau de Bacharel em Ciências da Computação.
+            }
+        \end{flushright}   
+
+        \begin{flushright}
+            \parbox{\textwidth*3/5}{%
+                Professor \imprimirorientador, Titulação - Orientador
+            }
+        \end{flushright}   
+
+        \vspace*{\fill} \vspace*{\fill} \vspace*{\fill}
+        \vspace*{\fill} \vspace*{\fill} \vspace*{\fill}
+
+        {\bfseries \MakeUppercase{\imprimirlocal} \\ \MakeUppercase{\imprimirdata} }
+
+    \end{centering}
+    \pagebreak
+}
+\makeatother
+
+% ---
+
+\makeatletter
+\newcommand{\imprimirfolhadeassinaturas}{
+    \SingleSpace
+    \begin{centering}
+        \vspace*{\fill} 
+        {\bfseries\LARGE\MakeUppercase{Folha de assinaturas}} 
+        %\includepdf{folhadeaprovacao_final.pdf}
+        \vspace*{\fill}
+    \end{centering}
+    \pagebreak
+}
+\makeatother
+
+% ---
+
+% Novo list of (listings) para QUADROS
+
+\newcommand{\quadroname}{Quadro}
+\newcommand{\listofquadrosname}{Lista de quadros}
+
+\newfloat[chapter]{quadro}{loq}{\quadroname}
+\newlistof{listofquadros}{loq}{\listofquadrosname}
+\newlistentry{quadro}{loq}{0}
+
+% configurações para atender às regras da ABNT
+\setfloatadjustment{quadro}{\centering}
+\counterwithout{quadro}{chapter}
+\renewcommand{\cftquadroname}{\quadroname\space} 
+\renewcommand*{\cftquadroaftersnum}{\hfill--\hfill}
+
+% Configuração de posicionamento padrão:
+\setfloatlocations{quadro}{hbtp}
+
+% ---
+
+\renewenvironment{siglas}{%
+  \pretextualchapter{\listadesiglasname}
+  \begin{itemize}[label={}]
+}{%
+  \end{itemize}
+  \cleardoublepage
+}
+
+% ---
+
 
 % ---
 % compila o indice
@@ -137,23 +289,21 @@
 % ---
 % Altera as margens padrões
 % ---
-\setlrmarginsandblock{3cm}{3cm}{*}
-\setulmarginsandblock{3cm}{3cm}{*}
+\setlrmarginsandblock{3cm}{2cm}{*}
+\setulmarginsandblock{3cm}{2cm}{*}
 \checkandfixthelayout
 % ---
 
-% --- 
-% Espaçamentos entre linhas e parágrafos 
-% --- 
+% ---
+% Espaçamentos entre linhas e parágrafos
+% ---
 
 % O tamanho do parágrafo é dado por:
 \setlength{\parindent}{1.3cm}
 
 % Controle do espaçamento entre um parágrafo e outro:
 \setlength{\parskip}{0.2cm}  % tente também \onelineskip
-
-% Espaçamento simples
-\SingleSpacing
+\setlength{\afterchapskip}{1.4cm}
 
 
 % ----
@@ -161,42 +311,63 @@
 % ----
 \begin{document}
 
-% Seleciona o idioma do documento (conforme pacotes do babel)
-%\selectlanguage{english}
 \selectlanguage{brazil}
-
-% Retira espaço extra obsoleto entre as frases.
-\frenchspacing 
+\frenchspacing
 
 % ----------------------------------------------------------
 % ELEMENTOS PRÉ-TEXTUAIS
 % ----------------------------------------------------------
 
-%---
-%
-% Se desejar escrever o artigo em duas colunas, descomente a linha abaixo
-% e a linha com o texto ``FIM DE ARTIGO EM DUAS COLUNAS''.
-% \twocolumn[    		% INICIO DE ARTIGO EM DUAS COLUNAS
-%
-%---
-
 % página de titulo principal (obrigatório)
-\maketitle
+\imprimircapa
 
+\imprimirfolhaderosto
 
-% titulo em outro idioma (opcional)
+\imprimirfolhadeassinaturas
 
+\begin{dedicatoria}
+    \vspace*{\fill}
+    \hfill
+    \parbox{0.5\textwidth}{%
+        \lipsum[2]
+    }
+    \vspace*{\fill}
+\end{dedicatoria}
+\pagebreak
 
+\DoubleSpacing
+\begin{agradecimentos}
+    \bigskip \bigskip
+    \lipsum[1]
+\end{agradecimentos}
+\pagebreak
+
+\SingleSpace
+\begin{epigrafe}
+    \vspace*{\fill}
+
+    \hfill
+    \parbox{0.5\textwidth}{%
+    Frase inspiradora com significado maneiro e/ou importante
+    }
+
+    \begin{flushright}
+    Autor da frase
+    \end{flushright}
+    \vspace*{\fill}
+\end{epigrafe}
 
 % resumo em português
+\DoubleSpacing
 \begin{resumoumacoluna}
+\bigskip
 
- \lipsum[1]
- 
+\lipsum[1]
+
  \vspace{\onelineskip}
- 
+
  \noindent
- \textbf{Palavras-chave}: Redes complexas. Geração de redes complexas. Comunidades. Comunidades sobrepostas. Comunidades hierárquicas. 
+ \textbf{Palavras-chave}: Redes complexas. Geração de redes complexas. Comunidades. Comunidades sobrepostas. Comunidades hierárquicas.
 \end{resumoumacoluna}
 
 
@@ -204,24 +375,40 @@
 \renewcommand{\resumoname}{Abstract}
 \begin{resumoumacoluna}
  \begin{otherlanguage*}{english}
+\bigskip
 
    \lipsum[2]
 
    \vspace{\onelineskip}
- 
+
    \noindent
    \textbf{Keywords}: Complex networks. Complex networks generation. Communities. Overlapping communities. Hierarchical communities
- \end{otherlanguage*}  
+ \end{otherlanguage*}
 \end{resumoumacoluna}
 
-% ]  				% FIM DE ARTIGO EM DUAS COLUNAS
-% ---
+\pdfbookmark[0]{\listfigurename}{lof}
+\listoffigures*
+\pagebreak
 
-\begin{center}\smaller
-\textbf{Data de submissão e aprovação}: 14 de maio de 2022.
+\listofquadros*
+\pagebreak
 
-\textbf{Identificação e disponibilidade}: \href{mailto:gustavospiess@gmail.com}{gustavospiess@gmail.com}.
-\end{center}
+\listoftables*
+\pagebreak
+
+\begin{siglas}
+\item[IE] -- Internet Explorer
+\item[QE] -- Qternet Explorer
+\end{siglas}
+\pagebreak
+
+\tableofcontents* 
+
+
+% \begin{center}\smaller % \textbf{Data de submissão e aprovação}: 14 de maio de 2022.
+%
+% \textbf{Identificação e disponibilidade}: \href{mailto:gustavospiess@gmail.com}{gustavospiess@gmail.com}.
+% \end{center}
 
 % ----------------------------------------------------------
 % ELEMENTOS TEXTUAIS
@@ -231,20 +418,37 @@
 % ----------------------------------------------------------
 % Introdução
 % ----------------------------------------------------------
-\section{Introdução}
+\chapter{Introdução}
 
-\lipsum[3-4]
+\subfile{introducao}
+
+\begin{figure}[h]
+    \caption{\label{fig:exmp}Exemplo}
+    Lorem
+\end{figure}
+\medskip
+
+\begin{quadro}[htb]
+\caption{\label{qua:exmp}Exemplo}
+    Lorem
+\end{quadro}
+
+\begin{table}[htb]
+    \centering
+    \caption{\label{tab:exmp}Exemplo}
+    Lorem
+\end{table}
 
 % ---
 % Finaliza a parte no bookmark do PDF, para que se inicie o bookmark na raiz
 % ---
-\bookmarksetup{startatroot}% 
+\bookmarksetup{startatroot}%
 % ---
 
 % ---
 % Conclusão
 % ---
-\section{Considerações finais}
+\chapter{Considerações finais}
 
 \lipsum[5]
 
@@ -254,21 +458,20 @@
 
 \lipsum[7]
 
-% ----------------------------------------------------------
-% ELEMENTOS PÓS-TEXTUAIS
+% ---------------------------------------------------------- % ELEMENTOS PÓS-TEXTUAIS
 % ----------------------------------------------------------
 \postextual
 
 % ----------------------------------------------------------
 % Referências bibliográficas
 % ----------------------------------------------------------
-\bibliography{abntex2-modelo-references}
+\bibliography{cngohc_ref}
 
 % ----------------------------------------------------------
 % Glossário
 % ----------------------------------------------------------
 %
-% Há diversas soluções prontas para glossário em LaTeX. 
+% Há diversas soluções prontas para glossário em LaTeX.
 % Consulte o manual do abnTeX2 para obter sugestões.
 %
 %\glossary
@@ -312,7 +515,7 @@
 % Agradecimentos
 % ----------------------------------------------------------
 
-\section*{Agradecimentos}
-\lipsum[8]
+\chapter*{Agradecimentos}
+\lipsum[9]
 
 \end{document}
