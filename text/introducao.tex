@@ -2,40 +2,49 @@
 
 \begin{document}
 
+
 Redes complexas, como definido por \citeonline{metz2007redes}, são grafos com uma topologia não trivial.
-Isso é, são grafos onde parte ou toda a informação de interesse está contida não nos vértices e arestas individualmente, mas em propriedade do conjunto de vértices e arestas.
+Isso é, são grafos onde parte ou toda a informação de interesse está contida não nos vértices e arestas individualmente, mas em propriedades do conjunto de vértices e arestas.
 
 Como apontado por \citeonline{girvan2002community}, um dos sistemas do mundo real que se pode modelar em uma rede complexa é o conjunto de relações sociais.
-Esse sistema poderia ser modelado com cada individuo sendo representado por um vértice, e as relações sendo representadas pelas arestas ligando dois indivíduos.
-Num modelo assim, se é observada na topologia do grafo a existência de um sub grafo completo, denominado clique \cite{fortunato2010community}, isso representa não só que existe um grupo onde todos se conhecem, mas de que esse grupo pode apresentar características próprias e relevantes.
+Uma modelagem simplista desse sistema apresenta é a representação de cada indivíduo como um vértice, e vértices adjacentes sendo pares de indivíduos que se conhecem.
+Nesse tipo de sistema um sub grafo completo, denominado clique \cite{fortunato2010community}, pode ser interpretada como uma propriedade relevante a indicação de que desse conjunto de indivíduos onde todos conhecem todos.
 
 \citeonline{girvan2002community} também aponta que outros sistemas, como cadeias alimentares, cadeias de metabolização, redes de transmissão elétrica e redes de computadores podem ser representadas como redes complexas.
-Em cada sistema do mundo real que se modela como uma rede complexa, diferentes propriedades emergem, e elas apresentam diferentes significados sobre o grafo observado.
-E.g. para a propriedade de comunidades, as características que definem o que é uma comunidade variam de acordo com o contexto que se está trabalhando \cite{da2020comparative}, como será discutido mais a frente.
+Muitas vezes propriedades que se observam em redes complexas de um domínio estão presentes também nas redes complexas de outros domínios, mas com interpretações distintas sobre o objeto modelado.
+O trabalho de \citeonline{fortunato2010community} indica isso na discussão de múltiplas interpretações do que constitui uma comunidade em uma rede complexa, dividindo-se principalmente em características estruturais, e por semelhança de vértice.
 
-No estudo de redes complexas, é relevante o entendimento de algumas terminologias que serão utilizadas mais à frente.
-É definido por \citeonline{fortunato2010community} o conceito de \emph{clique}, um clique se refere à um conjunto de vértices que forma um sub grafo completo.
-Definições ligeiramente distintas podem ser utilizadas, como apontado pelo próprio \citeonline{fortunato2010community}, dependendo do contexto, por exemplo é apresentada a definição de um \emph{n-clique}, como sendo um subgrafo onde todos os vértices estão a \emph{n} ou menos arestas de distância.
-Ou ainda um \emph{k-clique chain}, sendo a união de dois cliques com \emph{k} ou mais vértices que compartilham um ou mais desses vértices.
+No exemplo do trabalho desenvolvido por \citeonline{largeron2015generating}, as duas interpretações se encontram presentes, como é característica da literatura a despeito da geração de redes complexas.
+\citeonline{largeron2015generating} descreve o que é chamado na literatura de um modelo de geração algorítmica de redes complexas onde os vértices do grafo estão dispostos em uma nuvem de ponto e a distribuição deles em diferentes comunidades leva em conta sua posição espacial, e as arestas são construídas em função desse pertencimento a uma comunidade.
+\citeonline{akoglu2009rtg} descreve um modelo mais primitivo, que não realiza a atribuição explicita de comunidades, mas que gera um grafo com essas comunidades ainda assim. 
 
-Outra terminologia relevante é o conceito de partição, definido por \citeonline{fortunato2010community} como sendo a divisão dos vértices de um grafo em conjuntos distintos de forma que todos os vértices pertençam a exatamente uma partição.
-Essas duas definições são relevantes na forma como elas interagem com a definição de comunidade.
-Em alguns contextos uma comunidade pode ser definida como sendo necessariamente um \emph{clique} \cite{fortunato2010community}, ou em outros contextos a divisão das comunidades no grafo deve de representar uma partição \cite{da2020comparative, fortunato2010community}
-
-Mais uma definição definição relevante pode ser encontrada no trabalho de \citeonline{fortunato2010community}.
-O autor define triângulo como sendo um conjunto de três vértices conectados entre si, i.e. um \emph{3-clique}.
-E a contra parte dessa definição, o coeficiente de aglomeração, definido como a proporção em que as triplas conexas de um grafo são triângulos.
-Isso é, para um coeficiente de aglomeração igual a meio, isso representa que para quaisquer três vértices que estejam conectados entre si, existe cinquenta por cento de chance de esses vértices formarem um triângulo.
-
-Por fim, no estudo de redes complexas, existe também a definição de um grafo aleatório.
-Um grafo aleatório é produzido a partir de um grafo qualquer, mantendo a mesma quantidade de vértices e mantendo o mesmo grau, mas considerando que os vértices estão conetados baseados em uma probabilidade uniformemente distribuída.
-Um grafo aleatório é geralmente utilizado para comparação, servindo como exemplo nulo, no sentido de que ele não apresenta características topológicas relevantes \cite{fortunato2010community}.
+Indica-se, observando o trabalho de \citeonline{fortunato2010community} de que ha uma vasta literatura a respeito dos processos de detecção dessas comunidades.
+Oberando-se a literatura da qual os trabalhos de \citeonline{largeron2015generating, akoglu2009rtg} e \citeonline{slota2019scalable}, é indicada a existência dos modelos necessários para a geração de redes complexas com comunidades.
+No entanto propriedades adjacentes a presença de comunidades para os quais existe literatura a respeito da detecção, como comunidades hierárquicas e comunidades sobrepostas, parecem estar pouco presentes em modelos de geradores de redes complexas.
 
 \section{Objetivos}
 
-    asdf
-\subsection{Objetivos 23}
+Dado esse contexto, o objetivo do trabalho é a adaptação dos modelos presentes na literatura de geração de redes complexas para a incorporação de comunidades sobrepostas e comunidades hierárquicas.
 
-    asdf
+Os objetivos específicos são:
+
+\begin{alineas}
+    \item A construção de um modelo algorítmico de geração de redes complexas que inclua a propriedade de comunidades.
+    \item A especificação, dentro desse modelo,  de uma \emph{ground truth} de quais vértices pertencem a quais comunidades.
+    \item A possibilidade, dentro desse modelo, de comunidades hierárquicas.
+    \item A possibilidade, dentro desse modelo, de comunidades sobrepostas.
+    \item A representação, dentro desse modelo, dos vértices como uma nuvem de pontos, para a definição de semelhança de vértices por distância.
+\end{alineas}
+
+\section{Estrutura}
+
+Esse trabalho se estrutura em quatro capítulos sendo o primeiro uma introdução aos temas abordados, bem como a apresentação dos objetivos do trabalho.
+
+O segundo capítulo apresenta a fundamentação teórica da pesquisa, descrevendo o estado da arte do objeto de estudo.
+
+O terceiro capítulo discute o desenvolvimento do modelo algorítmico proposto, incluindo ferramentas e técnicas utilizadas.
+Também são apresentados os blocos de pseudo código do modelo.
+
+O quarto capítulo compõe os dados obtidos na avaliação dos resultados, bem como quaisquer discussões de implementações futuras ou outras formas de continuação.
 
 \end{document}
