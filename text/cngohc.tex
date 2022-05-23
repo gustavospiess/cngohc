@@ -28,17 +28,11 @@
 % ------------------------------------------------------------------------
 
 \documentclass[
-    % -- opções da classe memoir --
-    % article,            % indica que é um artigo acadêmico
-    11pt,               % tamanho da fonte
+    12pt,               % tamanho da fonte
     oneside,            % para impressão apenas no recto. Oposto a twoside
     a4paper,            % tamanho do papel.
-    % -- opções da classe abntex2 --
     chapter=TITLE,     % títulos de capítulos convertidos em letras maiúsculas
     section=TITLE,     % títulos de seções convertidos em letras maiúsculas
-    % subsection=TITLE,  % títulos de subseções convertidos em letras maiúsculas
-    %subsubsection=TITLE % títulos de subsubseções convertidos em letras maiúsculas
-    % -- opções do pacote babel --
     english,            % idioma adicional para hifenização
     brazil,             % o último idioma é o principal do documento
     sumario=tradicional
@@ -60,9 +54,11 @@
 \usepackage{color}              % Controle das cores
 \usepackage{graphicx}           % Inclusão de gráficos
 \usepackage{microtype}          % para melhorias de justificação
+\DisemulatePackage{setspace}
 \usepackage{setspace}
 \usepackage{tocloft}
 \usepackage{enumitem}
+\usepackage{subfiles}
 % ---
 
 % ---
@@ -77,6 +73,7 @@
 \usepackage[brazilian,hyperpageref]{backref}     % Paginas com as citações na bibl
 \usepackage[alf]{abntex2cite}   % Citações padrão ABNT
 % ---
+
 
 % ---
 % Configurações do pacote backref
@@ -93,12 +90,6 @@
     \else
         Citado #1 vezes nas páginas #2.%
     \fi}%
-% ---
-
-% ---
-% Pacotes de utilidades, para legibilidade
-% ---
-\usepackage{subfiles}
 % ---
 
 % ---
@@ -158,96 +149,6 @@ Geração de redes complexas
 }
 \makeatother
 
-% ---
-% Redefinição de comandos para adequar ao formato requerido
-% ---
-\makeatletter
-\renewcommand{\imprimircapa}{
-
-    \DoubleSpacing
-
-    \begin{centering}
-
-        {\bfseries \MakeUppercase{\imprimirinstituicao}\par}
-    
-        \vspace*{\fill} \vspace*{\fill} \vspace*{\fill} \vspace*{\fill}
-        \vspace*{\fill} \vspace*{\fill} \vspace*{\fill}
-    
-        {\bfseries\LARGE\MakeUppercase{\imprimirtitulo}}\\
-    
-        \vspace*{\fill}
-
-        \begin{flushright}
-            \bfseries \MakeUppercase{\imprimirautor}
-        \end{flushright}   
-
-        \vspace*{\fill} \vspace*{\fill} \vspace*{\fill} \vspace*{\fill}
-        \vspace*{\fill} \vspace*{\fill}
-
-        \SingleSpace
-
-        {\bfseries \MakeUppercase{\imprimirlocal} \\ \MakeUppercase{\imprimirdata} }
-        \vspace*{\fill}
-
-    \end{centering}
-    \pagebreak
-}
-\makeatother
-
-% ---
-
-\makeatletter
-\renewcommand{\imprimirfolhaderosto}{
-
-    \SingleSpace
-    \begin{centering}
-
-        {\bfseries \MakeUppercase{\imprimirautor}\par}
-    
-        \vspace*{\fill} \vspace*{\fill}
-    
-        {\bfseries\LARGE\MakeUppercase{\imprimirtitulo}}\\
-    
-        \vspace*{\fill}
-
-        \begin{flushright}
-            \parbox{0.5\textwidth}{%
-                Trabalho de Conclusão de Curso apresentado ao curso de graduação em Ciências da Computação no Centro de de Ciências Exatas e Naturais da Universidade Regional de Blumenau como requisito parcial para a obtenção de grau de Bacharel em Ciências da Computação.
-            }
-        \end{flushright}   
-
-        \begin{flushright}
-            \parbox{\textwidth*3/5}{%
-                Professor \imprimirorientador, Titulação - Orientador
-            }
-        \end{flushright}   
-
-        \vspace*{\fill} \vspace*{\fill} \vspace*{\fill}
-        \vspace*{\fill} \vspace*{\fill} \vspace*{\fill}
-
-        {\bfseries \MakeUppercase{\imprimirlocal} \\ \MakeUppercase{\imprimirdata} }
-
-    \end{centering}
-    \pagebreak
-}
-\makeatother
-
-% ---
-
-\makeatletter
-\newcommand{\imprimirfolhadeassinaturas}{
-    \SingleSpace
-    \begin{centering}
-        \vspace*{\fill} 
-        {\bfseries\LARGE\MakeUppercase{Folha de assinaturas}} 
-        %\includepdf{folhadeaprovacao_final.pdf}
-        \vspace*{\fill}
-    \end{centering}
-    \pagebreak
-}
-\makeatother
-
-% ---
 
 % Novo list of (listings) para QUADROS
 
@@ -268,7 +169,6 @@ Geração de redes complexas
 \setfloatlocations{quadro}{hbtp}
 
 % ---
-
 \renewenvironment{siglas}{%
   \pretextualchapter{\listadesiglasname}
   \begin{itemize}[label={}]
@@ -276,7 +176,11 @@ Geração de redes complexas
   \end{itemize}
   \cleardoublepage
 }
-
+% ---
+%%criar um novo estilo de cabeçalhos e rodapés
+\makepagestyle{estilocabecalho}
+  \makeevenhead{estilocabecalho}{}{}{\thepage}
+  \makeoddhead{estilocabecalho}{}{}{\thepage}
 % ---
 
 
@@ -298,12 +202,17 @@ Geração de redes complexas
 % Espaçamentos entre linhas e parágrafos
 % ---
 
-% O tamanho do parágrafo é dado por:
-\setlength{\parindent}{1.3cm}
-
-% Controle do espaçamento entre um parágrafo e outro:
-\setlength{\parskip}{0.2cm}  % tente também \onelineskip
+\setlength{\parindent}{1.2cm}
+\setlength{\parskip}{0.1cm}
 \setlength{\afterchapskip}{1.4cm}
+\let\originaltextual\textual
+\renewcommand{\textual}{%
+    \originaltextual
+    \setlength{\afterchapskip}{0pt}
+    \pagestyle{estilocabecalho}
+    \frenchspacing
+    \setstretch{1.43}
+    }
 
 
 % ----
@@ -318,97 +227,7 @@ Geração de redes complexas
 % ELEMENTOS PRÉ-TEXTUAIS
 % ----------------------------------------------------------
 
-% página de titulo principal (obrigatório)
-\imprimircapa
-
-\imprimirfolhaderosto
-
-\imprimirfolhadeassinaturas
-
-\begin{dedicatoria}
-    \vspace*{\fill}
-    \hfill
-    \parbox{0.5\textwidth}{%
-        \lipsum[2]
-    }
-    \vspace*{\fill}
-\end{dedicatoria}
-\pagebreak
-
-\DoubleSpacing
-\begin{agradecimentos}
-    \bigskip \bigskip
-    \lipsum[1]
-\end{agradecimentos}
-\pagebreak
-
-\SingleSpace
-\begin{epigrafe}
-    \vspace*{\fill}
-
-    \hfill
-    \parbox{0.5\textwidth}{%
-    Frase inspiradora com significado maneiro e/ou importante
-    }
-
-    \begin{flushright}
-    Autor da frase
-    \end{flushright}
-    \vspace*{\fill}
-\end{epigrafe}
-
-% resumo em português
-\DoubleSpacing
-\begin{resumoumacoluna}
-\bigskip
-
-\lipsum[1]
-
- \vspace{\onelineskip}
-
- \noindent
- \textbf{Palavras-chave}: Redes complexas. Geração de redes complexas. Comunidades. Comunidades sobrepostas. Comunidades hierárquicas.
-\end{resumoumacoluna}
-
-
-% resumo em inglês
-\renewcommand{\resumoname}{Abstract}
-\begin{resumoumacoluna}
- \begin{otherlanguage*}{english}
-\bigskip
-
-   \lipsum[2]
-
-   \vspace{\onelineskip}
-
-   \noindent
-   \textbf{Keywords}: Complex networks. Complex networks generation. Communities. Overlapping communities. Hierarchical communities
- \end{otherlanguage*}
-\end{resumoumacoluna}
-
-\pdfbookmark[0]{\listfigurename}{lof}
-\listoffigures*
-\pagebreak
-
-\listofquadros*
-\pagebreak
-
-\listoftables*
-\pagebreak
-
-\begin{siglas}
-\item[IE] -- Internet Explorer
-\item[QE] -- Qternet Explorer
-\end{siglas}
-\pagebreak
-
-\tableofcontents* 
-
-
-% \begin{center}\smaller % \textbf{Data de submissão e aprovação}: 14 de maio de 2022.
-%
-% \textbf{Identificação e disponibilidade}: \href{mailto:gustavospiess@gmail.com}{gustavospiess@gmail.com}.
-% \end{center}
+\subfile{pretexto}
 
 % ----------------------------------------------------------
 % ELEMENTOS TEXTUAIS
@@ -421,6 +240,10 @@ Geração de redes complexas
 \chapter{Introdução}
 
 \subfile{introducao}
+
+\chapter{Fundamentação teórica}
+
+\subfile{fundamentacao}
 
 \begin{figure}[h]
     \caption{\label{fig:exmp}Exemplo}

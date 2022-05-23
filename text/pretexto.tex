@@ -1,0 +1,188 @@
+\documentclass[notes.tex]{subfiles}
+
+% ---
+% Redefinição de comandos para adequar ao formato requerido
+% ---
+\makeatletter
+\renewcommand{\imprimircapa}{
+
+    \DoubleSpacing
+
+    \begin{centering}
+
+        {\bfseries \MakeUppercase{\imprimirinstituicao}\par}
+    
+        \vspace*{\fill} \vspace*{\fill} \vspace*{\fill} \vspace*{\fill}
+        \vspace*{\fill} \vspace*{\fill} \vspace*{\fill}
+    
+        {\bfseries\LARGE\MakeUppercase{\imprimirtitulo}}\\
+    
+        \vspace*{\fill}
+
+        \begin{flushright}
+            \bfseries \MakeUppercase{\imprimirautor}
+        \end{flushright}   
+
+        \vspace*{\fill} \vspace*{\fill} \vspace*{\fill} \vspace*{\fill}
+        \vspace*{\fill} \vspace*{\fill}
+
+        \SingleSpace
+
+        {\bfseries \MakeUppercase{\imprimirlocal} \\ \MakeUppercase{\imprimirdata} }
+        \vspace*{\fill}
+
+    \end{centering}
+    \pagebreak
+}
+\makeatother
+
+% ---
+
+\makeatletter
+\renewcommand{\imprimirfolhaderosto}{
+
+    \SingleSpace
+    \begin{centering}
+
+        {\bfseries \MakeUppercase{\imprimirautor}\par}
+    
+        \vspace*{\fill} \vspace*{\fill}
+    
+        {\bfseries\LARGE\MakeUppercase{\imprimirtitulo}}\\
+    
+        \vspace*{\fill}
+
+        \begin{flushright}
+            \parbox{0.5\textwidth}{%
+                Trabalho de Conclusão de Curso apresentado ao curso de graduação em Ciências da Computação no Centro de de Ciências Exatas e Naturais da Universidade Regional de Blumenau como requisito parcial para a obtenção de grau de Bacharel em Ciências da Computação.
+            }
+        \end{flushright}   
+
+        \begin{flushright}
+            \parbox{\textwidth*3/5}{%
+                Professor \imprimirorientador, Mestre - Orientador
+            }
+        \end{flushright}   
+
+        \vspace*{\fill} \vspace*{\fill} \vspace*{\fill}
+        \vspace*{\fill} \vspace*{\fill} \vspace*{\fill}
+
+        {\bfseries \MakeUppercase{\imprimirlocal} \\ \MakeUppercase{\imprimirdata} }
+
+    \end{centering}
+    \pagebreak
+}
+\makeatother
+
+% ---
+
+\makeatletter
+\newcommand{\imprimirfolhadeassinaturas}{
+    \SingleSpace
+    \begin{centering}
+        \vspace*{\fill} 
+        {\bfseries\LARGE\MakeUppercase{Folha de assinaturas}} 
+        %\includepdf{folhadeaprovacao_final.pdf}
+        \vspace*{\fill}
+    \end{centering}
+    \pagebreak
+}
+\makeatother
+
+% ---
+
+\begin{document}
+% página de titulo principal (obrigatório)
+\imprimircapa
+
+\imprimirfolhaderosto
+
+\imprimirfolhadeassinaturas
+
+\begin{dedicatoria}
+    \vspace*{\fill}
+    \hfill
+    \parbox{0.5\textwidth}{%
+        Dedico esse trabalho a minha noiva, cuja paciência em me ouvir falar desse trabalho tornou-o possível.
+    }
+    \vspace*{\fill}
+\end{dedicatoria}
+\pagebreak
+
+\DoubleSpacing
+\begin{agradecimentos}
+    A meu padrinho, Maiko Rafael Spiess, pelo sempre presente incentivo ao estudo.
+
+    Ao meu orientador, Aurélio Faustino Hoppe, por acreditar na conclusão desse trabalho.
+
+    A minha família, por todos os anos de apoio que foram necessários para chegar até aqui.
+
+    Aos amigos que fiz no percurso do bacharelado, pelo apoio recebido.
+
+    Aos professores do Departamento de Sistemas e Computação da Universidade Regional de Blumenau por suas contribuições durante os semestres letivos.
+\end{agradecimentos}
+\pagebreak
+
+\SingleSpace
+\begin{epigrafe}
+    \vspace*{\fill}
+
+    \hfill
+    \parbox{0.5\textwidth}{%
+    ``Se eu vi mais longe, foi por estar sobre ombros de gigantes.''
+    }
+
+    \begin{flushright}
+    Isaac Newton
+    \end{flushright}
+    \vspace*{\fill}
+\end{epigrafe}
+
+% resumo em português
+\DoubleSpacing
+\begin{resumoumacoluna}
+\bigskip
+
+\lipsum[1]
+
+ \vspace{\onelineskip}
+
+ \noindent
+ \textbf{Palavras-chave}: Redes complexas. Geração de redes complexas. Comunidades. Comunidades sobrepostas. Comunidades hierárquicas.
+\end{resumoumacoluna}
+
+
+% resumo em inglês
+\renewcommand{\resumoname}{Abstract}
+\begin{resumoumacoluna}
+ \begin{otherlanguage*}{english}
+\bigskip
+
+   \lipsum[2]
+
+   \vspace{\onelineskip}
+
+   \noindent
+   \textbf{Keywords}: Complex networks. Complex networks generation. Communities. Overlapping communities. Hierarchical communities
+ \end{otherlanguage*}
+\end{resumoumacoluna}
+
+\pdfbookmark[0]{\listfigurename}{lof}
+\listoffigures*
+\pagebreak
+
+\listofquadros*
+\pagebreak
+
+\listoftables*
+\pagebreak
+
+\begin{siglas}
+\item[IE] -- Internet Explorer
+\item[QE] -- Qternet Explorer
+\end{siglas}
+\pagebreak
+
+\tableofcontents* 
+
+\end{document}

@@ -1,0 +1,23 @@
+\documentclass[notes.tex]{subfiles}
+
+\begin{document}
+
+No estudo de redes complexas, é relevante o entendimento de algumas terminologias que serão utilizadas mais à frente.
+É definido por \citeonline{fortunato2010community} o conceito de \emph{clique}, um clique se refere à um conjunto de vértices que forma um sub grafo completo.
+Definições ligeiramente distintas podem ser utilizadas, como apontado pelo próprio \citeonline{fortunato2010community}, dependendo do contexto, por exemplo é apresentada a definição de um \emph{n-clique}, como sendo um subgrafo onde todos os vértices estão a \emph{n} ou menos arestas de distância.
+Ou ainda um \emph{k-clique chain}, sendo a união de dois cliques com \emph{k} ou mais vértices que compartilham um ou mais desses vértices.
+
+Outra terminologia relevante é o conceito de partição, definido por \citeonline{fortunato2010community} como sendo a divisão dos vértices de um grafo em conjuntos distintos de forma que todos os vértices pertençam a exatamente uma partição.
+Essas duas definições são relevantes na forma como elas interagem com a definição de comunidade.
+Em alguns contextos uma comunidade pode ser definida como sendo necessariamente um \emph{clique} \cite{fortunato2010community}, ou em outros contextos a divisão das comunidades no grafo deve de representar uma partição \cite{da2020comparative, fortunato2010community}
+
+Mais uma definição definição relevante pode ser encontrada no trabalho de \citeonline{fortunato2010community}.
+O autor define triângulo como sendo um conjunto de três vértices conectados entre si, i.e. um \emph{3-clique}.
+E a contra parte dessa definição, o coeficiente de aglomeração, definido como a proporção em que as triplas conexas de um grafo são triângulos.
+Isso é, para um coeficiente de aglomeração igual a meio, isso representa que para quaisquer três vértices que estejam conectados entre si, existe cinquenta por cento de chance de esses vértices formarem um triângulo.
+
+Por fim, no estudo de redes complexas, existe também a definição de um grafo aleatório.
+Um grafo aleatório é produzido a partir de um grafo qualquer, mantendo a mesma quantidade de vértices e mantendo o mesmo grau, mas considerando que os vértices estão conetados baseados em uma probabilidade uniformemente distribuída.
+Um grafo aleatório é geralmente utilizado para comparação, servindo como exemplo nulo, no sentido de que ele não apresenta características topológicas relevantes \cite{fortunato2010community}.
+
+\end{document}
