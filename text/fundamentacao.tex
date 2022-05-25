@@ -145,7 +145,7 @@ Mais que isso, esse coeficiente, dado um vértice, é a probabilidade de quaisqu
 \subsection{Homofilia e Homogeneidade de comunidades}
 
 Conforme foi discutida quanto a definição de comunidades por semelhança de vértices, é de se esperar que vértices adjacentes compartilhem características.
-A essa preferência se dá o nome de homofilia \cite{slota2019scalable}.
+A essa preferência se dá o nome de homofilia \cite{akoglu2009rtg}.
 Essa definição de semelhança é deliberadamente vaga, pois dentro de sistemas distintos é trivial imaginar funções de compatibilidade distintas.
 Independentemente disso, observa-se que em grafos obtidos observando sistemas do mundo real, não raro as arestas tornam ajacentes vértices que otimizam alguma função de proximidade, \cite{largeron2015generating}.
 
@@ -199,5 +199,47 @@ Isso é, dado que um K-clique é um subgrafo completo de $k$ vértices, de dois 
 Armado desse conhecimento, é possível desenhar que uma cobertura ideal deveria priorizar comunidades com grandes subgrafos completos internamente, mas de que os vértices da intersecção de duas comunidades deveriam de participar de k-cliques distintos, preferencialmente não estando anexos.
 A ideia por de trás disso é que se a intersecção de duas comunidades deveria ser parte da periferia das respectivas comunidades \cite{fortunato2010community}.
 Se a intersecção fosse tão densamente conexa quando o centro das duas comunidades, esses vértices não seriam mais valore intersectados entre duas comunidades distintas, e as comunidades seriam uma apenas.
+
+\section{O estado da arte em geração de redes complexas}
+
+Existe uma literatura muito prolífica de aplicações dos conceitos de redes complexas, como por exemplo o trabalho de \citeonline{stegehuis2016epidemic}, que faz uma análise do espalhamento de doenças em uma rede com comunidades, onde é demonstrado que a presença das comunidades tem um efeito significativo.
+Muitos métodos para a detecção de comunidades foram propostos, como fica evidente na ampla revisão feita por \citeonline{fortunato2010community}.
+É bastante mais escassa a literatura de modelos e metodologias capazes de gerar redes complexas onde se tenha a presença de redes complexas.
+
+\subsection{RTG: a recursive realistic graph generator using random typing}
+
+\citeonline{akoglu2009rtg} apresenta um trabalho seminal no que tange a geração de redes complexas.
+Como foi discutido anteriormente, o trabalho desenvolvido não apenas gera redes complexas com uma série de proporções que conhecidamente ocorrem em sistemas do mundo real, possibilitando a construção de grafos que se assemelhem aos produzidos pelos sistemas do mundo real, mas produz grafos com a presença de comunidades.
+
+A implementação realizada por \citeonline{akoglu2009rtg} se baseia em um gerador de arestas que tem as probabilidades tendenciosas.
+Esse gerador é o que os autores chamam de um teclado recursivo, na realidade é uma matriz de possibilidades de escolha de uma característica discreta para a origem e o destino em simultâneo.
+Nominalmente, os vértices são uma sequência aleatória de caracteres de um conjunto finito de possibilidades, é repetidamente escolhido uma letra para o destino e uma para a origem em simultâneo.
+Com um parâmetro controlando um reforço que é feito para que a célula da matriz escolhida a cada interação seja da diagonal principal, existe uma tendencia de que vértices adjacentes tenham as mesmas letras nas mesmas posições.
+
+Essas regras bastante simples são o bastante para que o modelo de \citeonline{akoglu2009rtg} tenha como emergentes algumas das propriedades desejáveis em um modelo de geração de redes complexas
+para além das proporções, mundo pequeno, anexação preferencial e homofilia, o sistema de \citeonline{akoglu2009rtg} gera comunidades homogêneas.
+
+Existe também um interesse relevante em quanto os algoritmos de geração de redes complexas precisam em tempo.
+Nesse quesito, a implementação de \citeonline{akoglu2009rtg} apresenta algumas das características mais desejáveis, ele é totalmente paralelizável, significando que para a construção de um grafo com o dobro de arestas, é possível dobrar a quantidade de recursos de processamento e assim dobrar a quantidade de arestas produzidas em um tempo constante.
+
+\subsection{Generating Attributed Networks with Communities}
+
+\citeonline{largeron2015generating} apresenta um modelo algorítmico de geração de redes complexas com uma abordagem da anteriormente discutida.
+O processo realizado é bastante mais explícito e deliberado em quais condicionantes são utilizadas para afetar quais propriedades.
+Uma faze inicial gera uma nuvem de pontos com uma distribuição aleatória e uma amostra dessa população é usada para inicializar as comunidades.
+Essa amostragem é processada em um algoritmo k-means, gebrando os clusters iniciais, e as arestas iniciais são geradas.
+Uma segunda faze processa os demais vértices, escolhendo qual a comunidade ao qual serão inseridos se baseando na distância euclideana (homofilia), e gerando os vértices baseado na distribuição de graus.
+Numa última faze, opcional, é realizada a introdução de novas arestas, essas arestas são escolhidas de forma a fecharem triângulos, para aumentar o coeficiente de clusterização $C$.
+
+Essa abordagem oferece uma funcionalidade bastante desejável, que é gerar um catálogo de qual vértice pertence a qual comunidade, dessa forma criando um ``ground truth'' contra o qual o desempenho de alguns algoritmos pode ser testado.
+Considerando os trabalhos que utilizam análise de redes complexas como \citeonline{stegehuis2016epidemic}, a possibilidade regerar um grafo com características topológicas conhecidas, podendo-se manipular o coeficiente de clusterização por exemplo, existem um conjunto de possíveis análises com relevância acadêmica.
+Para muitas dessas análises, as possibilidades de parametrização modelo de \citeonline{largeron2015generating} parece ser interessante.
+É feita também uma discussão de performance por parte de \citeonline{largeron2015generating}, mas é possível desenhar algumas críticas a forma como o modelo foi desenhado, que previnem a paralelização do processo de construção dos grafos.
+
+\subsection{Modelos dinâmicos de geração de redes complexas com comunidades}
+
+Para além do modelo trivial $\G = (\V, \E)$, é possível a concepção de um grafo dinâmico representado em $T$ estados,  $\G_i = (\V_i, \E_i)$ for  $i \in \{1, \ldots, T\}$.
+\citeonline{benyahia2016dancer} apresenta uma implementação dinâmica do que foi apresentado por \citeonline{largeron2015generating}.
+Outras implementação de um gerador de grafos dinâmicos são disponibilizada por \citeonline{duan2019dynamic} e \citeonline{luo2020time}.
 
 \end{document}
