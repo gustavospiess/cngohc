@@ -16,7 +16,8 @@ from .algo import rand
 from .models import Graph, Vertex
 
 
-from .validations import connectivity, relative_inertia, shens_modularity, diameter as _diameter
+from .validations import relative_inertia, shens_modularity
+from .validations import connectivity as _connectivity, diameter as _diameter
 
 
 def long_docstring(docs: str) -> str:
@@ -24,8 +25,14 @@ def long_docstring(docs: str) -> str:
 
 
 @click.group()
-@click.option('--posfix', '-p', default='', type=str, help='''output file posfix''')
-@click.option('--direcory', '-d', default='out', type=str, help='''output file direcory''')
+@click.option(
+        '--posfix', '-p', default='', type=str, help='''output file posfix''')
+@click.option(
+        '--direcory',
+        '-d',
+        default='out',
+        type=str,
+        help='''output file direcory''')
 @click.pass_context
 def main(ctx, posfix, direcory):
     ctx.ensure_object(dict)
@@ -57,7 +64,7 @@ def check(ctx):
 @check.command()
 @click.pass_context
 def connectivity(ctx):
-    connectivity(ctx.obj['graph'])
+    _connectivity(ctx.obj['graph'])
 
 
 @check.command()
@@ -101,10 +108,12 @@ def view(ctx):
 
     position = {n: tuple(d*10 for d in n) for n in graph.vertex_set}
 
-    colors =[
-            '#7FFFFF', '#00FFFF', '#FF7FFF', '#7F7FFF', '#007FFF', '#FF00FF', '#7F00FF', '#0000FF',
-            '#FFFF7F', '#7FFF7F', '#00FF7F', '#FF7F7F', '#7F7F7F', '#007F7F', '#FF007F', '#7F007F', '#00007F',
-            '#FFFF00', '#7FFF00', '#00FF00', '#FF7F00', '#7F7F00', '#007F00', '#FF0000', '#7F0000',
+    colors = [
+            '#7FFFFF', '#00FFFF', '#FF7FFF', '#7F7FFF', '#007FFF', '#FF00FF',
+            '#7F00FF', '#0000FF', '#FFFF7F', '#7FFF7F', '#00FF7F', '#FF7F7F',
+            '#7F7F7F', '#007F7F', '#FF007F', '#7F007F', '#00007F', '#FFFF00',
+            '#7FFF00', '#00FF00', '#FF7F00', '#7F7F00', '#007F00', '#FF0000',
+            '#7F0000',
             ]
     shuffle(colors)
 
@@ -118,21 +127,28 @@ def view(ctx):
         nodes = list(n for n in p if isinstance(n, Vertex))
         if len(nodes) == 0:
             continue
-        nx.draw_networkx_nodes(nx_graph, position, nodes, node_color=part_color[p])
-        plt.plot([0,0],[-40,40],lw=3, color='black')
-        plt.plot([-40,40],[0,0],lw=3, color='black')
+        nx.draw_networkx_nodes(
+                nx_graph, position, nodes, node_color=part_color[p])
+        plt.plot([0, 0], [-40, 40], lw=3, color='black')
+        plt.plot([-40, 40], [0, 0], lw=3, color='black')
         plt.show()
     for p in sorted(graph.partition.flat, key=lambda p: p.level * -1):
-        nodes = list(n for n in p if isinstance(n, Vertex) and n not in shared_nodes)
-        nx.draw_networkx_nodes(nx_graph, position, nodes, node_color=part_color[p])
-    nx.draw_networkx_nodes(nx_graph, position, shared_nodes, node_color='#000000')
-    plt.plot([0,0],[-40,40],lw=3, color='black')
-    plt.plot([-40,40],[0,0],lw=3, color='black')
+        nodes = list(
+                n
+                for n in p
+                if isinstance(n, Vertex) and n not in shared_nodes)
+        nx.draw_networkx_nodes(
+                nx_graph, position, nodes, node_color=part_color[p])
+    nx.draw_networkx_nodes(
+            nx_graph, position, shared_nodes, node_color='#000000')
+    plt.plot([0, 0], [-40, 40], lw=3, color='black')
+    plt.plot([-40, 40], [0, 0], lw=3, color='black')
     plt.show()
 
 
 @main.command()
-@click.option('--seed', '-s', default='17692', type=str, help='''random seed''')
+@click.option(
+        '--seed', '-s', default='17692', type=str, help='''random seed''')
 @click.option(
         '--vertex_count', '--N',
         default=Parameters._field_defaults['vertex_count'],
@@ -140,7 +156,8 @@ def view(ctx):
         help='''Number of vertexes of the graph''')
 @click.option(
         '--min_edge_count', '--MTE',
-        default=Parameters._field_defaults['min_edge_count'], type=Parameters._field_types['min_edge_count'],
+        default=Parameters._field_defaults['min_edge_count'],
+        type=Parameters._field_types['min_edge_count'],
         help='''Minimum number of edges of the graph''')
 @click.option(
         '--deviation_sequence', '--A',

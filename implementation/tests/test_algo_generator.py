@@ -146,7 +146,7 @@ def test_edge_insertion_within():
     g = generator.initialize_communities(p, g)
     for part in sample(g.partition.flat, k=3):
         for v in sample(g.vertex_set, k=10):
-            edge_set = generator.edge_insertion_within(p, g, v, part)
+            edge_set = generator.edge_insertion_within(p, g, v, part, True)
             assert len(edge_set) > 0
             for edge in edge_set:
                 assert v in edge
@@ -166,7 +166,7 @@ def test_edge_insertion_between():
     for part in sample(g.partition.flat, k=3):
         ignor = set(part.flat)
         for v in sample(unprocessed, k=30):
-            limit = len(generator.edge_insertion_within(p, g, v, part))
+            limit = len(generator.edge_insertion_within(p, g, v, part, False))
             edge_set = generator.edge_insertion_between(p, g, v, ignor, limit)
             assert limit >= len(edge_set) >= 0
             for edge in edge_set:

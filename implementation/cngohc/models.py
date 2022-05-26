@@ -10,7 +10,6 @@ from collections import Counter, defaultdict
 from math import sqrt as square_root
 
 from .utils import unchain, cached_generator
-from .algo.rand import sample
 
 
 import typing as tp
@@ -54,7 +53,7 @@ class Vector(tp.Tuple[float, ...]):
         return self == other or self < other
 
     @classmethod
-    def avg(cls, data: tp.Sequence['Vector']) -> 'Vector':
+    def avg(cls, data: tp.Collection['Vector']) -> 'Vector':
         qt = len(data)
         return cls(sum(d)/qt for d in zip(*data))
 
@@ -77,7 +76,7 @@ Edge = tp.Tuple[Vertex, Vertex]
 
 
 def edge_set(edges: tp.Collection[Edge]) -> tp.FrozenSet[Edge]:
-    return frozenset(tuple(sorted(e)) for e in edges)
+    return frozenset(e if e[0] > e[1] else (e[1], e[0]) for e in edges)
 
 
 PartitionMember = tp.Union[Vertex, 'Partition']
@@ -444,12 +443,12 @@ class _EdgesOfPartCol(tp.Collection[Edge]):
     def __init__(self, edge_set: tp.AbstractSet[Edge], partition: Partition):
         self.__edge_set = edge_set
         self.__partition = partition
+        self.__len: tp.Optional[int] = None
 
-    @lru_cache
     def __len__(self) -> int:
-        # terrible performance, but it should not be used anyways
-        s = sum(1 for e in self)
-        return s
+        if self.__len is None:
+            self.__len = sum(1 for e in self)
+        return self.__len or 0
 
     def __iter__(self) -> tp.Iterator[Edge]:
         for edge in self.__edge_set:
@@ -468,9 +467,9 @@ class _VertexGraphMapping(_GraphMapping[Vertex, _T], tp.Generic[_T]):
         return len(self.graph.vertex_set)
 
 
-class _PartitionsOf(_VertexGraphMapping[tp.Iterable[Partition]]):
+class _PartitionsOf(_VertexGraphMapping[tp.FrozenSet[Partition]]):
     '''Graph mapping for vertex communities'''
-    def __getitem__(self, item: Vertex) -> tp.Iterable[Partition]:
+    def __getitem__(self, item: Vertex) -> tp.FrozenSet[Partition]:
         it = self.__recursive_gen(item, (self.graph.partition,))
         return it
 
@@ -496,7 +495,7 @@ class _LeafPartitionsOf(_VertexGraphMapping[tp.Iterable[Partition]]):
     def __recursive_gen(
             self,
             item: Vertex,
-            com: Partition = None):
+            com: Partition):
         for sub in com:
             if isinstance(sub, Partition):
                 yield from self.__recursive_gen(item, sub)
@@ -513,13 +512,14 @@ class _NeighborsOf(_VertexGraphMapping[tp.Iterable[Vertex]]):
 
 class _AdjacencyCol(tp.Collection[Vertex]):
     __slots__ = ['__graph', '__vertex', '__cache']
+
     def __init__(self, graph, vertex):
         self.__graph = graph
         self.__vertex = vertex
         self.__cache = None
 
     def __len__(self) -> int:
-        len(self.__generator)
+        return len(self.__generator)
 
     @cached_generator
     def __generator(self) -> tp.Iterable[Vertex]:
@@ -530,9 +530,11 @@ class _AdjacencyCol(tp.Collection[Vertex]):
                 yield edge[0]
 
     def __iter__(self) -> tp.Iterator[Vertex]:
-        return self.__generator()
+        return iter(self.__generator())
 
-    def __contains__(self, vertex: Vertex) -> bool:
+    def __contains__(self, vertex: object) -> bool:
+        if not isinstance(vertex, Vertex):
+            return False
         return (
             ((vertex, self.__vertex) in self.__graph.edge_set) or
             ((self.__vertex, vertex) in self.__graph.edge_set))

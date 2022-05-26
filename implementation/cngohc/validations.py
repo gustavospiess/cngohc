@@ -5,7 +5,6 @@ from .models import Vector, Graph, Vertex
 
 from pprint import pprint
 from multiprocessing import Pool
-from time import time
 import networkx as nx
 
 
@@ -19,7 +18,8 @@ def inertia(data: tp.Collection[Vector]) -> float:
 
 def find_connected_components(
         graph: Graph) -> tp.Set[tp.FrozenSet[Vertex]]:
-    forest: tp.Set[tp.FrozenSet[Vertex]] = {frozenset([v]) for v in graph.vertex_set}
+    forest: tp.Set[tp.FrozenSet[Vertex]] = {
+            frozenset([v]) for v in graph.vertex_set}
     for edge in graph.edge_set:
         a_set: tp.FrozenSet[Vertex] = frozenset({edge[0]})
         b_set: tp.FrozenSet[Vertex] = frozenset({edge[1]})
@@ -57,10 +57,9 @@ def connectivity(graph: Graph):
 
 def relative_inertia(graph: Graph):
     '''TODO'''
-    g_center = Vector.avg(graph.vertex_set)
-    p_center = {p:Vector.avg(p.depht) for p in graph.partition.flat}
+    p_center = {p: Vector.avg(p.depht) for p in graph.partition.flat}
 
-    inertia_by_level = {p.level: 0 for p in graph.partition.flat}
+    inertia_by_level = {p.level: 0.0 for p in graph.partition.flat}
     qtd_by_level = {p.level: 0 for p in graph.partition.flat}
     for vertex in graph.vertex_set:
         for part in graph.partitions_of[vertex]:
@@ -96,6 +95,7 @@ def modularity_part(data):
 __graph = None
 __degree_of = None
 __partition_qt_of = None
+__neighbors = None
 __degree_sum: int = 0
 
 
@@ -117,22 +117,13 @@ def shens_modularity(graph: Graph):
             (p for p in graph.partition.flat),
             key=lambda p: p.level * -1))
 
-    # edges_of_part = {p: len(graph.edges_of_part[p]) for p in graph.partition.flat}
-    # for community in graph.partition.flat:
-    #     print(f'{community.level=}')
-    #     print(f'{edges_of_part[community]=}')
-    #     print(f'{100*edges_of_part[community]/(len(community.depht)*(len(community.depht)-1)/2)=}')
-    #     print(f'{len(community.depht)=}')
-
-    mod = 0
-    mod_b = 0
+    mod = 0.0
     for community in community_set:
         generator = (
-                (community, tuple((vertex_a, vertex_b) for vertex_a in community.depht))
-                for vertex_b in community.depht)
+                (community, tuple((va, vb) for va in community.depht))
+                for vb in community.depht)
         with Pool() as p:
             _map = p.imap_unordered(modularity_part, generator)
-            # _map = map(modularity_part, generator)
             _mod = sum(_map)/(__degree_sum)
             mod += _mod
             print(
