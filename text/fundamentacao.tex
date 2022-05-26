@@ -32,11 +32,11 @@ O trabalho de \citeonline{shen2009detect} implica que comunidades sejam estrutur
 Todas essas definições apresentam características específicas relevantes para a aplicação em que foram utilizadas.
 As definições são agrupadas em três classes distintas por \citeonline{fortunato2010community}:
 
-\begin{itemize}
+\begin{alineas}
     \item Definição local
     \item Definição global
     \item Definição por similaridade de vértice
-\end{itemize}
+\end{alineas}
 
 Essas definições não são mutuamente exclusivas, mas também não são ortogonais uma a outra.
 Segundo \citeonline{fortunato2010community}, a definição local parte das características topológicas internas á comunidade.
@@ -64,11 +64,9 @@ Segundo \citeonline{fortunato2010community} função de qualidade mais comumente
 \begin{quadro}[htb]
 \caption{\label{qua:mod_q}Função de modularidade $Q$}
 
-    \begin{equasion}
-    \boxed{%
+    \begin{empheq}[box=\fbox]{align*}
         Q = \frac{1}{2m}\sum_{ij}\Bigg(A_{ij}-\frac{K_iK_j}{2m}\Bigg)\delta(C_i, C_j)
-        }
-    \end{equasion}
+    \end{empheq}
 
     \fonte{\citeonline{girvan2002community}}
 \end{quadro}
@@ -78,11 +76,9 @@ Essa função no entanto não se aplica adequadamente ao caso de comunidades sob
 \begin{quadro}[htb]
 \caption{\label{qua:mod_eq}Função de modularidade estendida $EQ$}
 
-    \begin{equasion}
-    \boxed{%
+    \begin{empheq}[box=\fbox]{align*}
         EQ = \frac{1}{2m}\sum_{i}\sum_{v \in C_i, w \in C_i}\frac{1}{O_vO_w}\Bigg[A_{vw} - \frac{K_vK_w}{2m} \Bigg]
-        }
-    \end{equasion}
+    \end{empheq}
 
     \fonte{\citeonline{shen2009detect}}
 \end{quadro}
@@ -129,11 +125,9 @@ Essa definição aparentemente arbitrária é relevante no entendimento do coefi
 \begin{quadro}[htb]
 \caption{\label{qua:coecl}Coeficiente de clusterização $C$}
 
-    \begin{equasion}
-    \boxed{%
+    \begin{empheq}[box=\fbox]{align*}
         C = \frac{3 \times (\text{número de triângulos do grafo})}{(\text{número de triplas conexas do grafo})}
-        }
-    \end{equasion}
+    \end{empheq}
 
     \fonte{\citeonline{girvan2002community}}
 \end{quadro}
@@ -231,6 +225,8 @@ Essa amostragem é processada em um algoritmo k-means, gebrando os clusters inic
 Uma segunda faze processa os demais vértices, escolhendo qual a comunidade ao qual serão inseridos se baseando na distância euclideana (homofilia), e gerando os vértices baseado na distribuição de graus.
 Numa última faze, opcional, é realizada a introdução de novas arestas, essas arestas são escolhidas de forma a fecharem triângulos, para aumentar o coeficiente de clusterização $C$.
 
+Notadamente, a modelagem de grafo utilizada por \citeonline{largeron2015generating} é $\G = (\V, \E, \A)$ onde  $\A$ é um conjunto de atributos dos vértices vértices, de forma que cada $v \in \V$ é um vetor de valores  $v_A$.
+A modelagem tem acompanhando o grafo também um conjunto $\Pa$, composto por conjuntos de vértices, isolando assim as partições.
 Essa abordagem oferece uma funcionalidade bastante desejável, que é gerar um catálogo de qual vértice pertence a qual comunidade, dessa forma criando um ``ground truth'' contra o qual o desempenho de alguns algoritmos pode ser testado.
 Considerando os trabalhos que utilizam análise de redes complexas como \citeonline{stegehuis2016epidemic}, a possibilidade regerar um grafo com características topológicas conhecidas, podendo-se manipular o coeficiente de clusterização por exemplo, existem um conjunto de possíveis análises com relevância acadêmica.
 Para muitas dessas análises, as possibilidades de parametrização modelo de \citeonline{largeron2015generating} parece ser interessante.
