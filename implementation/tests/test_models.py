@@ -314,31 +314,31 @@ def test_compatibility_within_weigh():
             weigh_vector=models.Vector((1, 0)))
 
     assert p.weighed_distance(
-            models.Vertex((1, 0)), models.Vertex((2, 0))) == 1
+            models.Vertex((1, 0)), models.Vertex((2, 0)), 1) == 1
     assert p.weighed_distance(
-            models.Vertex((1, 0)), models.Vertex((0, 1))) == 1
+            models.Vertex((1, 0)), models.Vertex((0, 1)), 1) == 1
     assert p.weighed_distance(
-            models.Vertex((1, 99)), models.Vertex((0, 1))) == 1
+            models.Vertex((1, 99)), models.Vertex((0, 1)), 1) == 1
 
     p = PartitionMock(
             weigh_vector=models.Vector((0.5, 0.5)))
 
     assert p.weighed_distance(
-            models.Vertex((1, 0)), models.Vertex((3, 0))) == 2
+            models.Vertex((1, 0)), models.Vertex((3, 0)), 1) == 2
     assert p.weighed_distance(
-            models.Vertex((1, 0)), models.Vertex((0, 1))) == 1
+            models.Vertex((1, 0)), models.Vertex((0, 1)), 1) == 1
     assert p.weighed_distance(
-            models.Vertex((1, 99)), models.Vertex((0, 1))) > 100
+            models.Vertex((1, 99)), models.Vertex((0, 1)), 1) > 100
 
     p = PartitionMock(
             weigh_vector=models.Vector((0.7, 0.3)))
 
     assert p.weighed_distance(
-            models.Vertex((1, 0)), models.Vertex((0, 0))) == 0.7
+            models.Vertex((1, 0)), models.Vertex((0, 0)), 1) == 0.7
     assert p.weighed_distance(
-            models.Vertex((0, 1)), models.Vertex((0, 0))) == 0.3
+            models.Vertex((0, 1)), models.Vertex((0, 0)), 1) == 0.3
     assert p.weighed_distance(
-            models.Vertex((1, 1)), models.Vertex((0, 0))) == 1
+            models.Vertex((1, 1)), models.Vertex((0, 0)), 1) == 1
 
 
 def test_graph_immutable():

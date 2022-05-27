@@ -108,16 +108,17 @@ def _initialize_communities(
     part = set()
     edge_set = set()
     for cluster in cluster_set:
+        sub_pop = tuple(k for k in smp if k in cluster)
         nxt = level + 1
         sub_edge, sub_part = _initialize_communities(
-                graph, param, smp, nxt, id_count)
+                graph, param, sub_pop, nxt, id_count)
         part.add(sub_part)
         edge_set.update(sub_edge)
     return edge_set, Partition(
             part,
             identifier=next(id_count),
             level=level,
-            representative_set=frozenset(Vertex(s) for s in chain(*edge_set)))
+            representative_set=frozenset())
 
 
 def _initialize_leaf_communities(
@@ -159,6 +160,7 @@ def initialize_communities(param: Parameters, graph: Graph) -> Graph:
     the initial communities.
     '''
     edge_set, partition = _initialize_communities(graph, param)
+    assert all(isinstance(s, Partition) for s in partition)
     return Graph(graph.vertex_set, frozenset(edge_set), partition)
 
 
@@ -202,19 +204,14 @@ def chose_partitions(  # TODO rename to choose
     Givem the parameters, the partition returned may be randomly chosen, or may
     be the ones minimizing the weighed distance.
     '''
-    heterogenic = rand_threshold(param.homogeneity_indicator)
 
-    pool: tp.Sequence[Partition]
-    if heterogenic:
-        pool = list(graph.partition.flat)
-        shuffle(pool)
-        return frozenset({rand_pl(pool)})
-
+    homo = param.homogeneity_indicator
     sorted_pool = sorted((
             (p, min(
-                    p.weighed_distance(vertex, rep)
+                    p.weighed_distance(vertex, rep, homo)
                     for rep in p.representative_set))
             for p in graph.partition.flat
+            if len(p.representative_set) > 0
             ), key=lambda pt: pt[1])
 
     pool = tuple(map(
@@ -223,6 +220,7 @@ def chose_partitions(  # TODO rename to choose
             ))
 
     main = rand_pl(pool)
+    # main = pool[0]
     max_level = len(param.community_count)
     if main.level == max_level:
         return frozenset({main})
@@ -232,10 +230,11 @@ def chose_partitions(  # TODO rename to choose
         possible_a = tuple(c for c in pool if c in community_a)
         community_a = rand_pl(possible_a)
     community_b = community_a
+    community_a = main
     while community_a.level != max_level:
-        possible_a = tuple(
-                c for c in pool if c in community_a and c != community_b)
+        possible_a = tuple(c for c in pool if c in community_a and c != community_b)
         community_a = rand_pl(possible_a)
+    assert community_a != community_b
     return frozenset({community_a, community_b})
 
 
@@ -412,22 +411,23 @@ def generator(param: Parameters):
                 f'{round(time()-initial_time, 3)};' +
                 f' {count}/{param.vertex_count};' +
                 f' {100*count/param.vertex_count}%')
-        with Pool() as p:
-            proccess_batch = p.imap_unordered(introduce_vertex, batch)
-            part_builder = PartitionBuilder(
-                    __rolling_graph.partition, param.representative_count)
-            for vertex_neighboors, partition_ids, vertex in proccess_batch:
-                partition_set = {
-                        partition
-                        for partition in __rolling_graph.partition.flat
-                        if partition.identifier in partition_ids}
-                new_edges.update(vertex_neighboors)
-                part_builder.add_all(partition_set, vertex)
-            __rolling_graph = Graph(
-                    __rolling_graph.vertex_set,
-                    edge_set(__rolling_graph.edge_set | new_edges),
-                    part_builder.build()
-                    )
+        # with Pool() as p:
+        # proccess_batch = p.imap_unordered(introduce_vertex, batch)
+        proccess_batch = map(introduce_vertex, batch)
+        part_builder = PartitionBuilder(
+                __rolling_graph.partition, param.representative_count)
+        for vertex_neighboors, partition_ids, vertex in proccess_batch:
+            partition_set = {
+                    partition
+                    for partition in __rolling_graph.partition.flat
+                    if partition.identifier in partition_ids}
+            new_edges.update(vertex_neighboors)
+            part_builder.add_all(partition_set, vertex)
+        __rolling_graph = Graph(
+                __rolling_graph.vertex_set,
+                edge_set(__rolling_graph.edge_set | new_edges),
+                part_builder.build()
+                )
         count += len(batch)
 
     print(

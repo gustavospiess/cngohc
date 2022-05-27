@@ -10,6 +10,7 @@ from collections import Counter, defaultdict
 from math import sqrt as square_root
 
 from .utils import unchain, cached_generator
+from .algo.rand import sample, rand_uni
 
 
 import typing as tp
@@ -55,8 +56,7 @@ class Vector(tp.Tuple[float, ...]):
     @classmethod
     def avg(cls, data: tp.Collection['Vector']) -> 'Vector':
         qt = len(data)
-        return cls(sum(d)/qt for d in zip(*data))
-
+        return cls(sum(axis)/qt for axis in zip(*data))
 
 class Vertex(Vector):
     '''
@@ -140,7 +140,7 @@ class Partition(tp.FrozenSet[PartitionMember]):
 
     @property
     def weigh_vector(self) -> Vector:
-        return self.inverse_max_inertia_axis()
+        return self.min_inertia_axis()
 
     @property
     def representative_set(self) -> tp.FrozenSet[Vertex]:
@@ -240,17 +240,42 @@ class Partition(tp.FrozenSet[PartitionMember]):
 
         return cls(**raw)
 
-    def weighed_distance(self, representative: Vertex, other: Vertex) -> float:
+    def weighed_distance(
+            self,
+            representative: Vertex,
+            other: Vertex,
+            homo: float) -> float:
         '''
         Calculates and returns a compatibility measure.
         This measure could be an float getting the square of the euclidian
         distance, or other implementation.
         '''
-        return sum(
+        base = abs(representative-other)
+        weit = sum(
                 (rep-oth)**2*wei
                 for rep, oth, wei
                 in zip(representative, other, self.weigh_vector)
                 )
+        return weit*homo + base*(1-homo)
+
+    @lru_cache
+    def min_inertia_axis(self) -> Vector:
+        depht = tuple(self.depht)
+        if  len(depht) == 0:
+            return Vector((1,))
+        center = Vector.avg(depht)
+        _max = list()
+        _min = list()
+        for axis in range(len(center)):
+            over = tuple(d[axis] for d in depht if d[axis] >= center[axis])
+            under = tuple(d[axis] for d in depht if d[axis] <= center[axis])
+            _max.append(abs(sum(over)/len(over)))
+            _min.append(abs(sum(under)/len(under)))
+        error = tuple(__max-__min for __max, __min in zip(_max, _min))
+        minimal_error = min(error)
+        return Vector(0 if e > minimal_error else 1 for e in error)
+
+
 
     @lru_cache
     def inverse_max_inertia_axis(self) -> Vector:
@@ -316,9 +341,9 @@ class PartitionBuilder:
         possible_representatives = tuple(sorted(
                 part.depht,
                 key=lambda v: abs(v-center)))
-        # representative_set = sample(
-        #         possible_representatives,
-        #         k=min(len(members), self.qt_rep))
+        representative_set = sample(
+                possible_representatives,
+                k=min(len(possible_representatives), self.qt_rep))
         representative_set = possible_representatives[:self.qt_rep]
 
         return Partition(

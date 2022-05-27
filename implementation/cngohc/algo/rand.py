@@ -115,7 +115,7 @@ def rand_edge_within(
 @cached
 def edge_between_weigths(data, other):
     def distance(vertex, part):
-        return part.weighed_distance(vertex, other)
+        return part.weighed_distance(vertex, other, 1.0)
     total_degree = sum(1/distance(*v) for v in data)
     weights = tuple(1/distance(*v)/total_degree for v in data)
     return weights
