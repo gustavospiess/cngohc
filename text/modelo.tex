@@ -5,12 +5,13 @@
 A proposta de desenvolvimento desse trabalho é a extensão do modelo proposto por \citeonline{largeron2015generating} para a construção de comunidades hierárquicas e sobrepostas.
 A modelagem proposta se baseia na construção de uma cobertura (em oposição á construção de uma partição) recursiva, de forma semelhante ao que é produzido pelo algoritmo proposto por \citeonline{shen2009detect}.
 
-\section{O Modelagem}
+\section{A Representação do grafo}
 
-O modelagem proposto é:
+O model gera um grafo com atributos e uma cobertura de comunidades hierarquicamente dispostas.
 
 \begin{quadro}[htb]
-\caption{\label{qua:modelagem}Modelagem de grafo com comunidades hierárquicas e sobrepostas}
+    \caption{Modelagem de grafo com comunidades hierárquicas e sobrepostas}
+    \label{qua:representacao}
 
     \begin{empheq}[box=\fbox]{align*}
         \G &= (\V, \E, C_n) \\
@@ -42,12 +43,12 @@ Para efeito de notação $flat(C_n)$ é um conjunto com todas as comunidades do 
 E o mapa $L$, que relaciona cada comunidade com a quantidade de ancestrais que a comunidade possui, ou seja, com a quantidade de comunidades que ela compõe.
 As notações utilizadas serão  $L_C$, leia-se nível de $C$, ou $L$, leia-se níveis.
 A raiz da cobertura é o nível zero ($L_{C_n} = 0$) e a o nível de um nó folha é igual a $n$ ($L_{C_0}=n$)
-
-As características que devem ser verdadeiras se um grafo for representado nesta modelagem encontram-se descritas na \autoref{tab:prop_modelagem}.
+As características que devem ser verdadeiras se um grafo for representado nesta modelagem encontram-se descritas na \autoref{tab:prop_representacao}.
 
 \begin{table}[htb]
-\caption{Características da modelagem}
-\label{tab:prop_modelagem}
+    \centering
+    \caption{Características da modelagem}
+    \label{tab:prop_representacao}
 
     \begin{tblr}{X|l} \hline
         \SetCell{c} Característica & \SetCell{c} Formalismo
@@ -62,7 +63,7 @@ As características que devem ser verdadeiras se um grafo for representado nesta
         $\displaystyle V_{C_n} =  \V$
         \\ \hline
         Para todas as comunidades $C$, se $C$ não for folha, os vértices englobados em C são a união dos vértices englobados em seus componentes&
-        $\displaystyle \forall C (L_c > 0 \implies V_C =  \bigcup_{S \in C} V_S)$
+        $\displaystyle \forall C (L_C > 0 \implies V_C =  \bigcup_{S \in C} V_S)$
         \\ \hline
         Para todas as comunidades $C$, se $C$ for folha, os vértices englobados em C seus componentes&
         $\displaystyle \forall C (L_C = 0 \implies V_{C_0} = C_0)$
@@ -84,7 +85,7 @@ As características que devem ser verdadeiras se um grafo for representado nesta
     \fonte{elaborado pelo autor}
 \end{table}
 
-\section{Propriedades desejáveis}
+\section{Propriedades desejáveis do modelo}
 
 \citeonline{largeron2015generating} implementa um modelo algorítmico de geração de redes complexas que mantém uma série de propriedades desejáveis.
 Como a implementação proposta se baseia no modelo de \citeonline{largeron2015generating}, é desejável que as propriedades sejam mantidas.
@@ -92,10 +93,57 @@ Nominalmente, são elas:
 
 \begin{alineas}
     \item Mundo pequeno: O diâmetro das redes complexas geradas pelo modelo deve ter uma relação logarítmica com a quantidade de vértices no modelo.
-    \item distribuição de graus em lei de potência: Os graus dos vértices devem estar distribuídos com uma lei de potência.
+    \item Distribuição de graus em lei de potência: Os graus dos vértices devem estar distribuídos com uma lei de potência.
     \item Homofilia: O grafo gerado deve apresentar uma tendência de priorização da adjacência com vértices semelhantes.
     \item Estrutura de comunidades: O grafo gerado deve de ter comunidades, conforme etiquetadas na cobertura, de forma que todo vértice pertença a uma ou mais comunidades, e as comunidades se organizem em uma estrutura hierárquica.
     \item Comunidades homogêneas: As comunidades devem ser coesas não apenas na perspectiva topológica, mas em similaridade.
 \end{alineas}
+
+Para tanto, a abordagem do modelo é a construção explicita das comunidades com base na similaridade dos vértices.
+Para isso, a similaridade dos vértices é definida com base na distância euclideana dos vetores de atributos dos vértices.
+As arestas do grafo são definidas com base nas comunidades das quais o vértice faz parte.
+
+Essa implementação visa garantir a homogeneidade das comunidades e a homofilia ao selecionar os membros das comunidades estocasticamente preferindo vértices com menor distância euclideana.
+A construção das arestas é feita priorizando a introdução de vértices a vértices com mais arestas dentro da comunidade, de forma a reforçar a distribuição de graus em lei de potência e a estrutura de comunidade, bem como a propriedade de mundo pequeno.
+
+\section{Parâmetros do modelo}
+
+As propriedades descritas podem ser controladas utilizando uma série de parâmetros.
+Os parâmetros seguem descritos na tabela \autoref{tab:parameters}
+
+\begin{table}[htpb]
+    \centering
+    \caption{Descrição dos parâmetros do modelo}
+    \label{tab:parameters}
+    \begin{tblr}{l|X} \hline
+    \SetCell{c} Parâmetro & \SetCell{c} Descrição
+    \\ \hline
+    $N \in \set{n \in \mathbb{N} | n \ge 1}$&
+    Quantidade de vértices.
+    \\ \hline
+    $E_\text{wth}^\text{max} \in \set{i \in \mathbb{N} | i \ge 1}$&
+    Número máximo de arestas (internas a comunidade) inseridas a um vértice ao introduzir ele a uma comunidade.
+    \\ \hline
+    $E_\text{btw}^\text{max} \in \set{i \in \mathbb{N} | i \ge 1}$&
+    Número máximo de arestas (externas a comunidade) inseridas a um vértice ao introduzir ele as comunidades.
+    \\ \hline
+    $MTE \in \set{m \in \mathbb{N} | m \ge 1}$&
+    Número mínimo de arestas no grafo produzido.
+    \\ \hline
+    $\A \in \set{a \in \mathbb{Q} | a > 0}^{|\A|}$ &
+    Vetor de desvios padrão dos atributos dos vértices.
+    \\ \hline
+    $K \in \set{k \in \mathbb{N} | k \ge 1}^{|K|}$&
+    Vetor de quantidade de comunidades por nível
+    \\ \hline
+    $\theta \in \set{t \in \mathbb{Q} | 0 \ge t \ge 1}$&
+    Valor de interpolação entre homogeneidade por distância euclideana e distância por ortogonalidade de comunidade.
+    \\ \hline
+    $\Text{NbRep} \in \set{n \in \mathbb{N} | n \ge 1}$&
+    Número de representantes por comunidade.
+    \\ \hline
+    \end{tblr}
+    \fonte{elaborado pelo autor}
+\end{table}
 
 \end{document}
