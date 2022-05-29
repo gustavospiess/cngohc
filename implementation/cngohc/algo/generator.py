@@ -94,7 +94,7 @@ def _initialize_communities(
     smp = sample(population, k=sample_size)
 
     cluster_set = KMedoids(smp, n_clusters=comm_cont)
-    cluster_set = cluster_set.cap(cluster_set.min_len)
+    # cluster_set = cluster_set.cap(cluster_set.min_len)
     part = set()
     edge_set = set()
     for cluster in cluster_set:

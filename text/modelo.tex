@@ -162,6 +162,7 @@ Isso se deve à construção de uma árvore de comunidades hierarquicamente anin
 \subsection{Inicialização}
 
 A primeira faze do algoritmo é a inicialização dos vértices e das comunidades.
+Conforme definido no \autoref{qua:faze_1}.
 
 \begin{quadro}[htb]
 \caption{Faze 1 do modelo}
@@ -178,9 +179,9 @@ begin
     $\V \leftarrow \V \cup \set{v}$
 end
 
-Function cover($l$, $p$)
+Function $\text{cover}$($l$, $p$)
 begin
-    if $i = |k| -1$ then
+    if $l = |K|$ then
     begin
         for $v \in p$ do
         begin
@@ -190,18 +191,10 @@ begin
         end
         return $p$
     end
-    $s \leftarrow \prod_{i=l}^{|K|-1} K_i$
-    $p' \leftarrow \text{Sample}(p, s)$
+    $s \leftarrow \text{NbRep}\times\prod_{i=l}^{|K|-1} K_i$
+    $p' \leftarrow \text{Sample}(p, \min\set{s, |p|})$
     $k \leftarrow \text{K Medoids}(p', K_l)$ 
-    $m \leftarrow \min_{q \in k}|q|$
-    $c \leftarrow \emptyset$
-    for $q \in k$ do
-    begin
-        $q'' \leftarrow \Set{ q' \subseteq q | m = |q'| }$
-        $g \leftarrow$ centro de gravidade em $q$
-        $q \leftarrow \argmin_{q' \in q''} \sum_{v \in q'}d(v, g)$
-        $c \leftarrow c \cup \text{cover}(l+1, q)$
-    end
+    $c \leftarrow \set{\text{cover}(l+1, q) | q \in k}$
 
     $p' \leftarrow \set{\text{Rand}_\text{Uni}(c') | c' \in V_c}$
     $\E \leftarrow \E \cup \set{\Set{p'_i, p'_{i+1}}| i \in \set{1, 2, \ldots |p'| -1}}$
@@ -209,13 +202,45 @@ begin
     return $c$
 end
 
-$C = \text{cover}(\V, 0)$
+$C = \text{cover}(0, \V)$
 for $c \in \Set{c' \in \text{flat}(C) | L_{c'}=|K|}$ do $c$.rep $\leftarrow$ $c$
+for $c \in \Set{c' \in \text{flat}(C) | L_{c'}\neq|K|}$ do $c$.rep $\leftarrow$ $\emptyset$
 
 $\G \leftarrow (\V, \E, C)$
 Return $\G$
 \end{algorithm}
 \fonte{elaborado pelo autor}
 \end{quadro}
+
+O processo da inicialização se divide em gerar a nuvem de pontos e inicializar as comunidades.
+A linha quatro inicializa $\V$ com um conjunto vazio, e o laço de repetição das linhas 6 á 10 insere vetores neste conjunto enquanto ele tiver menos de  $N$ membros.
+O vetor em si é definido como uma série de distribuições aleatórias com o centro em zero e o desvio padrão informado pelo parâmetro $\A$.
+
+O processo de geração das estruturas de comunidade é mais complexo, exigindo uma função para possibilitar recursividade.
+A função cover tem como condicionante a característica de se a comunidade que se está processando é folha, isso é, se ela não possuirá subdivisões internas.
+Na linha 14 é feita essa ramificação, considerando que $l$, um parâmetro de controle que é incrementado a cada chamada recursiva.
+Se $l$ for igual á cardinalidade de $k$, isso indica que estamos no último nível a ser gerado.
+
+O processo para o último nível sendo gerado gera um conjunto de arestas entre os membros da comunidade, recebidos por parâmetro com $p$.
+Nas linhas 16 até 20 é iterado sobre os vértices, os vértices com quem é possível formar arestas, nomeado $p'$, são definidos como os vértices em $p$ diferentes de $v$ com quem $v$ não é ajacente.
+Nas linhas 19 e 20 uma quantidade aleatória das arestas possíveis são construídas.
+
+As funções $\text{Rand}_{\text{Uni}}$ e $\text{Sample}$ são duas funções de escolha aleatória uniformes.
+$\text{Sample}(P, l)$ escolhe um sub conjunto de $P$ com $l$ elementos uniformemente distribuído, i.e., todos os membros de $P$ tem a mesma chance de estar presente no conjunto construído.
+$\text{Rand}_{\text{Uni}(P)}$ funciona da mesma forma, mas retorna um único membro de $P$.
+
+No caso de não ser uma comunidade folha, o processo de construção da comunidade encontra-se nas linhas 24 até 30.
+Para isso primeiramente é definido um tamanho de amostragem $s$.
+Esse tamanho é definido como um produto dos valores de $K$, filtrando para o nível atual em diante.
+Com isso, buscasse uma amostra $p'$, com tamanho  $s$ ou o valor máximo possível se  $s$ for maior que a quantidade de membros em  $p$.
+
+Com essa amostra, é realizado um agrupamentos utilizando o algoritmo $\text{K Medoids}$.
+Nesses clusters iniciais é realizada a chamada recursiva da função $\text{cover}$, que faz a construção da comunidade composta pelos vértices do cluster.
+Com as comunidades definidas e agrupadas no conjunto $c$, que representa a comunidade que se está processando, é realizada a introdução de arestas para que a comunidade seja conexa.
+Assumindo que todas as comunidades geradas por meio da função  $\text{cover}$ sejam conexas, é construído um caminho que liga um membro de cada comunidade.
+A função se conclui retornando a comunidade criada.
+
+A chamada original para a função $\text{cover}(l, p)$ é feita com $l$ sendo zero e  $p$ sendo a nuvem de pontos.
+Por fim, o processo também realiza a atribuição dos representantes de cada comunidade folha como sendo a totalidade dos membros da comunidade, e mantendo as demais comunidades sem representantes.
 
 \end{document}
