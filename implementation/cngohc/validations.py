@@ -1,11 +1,14 @@
 '''Validation arlgorithm'''
 
-from .models import Vector, Graph, Vertex
+from .models import Vector, Graph, Vertex, Vector
+from .algo.rand import sample, shuffle
 
 
 from pprint import pprint
 from multiprocessing import Pool
 import networkx as nx
+from itertools import combinations
+from math import comb as combination_size
 
 
 import typing as tp
@@ -137,3 +140,41 @@ def diameter(graph: Graph):
     nx_graph.add_edges_from(graph.edge_set)
     d = nx.diameter(nx_graph)
     print(d)
+
+
+def _distance(v):
+    return abs(v[0]-v[1])
+
+
+def homophily(graph: Graph):
+    sample_size = max(len(graph.edge_set), 50_000)
+
+    v_a = list(graph.vertex_set)
+    v_b = list(graph.vertex_set)
+    shuffle(v_a)
+    shuffle(v_b)
+    generator = (
+            (v_a[i], v_b[i+delta])
+            for delta in range(1, len(v_a)-1)
+            for i in range(len(v_a)-delta)
+            if v_a[i] != v_b[i+delta]
+            )
+    sample = (next(generator) for _ in range(sample_size))
+    with Pool() as p:
+        try:
+            expected = sum(p.imap_unordered(_distance, sample))/sample_size
+        except:
+            sample_size = len(graph.edge_set)
+            generator = (
+                    (v_a[i], v_b[i+delta])
+                    for delta in range(1, len(v_a)-1)
+                    for i in range(len(v_a)-delta)
+                    if v_a[i] != v_b[i+delta]
+                    )
+            sample = (next(generator) for _ in range(sample_size))
+            expected = sum(p.imap_unordered(_distance, sample))/sample_size
+        print(f'{sample_size=}')
+        print(f'{expected=}')
+
+        real = sum(p.imap_unordered(_distance, graph.edge_set))/len(graph.edge_set)
+        print(f'{real=}')

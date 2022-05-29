@@ -16,7 +16,7 @@ from .algo import rand
 from .models import Graph, Vertex
 
 
-from .validations import relative_inertia, shens_modularity
+from .validations import relative_inertia, shens_modularity, homophily as homo
 from .validations import connectivity as _connectivity, diameter as _diameter
 
 
@@ -81,6 +81,12 @@ def modularity(ctx):
 
 @check.command()
 @click.pass_context
+def homophily(ctx):
+    homo(ctx.obj['graph'])
+
+
+@check.command()
+@click.pass_context
 def diameter(ctx):
     _diameter(ctx.obj['graph'])
 
@@ -96,6 +102,19 @@ def edge_distribution(ctx):
     plt.bar(x, y)
     plt.grid()
     plt.show()
+
+
+@check.command()
+@click.pass_context
+def data(ctx):
+    graph = ctx.obj['graph']
+    for p in sorted(graph.partition.flat, key=lambda p: p.level):
+        print(
+                # f'partition id {p.identifier}; ' +
+                f'level {p.level}; ' +
+                f'len {len(p.depht)}; ' +
+                f'wth degree {len(graph.edges_of_part[p])*2}; ' +
+                f'degree {sum(graph.degree_of[v] for v in p.depht)};')
 
 
 @check.command()
@@ -191,8 +210,8 @@ def view(ctx):
 @click.option(
         '--max_within_edge', '--E_max_wth',
         default=Parameters._field_defaults['max_within_edge'],
-        # type=Parameters._field_types['max_within_edge'],
-        multiple=True, type=int,
+        type=Parameters._field_types['max_within_edge'],
+        # multiple=True, type=int,
         help=long_docstring('''
                 Sequence of the max initial edges a vertex will receive when
                 being added to a community, the first value is the quantity of

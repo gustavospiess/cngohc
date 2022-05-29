@@ -10,7 +10,7 @@ from collections import Counter, defaultdict
 from math import sqrt as square_root
 
 from .utils import unchain, cached_generator
-from .algo.rand import sample, rand_uni
+from .algo.rand import sample
 
 
 import typing as tp
@@ -57,6 +57,7 @@ class Vector(tp.Tuple[float, ...]):
     def avg(cls, data: tp.Collection['Vector']) -> 'Vector':
         qt = len(data)
         return cls(sum(axis)/qt for axis in zip(*data))
+
 
 class Vertex(Vector):
     '''
@@ -261,7 +262,7 @@ class Partition(tp.FrozenSet[PartitionMember]):
     @lru_cache
     def min_inertia_axis(self) -> Vector:
         depht = tuple(self.depht)
-        if  len(depht) == 0:
+        if len(depht) == 0:
             return Vector((1,))
         center = Vector.avg(depht)
         _max = list()
@@ -274,8 +275,6 @@ class Partition(tp.FrozenSet[PartitionMember]):
         error = tuple(__max-__min for __max, __min in zip(_max, _min))
         minimal_error = min(error)
         return Vector(0 if e > minimal_error else 1 for e in error)
-
-
 
     @lru_cache
     def inverse_max_inertia_axis(self) -> Vector:

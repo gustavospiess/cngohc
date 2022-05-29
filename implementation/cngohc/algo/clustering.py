@@ -11,7 +11,7 @@ import typing as tp
 
 
 @tp.runtime_checkable
-class Cluster(tp.Protocol, tp.Iterable[Vector], tp.Sized):
+class Cluster(tp.Protocol, tp.Collection[Vector], tp.Sized):
     center: Vector
     centroid: Vector
     pass

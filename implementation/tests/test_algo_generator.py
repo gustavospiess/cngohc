@@ -100,8 +100,9 @@ def test_initialize_communities(
 
     assert len(g.partition) == community_count[0]
     for part in g.partition.flat:
-        for vertex in part.representative_set:
-            assert g.degree_of[vertex] > 0
+        if len(part.representative_set) > 1:
+            for vertex in part.representative_set:
+                assert g.degree_of[vertex] > 0
 
     for expected_level in range(1, len(community_count)+1):
         expected = reduce(
@@ -111,18 +112,16 @@ def test_initialize_communities(
         communities_of_level = tuple(
                 part for part in g.partition.flat
                 if part.level == expected_level)
-        print(expected_level)
         assert len(communities_of_level) == expected
 
     proccessed = tuple(g.partition.depht)
     for vertex in proccessed:
         neighbor_list = tuple(g.neighbors_of[vertex])
-        assert len(neighbor_list) > 0
         for neighbor in neighbor_list:
             assert neighbor in proccessed
 
     for vertex in proccessed:
-        for part in g.partitions_of[vertex]:
+        for part in g.leaf_partitions_of[vertex]:
             assert vertex in part.representative_set
 
 
@@ -172,6 +171,7 @@ def test_edge_insertion_between():
             for edge in edge_set:
                 assert v in edge
                 other = edge[0] if v == edge[1] else edge[1]
+                print(other)
                 assert len(tuple(g.neighbors_of[other])) > 0
 
 
@@ -204,7 +204,7 @@ def test_generator():
             homogeneity_indicator=0.95,
             representative_count=10,
             community_count=(2, 3, 4),
-            max_within_edge=(1, 5, 10, 30),
+            max_within_edge=30,
             max_between_edge=20)
     g = generator.generator(p)
     assert len(g.vertex_set) == p.vertex_count
@@ -218,13 +218,13 @@ def test_generator():
 @pytest.mark.slow
 def test_generator_b():
     p = generator.Parameters(
-            vertex_count=10_500,
+            vertex_count=2_500,
             min_edge_count=4_000,
             deviation_sequence=(1.0, 2.5),
             homogeneity_indicator=0.95,
             representative_count=10,
             community_count=(4,),
-            max_within_edge=(1, 30),
+            max_within_edge=30,
             max_between_edge=20)
     g = generator.generator(p)
     assert len(g.vertex_set) == p.vertex_count

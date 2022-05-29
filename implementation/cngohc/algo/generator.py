@@ -6,8 +6,8 @@ This module wraps all the methods for the graph generation.
 from ..models import Vertex, Vector, Graph, Partition
 from ..models import PartitionBuilder, Edge, edge_set
 from .clustering import KMedoids
-from .rand import rand_norm, rand_in_range, sample, shuffle
-from .rand import rand_threshold, rand_pl, rand_edge_within, rand_edge_between
+from .rand import rand_norm, rand_in_range, sample, shuffle, rand_uni
+from .rand import rand_pl, rand_edge_within, rand_edge_between
 
 from itertools import chain, repeat, combinations, count
 from multiprocessing import Pool
@@ -26,7 +26,7 @@ class Parameters(tp.NamedTuple):
     '''Sequence of deviation values to initialize the vertexes '''
     homogeneity_indicator: float = 0  # theta
     '''Ratio of vertexes to be added by homogeneity'''
-    representative_count: int = 3  # NbRep
+    representative_count: int = 20  # NbRep
     '''Number of representatives of a partition'''
     community_count: tp.Tuple[int, ...] = (6, 2,)  # K
     '''
@@ -38,15 +38,9 @@ class Parameters(tp.NamedTuple):
     The level_count, quantity of levels in the Graph, will be the length of it,
     and the amount of leaf communities will be the product of all those values.
     '''
-    max_within_edge: tp.Tuple[int, ...] = (1, 1, 2, 1000, 600)  # E_max_wth
+    max_within_edge: int = 45  # E_max_wth
     '''
-    Sequence of the max initial edges a vertex will receive when being added to
-    a community, the first value is the quantity of edges to be added inside
-    the first level community the vertex will be in, the second value for the
-    second level community and so on.
-    This should be a sequence of length equal to the level count of the graph
-    plus one, as for initialization purposes, the whole graph is considered a
-    community.
+    TODO
     '''
     max_between_edge: int = 3  # E_max_btw
     '''Maximum quantity of initial edges a vertex will receive on addition to a
@@ -72,7 +66,7 @@ def initialize_graph(param: Parameters) -> Graph:
 def _initialize_communities(
         graph: Graph,
         param: Parameters,
-        population: tp.FrozenSet[Vector] = frozenset(),
+        population: tp.Collection[Vector] = frozenset(),
         level: int = 0,
         id_count: tp.Iterator[int] = count()
         ) -> tp.Tuple[tp.Set[tp.Tuple[Vertex, Vertex]], Partition]:
@@ -86,10 +80,6 @@ def _initialize_communities(
 
     The return is the set of edges generates, as well as the partitions.
     '''
-
-    if not population:
-        return _initialize_communities(
-                graph, param, graph.vertex_set, level, id_count)
 
     max_level = len(param.community_count)
     if level == max_level:
@@ -108,12 +98,14 @@ def _initialize_communities(
     part = set()
     edge_set = set()
     for cluster in cluster_set:
-        sub_pop = tuple(k for k in smp if k in cluster)
         nxt = level + 1
         sub_edge, sub_part = _initialize_communities(
-                graph, param, sub_pop, nxt, id_count)
+                graph, param, cluster, nxt, id_count)
         part.add(sub_part)
         edge_set.update(sub_edge)
+    smp = tuple(rand_uni(p.depht) for p in part)
+    edge_set.update({(smp[i-1], smp[i]) for i in range(1, len(smp))})
+
     return edge_set, Partition(
             part,
             identifier=next(id_count),
@@ -141,8 +133,12 @@ def _initialize_leaf_communities(
             representative_set=members)
     edge_set: tp.Set[tp.Tuple[Vertex, Vertex]] = set()
     for vertex in partition:
-        vertex_pool = partition - {vertex} - {e[1] for e in edge_set}
-        max_edge_count = min(len(vertex_pool), param.max_within_edge[-1])
+        vertex_pool = (
+                partition -
+                {vertex} -
+                {e[1] for e in edge_set} -
+                {e[0] for e in edge_set})
+        max_edge_count = min(len(vertex_pool), param.max_within_edge)
         edge_count = max_edge_count
         if (max_edge_count > 1):
             edge_count = rand_in_range(range(1, max_edge_count))
@@ -159,8 +155,8 @@ def initialize_communities(param: Parameters, graph: Graph) -> Graph:
     Internally this function will use a set of recursive functions to populate
     the initial communities.
     '''
-    edge_set, partition = _initialize_communities(graph, param)
-    assert all(isinstance(s, Partition) for s in partition)
+    edge_set, partition = _initialize_communities(
+            graph, param, graph.vertex_set)
     return Graph(graph.vertex_set, frozenset(edge_set), partition)
 
 
@@ -232,7 +228,10 @@ def chose_partitions(  # TODO rename to choose
     community_b = community_a
     community_a = main
     while community_a.level != max_level:
-        possible_a = tuple(c for c in pool if c in community_a and c != community_b)
+        possible_a = tuple(
+                c
+                for c in pool
+                if c in community_a and c != community_b)
         community_a = rand_pl(possible_a)
     assert community_a != community_b
     return frozenset({community_a, community_b})
@@ -252,9 +251,8 @@ def edge_insertion_within(
     The edge is betwen the given vertex and a random member of the community
     choosen randomly with the ´rand_edge_within´.
     '''
-    level: int = partition.level
     vertex_pool = set(partition.depht)
-    max_count = min(len(vertex_pool), param.max_within_edge[level])+1
+    max_count = min(len(vertex_pool), param.max_within_edge)+1
     if over_lap:
         max_count = ceil(sqrt(max_count))
     min_count = 1
@@ -411,24 +409,23 @@ def generator(param: Parameters):
                 f'{round(time()-initial_time, 3)};' +
                 f' {count}/{param.vertex_count};' +
                 f' {100*count/param.vertex_count}%')
-        # with Pool() as p:
-        # proccess_batch = p.imap_unordered(introduce_vertex, batch)
-        proccess_batch = map(introduce_vertex, batch)
-        part_builder = PartitionBuilder(
-                __rolling_graph.partition, param.representative_count)
-        for vertex_neighboors, partition_ids, vertex in proccess_batch:
-            partition_set = {
-                    partition
-                    for partition in __rolling_graph.partition.flat
-                    if partition.identifier in partition_ids}
-            new_edges.update(vertex_neighboors)
-            part_builder.add_all(partition_set, vertex)
-        __rolling_graph = Graph(
-                __rolling_graph.vertex_set,
-                edge_set(__rolling_graph.edge_set | new_edges),
-                part_builder.build()
-                )
-        count += len(batch)
+        with Pool() as p:
+            proccess_batch = p.imap_unordered(introduce_vertex, batch)
+            part_builder = PartitionBuilder(
+                    __rolling_graph.partition, param.representative_count)
+            for vertex_neighboors, partition_ids, vertex in proccess_batch:
+                partition_set = {
+                        partition
+                        for partition in __rolling_graph.partition.flat
+                        if partition.identifier in partition_ids}
+                new_edges.update(vertex_neighboors)
+                part_builder.add_all(partition_set, vertex)
+            __rolling_graph = Graph(
+                    __rolling_graph.vertex_set,
+                    edge_set(__rolling_graph.edge_set | new_edges),
+                    part_builder.build()
+                    )
+            count += len(batch)
 
     print(
             f'{round(time()-initial_time, 3)};' +
@@ -466,5 +463,6 @@ def generator(param: Parameters):
             f'{round(time()-initial_time, 3)}; ' +
             f'{len(__rolling_graph.edge_set)}/{param.min_edge_count}; ' +
             f'{len(__rolling_graph.edge_set)/param.min_edge_count*100}%')
+
 
     return __rolling_graph

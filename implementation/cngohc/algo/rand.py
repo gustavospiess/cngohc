@@ -32,6 +32,10 @@ def rand_uni(data: tp.Sequence[_T], *, rand: Random) -> _T:
     It should be equivalent to calling `rand_pl` passing a distribution method
     that gives an even probability distribution for every entry.
     '''
+    if len(data) == 1:
+        return tuple(data)[0]
+    if len(data) == 0:
+        raise Exception()
     return rand.sample(data, k=1)[0]
 
 
@@ -107,6 +111,9 @@ def rand_edge_within(
     all degrees.
     '''
     t_data = tuple(data)
+    if len(t_data) == 1:
+        # jus tiniticalized a community with one representative
+        return t_data[0]
     total_degree = sum(degree(v) for v in data)
     weights = tuple(degree(v)/total_degree for v in data)
     return rand.choices(t_data, weights=weights, k=1)[0]
@@ -131,6 +138,10 @@ def rand_edge_between(data, other, lenth, *, rand: Random):
     if (lenth == 0):
         return frozenset()
     t_data = tuple(data)
+    if len(t_data) == 0:
+        return frozenset()
+    if len(t_data) <= lenth:
+        return frozenset(t_data)
     weights = edge_between_weigths(data, other)
     return frozenset(
             p[0] for p in rand.choices(t_data, weights=weights, k=lenth))
