@@ -2,10 +2,15 @@
 
 \begin{document}
 
-A proposta de desenvolvimento desse trabalho é a extensão do modelo proposto por \citeonline{largeron2015generating} para a construção de comunidades hierárquicas e sobrepostas.
-A modelagem proposta se baseia na construção de uma cobertura (em oposição á construção de uma partição) recursiva, de forma semelhante ao que é produzido pelo algoritmo proposto por \citeonline{shen2009detect}.
+O que este trabalho propõe é um modelo algorítmico de geração de redes complexas que produza grafos mais realistas.
+Realista nesse contexto é entendido como tendo a presença de um conjunto de propriedades que se observam em grafos do mundo real.
+A proposta desse trabalho é a extensão do modelo de \citeonline{largeron2015generating} para a construção de grafos em que se apresentem também as propriedades de comunidades hierárquicas e comunidades sobrepostas.
+A modelagem proposta se baseia na construção de uma cobertura (em oposição á construção de uma partição) recursiva, de forma semelhante ao que é produzido pelo algoritmo de detecção proposto por \citeonline{shen2009detect}.
 
-\section{A Representação do grafo}
+
+\section{Hipótese}
+
+\subsection{A Representação do grafo}
 
 O model gera um grafo com atributos e uma cobertura de comunidades hierarquicamente dispostas.
 
@@ -38,8 +43,8 @@ A cardinalidade de cada um dos conjuntos que formam a cobertura é variável de 
 É considerada também a existência de um vetor, denotado $K$, em um espaço de $n-1$ dimensões, que denota a cardinalidade das coberturas compostas por outras coberturas.
 Todas as comunidades do grafo $\G$ contém pelo menos um membro.
 
-Uma característica de notação é a função $flat$ que mapeia uma comunidade para um conjunto de quais as comunidades que a compõe.
-Para efeito de notação $flat(C_n)$ é um conjunto com todas as comunidades do grafo, incluindo a comunidade global.
+Uma característica de notação é a função flat que mapeia uma comunidade para um conjunto de quais as comunidades que a compõe.
+Para efeito de notação $\text{flat}(C_n)$ é um conjunto com todas as comunidades do grafo, incluindo a comunidade global.
 E o mapa $L$, que relaciona cada comunidade com a quantidade de ancestrais que a comunidade possui, ou seja, com a quantidade de comunidades que ela compõe.
 As notações utilizadas serão  $L_C$, leia-se nível de $C$, ou $L$, leia-se níveis.
 A raiz da cobertura é o nível zero ($L_{C_n} = 0$) e a o nível de um nó folha é igual a $n$ ($L_{C_0}=n$)
@@ -53,11 +58,11 @@ As características que devem ser verdadeiras se um grafo for representado nesta
     \begin{tblr}{X|l} \hline
         \SetCell{c} Característica & \SetCell{c} Formalismo
         \\ \hline
-        Para toda a comunidade $C$, se ela não for folha, a função $flat$ dela é a união de $C$ com a função flat de seus componentes.&
-        $\displaystyle \forall C (L_C < n \implies flat(C) = C\cup\bigcup_{S \in C}flat(S))$
+        Para toda a comunidade $C$, se ela não for folha, a função flat dela é a união de $C$ com a função flat de seus componentes.&
+        $\displaystyle \forall C (L_C < n \implies \text{flat}(C) = C\cup\bigcup_{S \in C}\text{flat}(S))$
         \\\hline
-        Para toda a comunidade $C$, se ela for folha, a função $flat$ dela é um conjunto consigo.&
-        $\displaystyle \forall C (L_C = n \implies flat(C) = \set{C})$
+        Para toda a comunidade $C$, se ela for folha, a função flat dela é um conjunto consigo.&
+        $\displaystyle \forall C (L_C = n \implies \text{flat}(C) = \set{C})$
         \\\hline
         A comunidade raiz engloba todos os vértices do grafo.&
         $\displaystyle V_{C_n} =  \V$
@@ -85,7 +90,7 @@ As características que devem ser verdadeiras se um grafo for representado nesta
     \fonte{elaborado pelo autor}
 \end{table}
 
-\section{Propriedades desejáveis do modelo}
+\subsection{Propriedades desejáveis do modelo}
 
 \citeonline{largeron2015generating} implementa um modelo algorítmico de geração de redes complexas que mantém uma série de propriedades desejáveis.
 Como a implementação proposta se baseia no modelo de \citeonline{largeron2015generating}, é desejável que as propriedades sejam mantidas.
@@ -106,44 +111,111 @@ As arestas do grafo são definidas com base nas comunidades das quais o vértice
 Essa implementação visa garantir a homogeneidade das comunidades e a homofilia ao selecionar os membros das comunidades estocasticamente preferindo vértices com menor distância euclideana.
 A construção das arestas é feita priorizando a introdução de vértices a vértices com mais arestas dentro da comunidade, de forma a reforçar a distribuição de graus em lei de potência e a estrutura de comunidade, bem como a propriedade de mundo pequeno.
 
-\section{Parâmetros do modelo}
+\section{Algoritmo}
+
+\subsection{Parâmetros}
 
 As propriedades descritas podem ser controladas utilizando uma série de parâmetros.
-Os parâmetros seguem descritos na tabela \autoref{tab:parameters}
+Os parâmetros seguem descritos na tabela \autoref{tab:parameters}.
+Eles são uma adaptação bastante direta dos parâmetros do modelo de \citeonline{largeron2015generating}, a difere-a mais significativa é no parâmetro $K$, que é um vetor multi dimensional de inteiros maiores que 1.
+Isso se deve à construção de uma árvore de comunidades hierarquicamente aninhadas.
 
-\begin{table}[htpb]
+\begin{table}[htb]
     \centering
-    \caption{Descrição dos parâmetros do modelo}
+    \caption{Características da modelagem}
     \label{tab:parameters}
+
     \begin{tblr}{l|X} \hline
-    \SetCell{c} Parâmetro & \SetCell{c} Descrição
-    \\ \hline
-    $N \in \set{n \in \mathbb{N} | n \ge 1}$&
-    Quantidade de vértices.
-    \\ \hline
-    $E_\text{wth}^\text{max} \in \set{i \in \mathbb{N} | i \ge 1}$&
-    Número máximo de arestas (internas a comunidade) inseridas a um vértice ao introduzir ele a uma comunidade.
-    \\ \hline
-    $E_\text{btw}^\text{max} \in \set{i \in \mathbb{N} | i \ge 1}$&
-    Número máximo de arestas (externas a comunidade) inseridas a um vértice ao introduzir ele as comunidades.
-    \\ \hline
-    $MTE \in \set{m \in \mathbb{N} | m \ge 1}$&
-    Número mínimo de arestas no grafo produzido.
-    \\ \hline
-    $\A \in \set{a \in \mathbb{Q} | a > 0}^{|\A|}$ &
-    Vetor de desvios padrão dos atributos dos vértices.
-    \\ \hline
-    $K \in \set{k \in \mathbb{N} | k \ge 1}^{|K|}$&
-    Vetor de quantidade de comunidades por nível
-    \\ \hline
-    $\theta \in \set{t \in \mathbb{Q} | 0 \ge t \ge 1}$&
-    Valor de interpolação entre homogeneidade por distância euclideana e distância por ortogonalidade de comunidade.
-    \\ \hline
-    $\Text{NbRep} \in \set{n \in \mathbb{N} | n \ge 1}$&
-    Número de representantes por comunidade.
-    \\ \hline
+        \SetCell{c} Parâmetro & \SetCell{c} Descrição
+        \\ \hline
+        $N \in \set{n \in \mathbb{N} | n \ge 1}$&
+        Quantidade de vértices.
+        \\ \hline
+        $E_\text{wth}^\text{max} \in \set{i \in \mathbb{N} | i \ge 1}$&
+        Número máximo de arestas (internas a comunidade) inseridas a um vértice ao introduzir ele a uma comunidade.
+        \\ \hline
+        $E_\text{btw}^\text{max} \in \set{i \in \mathbb{N} | i \ge 1}$&
+        Número máximo de arestas (externas a comunidade) inseridas a um vértice ao introduzir ele as comunidades.
+        \\ \hline
+        $MTE \in \set{m \in \mathbb{N} | m \ge 1}$&
+        Número mínimo de arestas no grafo produzido.
+        \\ \hline
+
+        $\A \in \set{a \in \mathbb{Q} | a > 0}^{|\A|}$ &
+        Vetor de desvios padrão dos atributos dos vértices.
+        \\ \hline
+        $K \in \set{k \in \mathbb{N} | k \ge 2}^{|K|}$&
+        Vetor de quantidade de comunidades por nível
+        \\ \hline
+        $\theta \in \set{t \in \mathbb{Q} | 0 \ge t \ge 1}$&
+        Valor de interpolação entre homogeneidade por distância euclideana e distância por ortogonalidade de comunidade.
+        \\ \hline
+        $\text{NbRep} \in \set{n \in \mathbb{N} | n \ge 1}$&
+        Número de representantes por comunidade.
+        \\ \hline
+
     \end{tblr}
+
     \fonte{elaborado pelo autor}
 \end{table}
+
+\subsection{Inicialização}
+
+A primeira faze do algoritmo é a inicialização dos vértices e das comunidades.
+
+\begin{quadro}[htb]
+\caption{Faze 1 do modelo}
+\label{qua:faze_1}
+\begin{algorithm}[escapeinside={/*}{*/}]
+Input: $N$, $\A$, $K$, $\text{NbRep}$
+Output: $\G = (\V, \E, C)$
+
+$\V \leftarrow \emptyset$
+$\E \leftarrow \emptyset$
+while $|\V| < N$ do
+begin
+    $v \leftarrow (\mathcal{N}(0, \sigma_{\A_0}), \mathcal{N}(0, \sigma_{\A_1}), \ldots, \mathcal{N}(1, \sigma_{\A_{|\A|-1}}))$
+    $\V \leftarrow \V \cup \set{v}$
+end
+
+Function cover($l$, $p$)
+begin
+    if $i = |k| -1$ then
+    begin
+        for $v \in p$ do
+        begin
+            $p' \leftarrow \Set{v' \in p | \set{v, v'} \not\in \E \land \set{v, v'} \not\in \E \land v' \neq v}$
+            $s \leftarrow \text{Rand}_\text{Uni}([1, |p'|])$
+            for $v'\in \text{Sample}(p', s)$ do $\E \leftarrow \E \cup (v, v')$
+        end
+        return $p$
+    end
+    $s \leftarrow \prod_{i=l}^{|K|-1} K_i$
+    $p' \leftarrow \text{Sample}(p, s)$
+    $k \leftarrow \text{K Medoids}(p', K_l)$ 
+    $m \leftarrow \min_{q \in k}|q|$
+    $c \leftarrow \emptyset$
+    for $q \in k$ do
+    begin
+        $q'' \leftarrow \Set{ q' \subseteq q | m = |q'| }$
+        $g \leftarrow$ centro de gravidade em $q$
+        $q \leftarrow \argmin_{q' \in q''} \sum_{v \in q'}d(v, g)$
+        $c \leftarrow c \cup \text{cover}(l+1, q)$
+    end
+
+    $p' \leftarrow \set{\text{Rand}_\text{Uni}(c') | c' \in V_c}$
+    $\E \leftarrow \E \cup \set{\Set{p'_i, p'_{i+1}}| i \in \set{1, 2, \ldots |p'| -1}}$
+
+    return $c$
+end
+
+$C = \text{cover}(\V, 0)$
+for $c \in \Set{c' \in \text{flat}(C) | L_{c'}=|K|}$ do $c$.rep $\leftarrow$ $c$
+
+$\G \leftarrow (\V, \E, C)$
+Return $\G$
+\end{algorithm}
+\fonte{elaborado pelo autor}
+\end{quadro}
 
 \end{document}

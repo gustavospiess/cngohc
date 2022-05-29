@@ -66,6 +66,8 @@
 \usepackage{braket}
 \usepackage{empheq}
 \usepackage{tabularray}
+\usepackage{listings}
+
 % ---
 
 % ---
@@ -105,6 +107,7 @@
 \renewcommand{\ABNTEXchapterfont}{\rmfamily}
 \renewcommand{\ABNTEXchapterfontsize}{\normalsize \bfseries} % solução deselegantes, mas funcional pra deixar o titulo das sessões em negrito
 \renewcommand{\ABNTEXsectionfontsize}{\normalsize}
+\renewcommand{\ABNTEXsubsectionfontsize}{\normalsize}
 
 
 \addto\captionsbrazil{
@@ -165,6 +168,24 @@ Geração de redes complexas
 \newfloat[chapter]{quadro}{loq}{\quadroname}
 \newlistof{listofquadros}{loq}{\listofquadrosname}
 \newlistentry{quadro}{loq}{0}
+
+%ambiente para código fonte
+\lstnewenvironment{algorithm}[1][] %defines the algorithm listing environment
+{   
+    \lstset{ %this is the stype
+        mathescape=true,
+        frame=tbrl,
+        % numbers=left, 
+        % numberstyle=\tiny,
+        basicstyle=\small, 
+        keywordstyle=\color{black}\bfseries,
+        keywords={,Input, Output, Return, Function, in, if, then, else, for, while, do, begin, end, }
+        numbers=left,
+        xleftmargin=.04\textwidth,
+        #1 % this is to add specific settings to an usage of this environment (for instnce, the caption and referable label)
+    }
+}
+{}
 
 % configurações para atender às regras da ABNT
 \setfloatadjustment{quadro}{\centering}
@@ -227,6 +248,7 @@ Geração de redes complexas
 \DeclareMathOperator{\E}{\mathcal{E}}
 \DeclareMathOperator{\A}{\mathcal{A}}
 \DeclareMathOperator{\Pa}{\mathcal{P}}
+\DeclareMathOperator*{\argmin}{arg\,min} 
 
 % ----
 % Início do documento
