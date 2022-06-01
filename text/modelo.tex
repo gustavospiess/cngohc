@@ -164,13 +164,12 @@ Isso se deve à construção de uma árvore de comunidades hierarquicamente anin
 A primeira faze do algoritmo é a inicialização dos vértices e das comunidades.
 Conforme definido no \autoref{qua:faze_1}.
 
-\begin{quadro}[htb]
+\begin{quadro}[htbp]
 \caption{Faze 1 do modelo}
 \label{qua:faze_1}
-\begin{algorithm}[escapeinside={/*}{*/}]
+\begin{algorithm}
 Input: $N$, $\A$, $K$, $\text{NbRep}$
 Output: $\G = (\V, \E, C)$
-
 $\V \leftarrow \emptyset$
 $\E \leftarrow \emptyset$
 while $|\V| < N$ do
@@ -178,7 +177,6 @@ begin
     $v \leftarrow (\mathcal{N}(0, \sigma_{\A_0}), \mathcal{N}(0, \sigma_{\A_1}), \ldots, \mathcal{N}(1, \sigma_{\A_{|\A|-1}}))$
     $\V \leftarrow \V \cup \set{v}$
 end
-
 Function $\text{cover}$($l$, $p$)
 begin
     if $l = |K|$ then
@@ -195,17 +193,13 @@ begin
     $p' \leftarrow \text{Sample}(p, \min\set{s, |p|})$
     $k \leftarrow \text{K Medoids}(p', K_l)$ 
     $c \leftarrow \set{\text{cover}(l+1, q) | q \in k}$
-
     $p' \leftarrow \set{\text{Rand}_\text{Uni}(c') | c' \in V_c}$
     $\E \leftarrow \E \cup \set{\Set{p'_i, p'_{i+1}}| i \in \set{1, 2, \ldots |p'| -1}}$
-
     return $c$
 end
-
 $C = \text{cover}(0, \V)$
 for $c \in \Set{c' \in \text{flat}(C) | L_{c'}=|K|}$ do $c$.rep $\leftarrow$ $c$
 for $c \in \Set{c' \in \text{flat}(C) | L_{c'}\neq|K|}$ do $c$.rep $\leftarrow$ $\emptyset$
-
 $\G \leftarrow (\V, \E, C)$
 Return $\G$
 \end{algorithm}
@@ -242,5 +236,7 @@ A função se conclui retornando a comunidade criada.
 
 A chamada original para a função $\text{cover}(l, p)$ é feita com $l$ sendo zero e  $p$ sendo a nuvem de pontos.
 Por fim, o processo também realiza a atribuição dos representantes de cada comunidade folha como sendo a totalidade dos membros da comunidade, e mantendo as demais comunidades sem representantes.
+
+\subsection{Processamento dos vértices}
 
 \end{document}
