@@ -1,6 +1,7 @@
 \documentclass[notes.tex]{subfiles}
 
 \begin{document}
+\chapter{Modelo}
 
 O que este trabalho propõe é um modelo algorítmico de geração de redes complexas que produza grafos mais realistas.
 Realista nesse contexto é entendido como tendo a presença de um conjunto de propriedades que se observam em grafos do mundo real.
@@ -257,7 +258,7 @@ O processamento dos vértices, isso é, a sistemática introdução deles á com
 Esse processo tem um forte componente do custo relacionado á quantidade de vértices do grafo final, isso é, o parâmetro $N$.
 Para tanto, as principais distinções do modelo proposto para com o modelo de \citeonline{largeron2015generating} são para possibilidade de paralelização do processo.
 
-\begin{quadro}[Bbhtp]
+\begin{quadro}[bhtp]
 \caption{fase 2 do modelo, construção dos lotes}
 \label{qua:fase_2_1}
 \begin{algorithm}
@@ -305,22 +306,22 @@ Function $\text{introduce}(v, \G_p)$
 begin
     $C_c \leftarrow \text{chooseCommunities}(v, \G_p)$
 
-    $t_\E$$\leftarrow \emptyset$
-    for $C_i \in C_c$ do $t_\E$$\leftarrow t_\E$ $\cup$ $\text{edgesWithin}(v, \G_p, C_i, |C_c|)$
-    $t_\E$$\leftarrow t_\E$ $\cup$ $\text{edgesBetween}(v, \G_p, C_c, |t_\E$$|)$
+    $t_{\E}\leftarrow \emptyset$
+    for $C_i \in C_c$ do $t_{\E}\leftarrow t_{\E}\cup\text{edgesWithin}(v, \G_p, C_i, |C_c|)$
+    $t_{\E}\leftarrow t_{\E}\cup\text{edgesBetween}(v, \G_p, C_c, |t_{\E}|)$
     $t_C \leftarrow \set{(v, C_i) | C_i \in C_c}$
-    return $t_C$,  $t_\E$
+    return $t_C$,  $t_{\E}$
 end
 
 for $b \in B$ do
 begin
     for $v \in b$ do #  $\text{esse laço pode ser realizado paralelamente}$
     begin
-        $t_C$, $t_\E$$\leftarrow \text{introduce}(v, \G)$
+        $t_C$, $t_{\E}\leftarrow \text{introduce}(v, \G)$
         $T_C \leftarrow T_C \cup t_C$
-        $T_\E$$\leftarrow T_\E$$\cup t_\E$
+        $T_{\E}\leftarrow T_{\E}\cup t_{\E}$
     end
-    $\E \leftarrow \E \cup t_\E$
+    $\E \leftarrow \E \cup t_{\E}$
     $C_n \leftarrow \text{buildCover}(C_n, T_C)$
     $R \leftarrow \text{electRepresentants}(C_n)$
 end
@@ -335,7 +336,7 @@ Isso é, fazendo uso de um estado $\G_p = (\V, \E, C_n, R)$ imutável, o process
 Ao final desse processamento, é trivial acumular os dados gerados por cada execução, e com esses dados gerar um novo estado do grafo.
 
 A implementação da função introduce em si se dá pela escolha de um conjunto de comunidades $C_c$ por meio da função $\text{chooseCommunities}(v, \G_p)$, seguido pela geração de arestas.
-São geradas as arestas internas a comunidade dentro de uma função $\text{edgesWithin}(v, \G_p, C_i)$ e as externas ás comunidades $\text{edgesBetween}(v, \G_p, C_c, |t_\E$$|)$.
+São geradas as arestas internas a comunidade dentro de uma função $\text{edgesWithin}(v, \G_p, C_i)$ e as externas ás comunidades $\text{edgesBetween}(v, \G_p, C_c, |t_{\E}|)$.
 Ambas as funções de geração de arestas retornam um conjunto de pares não ordenados.
 
 Assumindo que as implementações dessa funções se dá de forma a reforçar as propriedades desejadas, isso é:
@@ -359,7 +360,7 @@ A cada lote processado, o processo de construção de um novo estado para o graf
 \begin{algorithm}
 Function $\text{chooseCommunities}(v, \G_p)$
     $P \leftarrow $ o conjunto $\set{(C_i, r) | C_i \in \text{flat}(C_n) | r \in R_{C_i}}$ ordenado pela  $\text{função } d$
-    $C \leftarrow \text{Rand}_\text{PL}(P)$
+    $C \leftarrow \text{Rand}_{\text{PL}}(P)$
     $(C', C'') \leftarrow (C, C)$
     while $C' \neq \text{flat}(C')$ do $C' \leftarrow \text{Rand}_\text{PL}(\set{p \in P | p_0 \in \text{flat}(C'_0) \land p \neq C'})$
     while $C'' \neq \text{flat}(C'')$ do $C' \leftarrow \text{Rand}_\text{PL}(\set{p \in P | p_0 \in \text{flat}(C''_0) \land p \neq C'' \land p \neq C'})$
@@ -426,7 +427,7 @@ A probabilidade de escolher um vértice é proporcional a seu grau dividido pela
     u \mapsto \frac{\text{deg}(u)}{\displaystyle\sum_{u' \in W}^{}\text{deg}(u')}
 \end{equation}
 
-As arestas que ligam o vértice $v$ á outros com os quais ele não compartilha comunidades se dá conforme a função $edgesBetween(v, \G_p, C_c, m)$, como descrito no \autoref{qua_fase_2_5}.
+As arestas que ligam o vértice $v$ á outros com os quais ele não compartilha comunidades se dá conforme a função $edgesBetween(v, \G_p, C_c, m)$, como descrito no \autoref{qua:fase_2_5}.
 A função elenca um conjunto $p$ de vértices que podem ser escolhidos.
 Esse conjunto é a união de todos os representantes de comunidades nas quais o vértice $v$ não está sendo introduzido.
 

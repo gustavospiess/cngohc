@@ -79,7 +79,7 @@
 % Pacotes de citações
 % ---
 \usepackage[brazilian,hyperpageref]{backref}     % Paginas com as citações na bibl
-\usepackage[alf]{abntex2cite}   % Citações padrão ABNT
+\usepackage[alf, abnt-emphasize=bf]{abntex2cite}   % Citações padrão ABNT
 % ---
 
 
@@ -91,13 +91,14 @@
 \renewcommand{\backref}{}
 % Define os textos da citação
 \renewcommand*{\backrefalt}[4]{
-    \ifcase #1 %
-        Nenhuma citação no texto.%
-    \or
-        Citado na página #2.%
-    \else
-        Citado #1 vezes nas páginas #2.%
-    \fi}%
+    % \ifcase #1 %
+    %     Nenhuma citação no texto.%
+    % \or
+    %     Citado na página #2.%
+    % \else
+    %     Citado #1 vezes nas páginas #2.%
+    % \fi
+    }%
 % ---
 
 % ---
@@ -277,37 +278,15 @@ Geração de redes complexas
 \selectlanguage{brazil}
 \frenchspacing
 
-% ----------------------------------------------------------
-% ELEMENTOS PRÉ-TEXTUAIS
-% ----------------------------------------------------------
-
 \subfile{pretexto}
 
-% ----------------------------------------------------------
-% ELEMENTOS TEXTUAIS
-% ----------------------------------------------------------
 \textual
-
-% ----------------------------------------------------------
-% Introdução
-% ----------------------------------------------------------
-\chapter{Introdução}
-
 \subfile{introducao}
-
-\chapter{Fundamentação teórica}
-
 \subfile{fundamentacao}
-
-\chapter{Modelo}
-
 \subfile{modelo}
+\subfile{resultados}
 
 \postextual
-
-% ----------------------------------------------------------
-% Referências bibliográficas
-% ----------------------------------------------------------
 \bibliography{cngohc_ref}
 
 % ----------------------------------------------------------
