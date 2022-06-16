@@ -181,7 +181,6 @@ Conforme definido no \autoref{qua:fase_1}.
 \caption{fase 1 do modelo}
 \label{qua:fase_1}
 \begin{algorithm}
-Input: $N$, $\A$, $K$, $\text{NbRep}$
 Output: $\G_p = (\V, \E, C_n, R)$
 $\V \leftarrow \emptyset$
 $\E \leftarrow \emptyset$
@@ -262,7 +261,6 @@ Para tanto, as principais distinções do modelo proposto para com o modelo de \
 \caption{fase 2 do modelo, construção dos lotes}
 \label{qua:fase_2_1}
 \begin{algorithm}
-Input: $\G$
 Output: $B \subset \set{B' | B' \subset \V}$
 
 $B' \leftarrow \Set{v \in \V | \neg \exists v'(\Set{v, v'} \in \E)}$
@@ -301,7 +299,6 @@ O consumo desses lotes para a construção das comunidades hierárquicas e sobre
 \caption{fase 2 do modelo, processamento dos lotes}
 \label{qua:fase_2_2}
 \begin{algorithm}
-Input: $\G_p$, $B$, $\ldots$
 Output: $\G = (\V, \E, C_n)$
 
 Function $\text{introduce}(v, \G_p)$
@@ -327,6 +324,8 @@ begin
     $C_n \leftarrow \text{buildCover}(C_n, T_C)$
     $R \leftarrow \text{electRepresentants}(C_n)$
 end
+$\G \leftarrow (\V, \E, C_n)$ 
+return $\G$
 \end{algorithm}
 \fonte{elaborado pelo autor}
 \end{quadro}
@@ -470,5 +469,58 @@ A quantidade de representantes é o menor valor entre $\text{NbRep}$ e $|V_C|$.
 É relevante ressaltar de que esses representantes não precisam de ser vértices do grafo, já que são utilizados apenas para a comparação de distância.
 Em implementações alternativas poderia ser utilizado o centro de gravidade.
 Alternativamente, poderia se utilizar pontos que maximizam a distancia do centro de gravidade, para que os representantes sejam exemplos da periferia da comunidade.
+
+\subsection{Adição final de arestas}
+
+Com a conclusão da segunda fase do algoritmo, tem-se um grafo conexo com uma cobertura que engloba todos os vértices de forma que não hajam comunidades vazias.
+Para todos os efeitos, o grafo gerado até este ponto já tem a maioria das propriedades que o modelo se propõe a gerar.
+Esta etapa final de geração de arestas é executado para o reforço dessas características.
+
+\begin{quadro}[htbp]
+\caption{fase 3 do modelo, adição final de arestas}
+\label{qua:fase_3}
+\begin{algorithm}
+Output: $\G = (\V, \E, C_n)$
+
+$l \leftarrow \max(\set{L_C | C \in \text{flat}(C_n)})$
+while $|\E| < MTE \land \G \neq K_{|\V|}$ do
+begin
+    $T \leftarrow \set{\set{v, v'} | v, v', v'' \in \V | \set{v, v''} \in \E \land \set{v', v''} \in \E \land \set{v, v'} \not\in \E}$
+    $T' \leftarrow \set{e \in T | \exists C \in \text{flat}(C_n) (\forall v \in e (v \in C) \land L_C = l)}$
+    if $T' = \emptyset$ then  $l \leftarrow l - 1$
+    else $\E \leftarrow \E \cup \set{\text{Rand}_\text{Uni}(T')}$
+end
+\end{algorithm}
+\fonte{elaborado pelo autor}
+\end{quadro}
+
+O processo descrito no \autoref{qua:fase_3} inicia identificando o nível máximo que uma comunidade pode possuir, $l$.
+Com esse valor, é iniciado um processo iterativo, enquanto forem encontradas triplas conexas dentro de comunidades com este nível, ele se mantém.
+Quando todas as comunidades desse nível forem subgrafos completos o valor de $l$ é decrementado.
+
+O laço em si itera enquanto a quantidade de arestas no grafo não for igual ao parâmetro $MTE$ e o grafo não for um grafo completo. 
+Isso é, se o parâmetro denotar uma quantidade de arestas superior ao que é possível com a quantidade de vértices, este não serás um laço infinito.
+
+O processo interno ao loop é a identificação das arestas que se adicionadas ao grafo completariam mais um triangulo.
+Depois, essas arestas são filtradas para considerar apenas as que seriam internas a alguma comunidade de nível $l$.
+Se  $T'$ é vazio, isso indica que todas as comunidade de nível  $l$ ou superiores são grafos completos (ou seriam grafos desconexos, o que é trivialmente demonstrável como impossível neste ponto do algoritmo).
+Neste caso, $l$ é decrementado para que se considerem as comunidades hierarquicamente superiores a estas.
+Caso  $T'$ seja não vazio, é escolhido uma aresta aleatória para ser preenchida no grafo.
+
+Essa implementação deliberadamente otimiza o coeficiente de clusterização, definido na equação \ref{eq:coef_clus}.
+Assumindo que as propriedades de homofilia estejam presentes, esse processo deveria de ter pouco ou nenhum impacto na mesma, pela característica transitiva da semelhança como distância euclideana.
+Isso é, qualquer aresta adicionada nesse processo que ligue dois vértices  $a$ e  $b$ que compartilham um vizinho  $c$ não vai ter uma distancia maior que soma das duas arestas já presentes no grafo.
+
+\begin{equation}
+0 \le d(a, b) \le d(a, c) + d(b, c)
+\end{equation}
+
+Da mesma forma, o impacto desse processo na distribuição de graus intuitivamente parece ser mínimo.
+A proporção de triplas conexas a qual um dado vértice $v$ é diretamente proporcional ao grau de $v$. 
+No entanto é possível demonstrar que valores mais elevados de $MTE$ tem o efeito de diminuir a quantidade de vértices com grau um.
+
+Da perspectiva das características estruturais de uma comunidade, é intuitiva também a compreensão de que valores razoáveis do parâmetro reforçarão a estrutura, construindo novas arestas nas comunidades folha.
+Mas também é perceptível que a geração de arestas a ponto de transformar comunidades que não são folha em cliques faz com que a estrutura das comunidades folha contidas nesta sejam destruídas.
+Mas essas influencias da parametrização melhor exploradas com resultados experimentais.
 
 \end{document}
