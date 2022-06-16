@@ -35,7 +35,6 @@
     section=TITLE,     % títulos de seções convertidos em letras maiúsculas
     english,            % idioma adicional para hifenização
     brazil,             % o último idioma é o principal do documento
-    sumario=tradicional
     ]{abntex2}
 
 
@@ -99,6 +98,26 @@
     \else
         Citado #1 vezes nas páginas #2.%
     \fi}%
+% ---
+
+% ---
+% Configurações do sumário
+% ---
+\makeatletter
+\let\oldcontentsline\contentsline
+\def\contentsline#1#2{%
+  \expandafter\ifx\csname l@#1\endcsname\l@section
+    \expandafter\@firstoftwo
+  \else
+    \expandafter\@secondoftwo
+  \fi
+  {%
+    \oldcontentsline{#1}{\MakeTextUppercase{#2}}%
+  }{%
+    \oldcontentsline{#1}{#2}%
+  }%
+}
+\makeatother
 % ---
 
 % ---
@@ -179,7 +198,7 @@ Geração de redes complexas
         numberstyle=\tiny,
         basicstyle=\small, 
         keywordstyle=\color{black}\bfseries,
-        keywords={,Input, Output, Return, Function, in, if, then, else, for, while, do, begin, end, }
+        keywords={,Input, Output, Function, return, in, if, then, else, for, while, do, begin, end,}
         numbers=left,
         xleftmargin=.04\textwidth,
         #1 % this is to add specific settings to an usage of this environment (for instnce, the caption and referable label)

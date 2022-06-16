@@ -264,7 +264,7 @@ def edge_insertion_within(
         other = rand_edge_within(vertex_pool, degree)
         vertex_pool.remove(other)
         neighbor_set.add(other)
-    return frozenset((vertex, n) for n in neighbor_set)
+    return frozenset((vertex, n) for  in neighbor_set)
 
 
 def edge_insertion_between(
