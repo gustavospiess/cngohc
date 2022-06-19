@@ -18,7 +18,7 @@ Para os testes iniciais, foram utilizados valores descritos no \autoref{qua:base
     \fonte{Elaborado pelo autor}
 \end{quadro}
 
-\section{Comunidades por definições estruturais}
+\section{Comunidades}
 
 A presença de comunidades como uma propriedade de redes complexas está tipicamente atrelada a ideia de haverem mais arestas internas a uma comunidade do que arestas que atravessem a fronteira entre duas comunidades.
 Esse entendimento é solidificado na função de modularidade $Q$ de \citeonline{girvan2002community}, conforme descrito na equação \ref{eq:mod}.
@@ -30,17 +30,17 @@ Esse entendimento é solidificado na função de modularidade $Q$ de \citeonline
     \label{tab:mod_base_params}
     \begin{tblr}{l|r|r} \hline
         \SetCell{c} Execução & \SetCell{c} $EQ_1$ & \SetCell{c} $EQ_2$ \\ \hline
-        $B_0$ & 0,79495 & 0,60334 \\ \hline
-        $B_1$ & 0,79105 & 0,59501 \\ \hline
-        $B_2$ & 0,80186 & 0,61164 \\ \hline
-        $B_3$ & 0,78451 & 0,58388 \\ \hline
-        $B_4$ & 0,80162 & 0,60212 \\ \hline
-        $B_5$ & 0,80396 & 0,60521 \\ \hline
-        $B_6$ & 0,79186 & 0,59827 \\ \hline
-        $B_7$ & 0,80232 & 0,64051 \\ \hline
-        $B_8$ & 0,78787 & 0,57823 \\ \hline
-        $B_9$ & 0,80018 & 0,64781 \\ \hline
-        Média & 0,79602 & 6.06602 \\ \hline
+        $B_0$ & 0,79749 & 0,59244 \\ \hline
+        $B_1$ & 0,79729 & 0,60191 \\ \hline
+        $B_2$ & 0,80668 & 0,61159 \\ \hline
+        $B_3$ & 0,79498 & 0,64428 \\ \hline
+        $B_4$ & 0,79230 & 0,61631 \\ \hline
+        $B_5$ & 0,78668 & 0,56342 \\ \hline
+        $B_6$ & 0,80528 & 0,62212 \\ \hline
+        $B_7$ & 0,81357 & 0,59754 \\ \hline
+        $B_8$ & 0,81050 & 0,58689 \\ \hline
+        $B_9$ & 0,78874 & 0,57122 \\ \hline
+        Média & 0,79935 & 0,60077 \\ \hline
     \end{tblr}
     \fonte{Elaborado pelo autor}
 \end{table}
@@ -55,15 +55,16 @@ Observa-se que a redução do número mínimo foi feita para evitar a descaracte
 
 \begin{table}[htbp]
     \centering
-    \caption{Modularidade com os parâmetros $K = (9, 2, 2, 2)$}
+    \caption{Modularidade com $K = (9, 2, 2, 2)$}
     \label{tab:mod_pro_params}
     \begin{tblr}{l|r|r|r|r} \hline
         \SetCell{c} Execução & \SetCell{c} $EQ_1$ & \SetCell{c} $EQ_2$ & \SetCell{c} $EQ_3$ & \SetCell{c} $EQ_4$ \\ \hline
-$M_0$ & 0,87848 & 0,92471 & 0,93336 & 0,90927 \\ \hline
-$M_1$ & 0,87718 & 0,92260 & 0,93258 & 0,90927 \\ \hline
-$M_2$ & 0,87618 & 0,92296 & 0,93272 & 0,90914 \\ \hline
-$M_3$ & 0,87599 & 0,92328 & 0,93262 & 0,90920 \\ \hline
-$M_4$ & 0,86634 & 0,91004 & 0,91916 & 0,89407 \\ \hline
+        $M_0$ & 0,87488 & 0,92136 & 0,93030 & 0,90631 \\ \hline
+        $M_0$ & 0,87855 & 0,92355 & 0,93257 & 0,90777 \\ \hline
+        $M_0$ & 0,87783 & 0,92417 & 0,93343 & 0,90915 \\ \hline
+        $M_0$ & 0,87769 & 0,92300 & 0,93276 & 0,90888 \\ \hline
+        $M_0$ & 0,86678 & 0,91529 & 0,92477 & 0,90950 \\ \hline
+        Média & 0,87515 & 0,92147 & 0,93077 & 0,90832 \\ \hline
     \end{tblr}
     \fonte{Elaborado pelo autor}
 \end{table}
@@ -71,7 +72,7 @@ $M_4$ & 0,86634 & 0,91004 & 0,91916 & 0,89407 \\ \hline
 O incremento nos valores obtidos é atribuível á existência de mais comunidades para as quais distribuir os vértices, não apenas em profanidade mas em diâmetro também.
 Descartando-se a possibilidade de ser a alteração do valor de $MTE$ ao realizar testes com este zerado mas mantendo o $K$ padrão.
 Outros testes descritos na \autoref{tab:mod_var_params}, onde com $MTE = 0$ realizou-se uma exploração dos valores de $EQ$ para diversos valores em $K$.
-Note-se o caso $M_9$ como conta exemplo do impacto de $K$ na modularidade, bem como o exemplo $M_6$, que nas comunidades de primeiro teme $EQ = 0,48$.
+Note-se o caso $M_9$ como conta exemplo do impacto de $K$ na modularidade, bem como o exemplo $M_6$, que nas comunidades de primeiro teme $EQ = 0,5$.
 
 \begin{table}[htbp]
     \centering
@@ -79,25 +80,27 @@ Note-se o caso $M_9$ como conta exemplo do impacto de $K$ na modularidade, bem c
     \label{tab:mod_var_params}
     \begin{tblr}{l|r|r} \hline
         \SetCell{c} Execução & $K$ & \SetCell{c} Média de $EQ$ \\ \hline
-        % (0.85535 + 0.92134 + 0.79386)/3 = 0.85685
-        $M_5$ & $(5, 5, 5)$ & 0,856850 \\ \hline 
-        % (0.48498 + 0.83910 + 0.91130)/3 = 0.745127
-        $M_6$ & $(2, 4, 8)$ & 0,745127 \\ \hline
-        % (0.84992 + 0.90629 + 0.90400)/ 3 = 0.886737
-        $M_7$ & $(8, 2, 4)$ & 0,886737 \\ \hline
-        $M_8$ & $(100)$ & 0,872190 \\ \hline
-        $M_9$ & $(3)$ & 0,294310 \\ \hline
+        % (0.85619 + 0.93076 + 0.79259) /3 = 0.859847
+        $M_5$ & $(5, 5, 5)$ & 0,859847 \\ \hline 
+        % (0.91485 + 0.86146 + 0.49883) /3 = 0.75838
+        $M_6$ & $(2, 4, 8)$ & 0,75838 \\ \hline
+        % (0.91605 + 0.9208 + 0.86662) /3 = 0.901157
+        $M_7$ & $(8, 2, 4)$ & 0,901157 \\ \hline
+        $M_8$ & $(100)$ & 0,87249 \\ \hline
+        $M_9$ & $(3)$ & 0,34691 \\ \hline
     \end{tblr}
     \fonte{Elaborado pelo autor}
 \end{table}
 
 Alternativamente, é possível modificar significativamente os valores obtidos para a modularidade com os parâmetros $E_\text{btw}^\text{max}$ e $E_\text{wth}^\text{max}$.
-Na execução $M_{10}$ utilizou-se os demais parâmetros nos valores padrão, mas com $E_\text{btw}^\text{max}=45$, para um $EQ$ de 0,29.
+Na execução $M_{10}$ utilizou-se os demais parâmetros nos valores padrão, mas com $E_\text{btw}^\text{max}=45$ e $K = (2, 2)$, para um $EQ$ de 0,4.
 
 \section{Homofilia e Homogeneidade}
 
 Homogeneidade é a principal propriedade das comunidades definidas por semelhança de vértices, e ela está intimamente ligada á propriedade de homofilia.
 Assumindo a distância euclideana como função de semelhança, a forma natural de medir a homogeneidade das comunidades descritas por uma cobertura é a inercia e a razão da inercia entre diferentes níveis de comunidades.
+
+\subsection{Inercia}
 
 Inertia, definida como a soma dos quadrados das distancias de cada membro de um conjunto com a média do conjunto, sumariza quão semelhantes ou dissemelhantes os membros são.
 A razão entre a inercia em diferentes níveis é facilmente extrapolada do conceito de razão de inercia introduzido por \citeonline{largeron2015generating}.
@@ -105,7 +108,7 @@ Assumindo que as comunidades de uma rede complexa sejam homogêneas e hierárqui
 Tendo em vista que a inercia calculada com uma cobertura deve levar em conta que vértices serão contados múltiplas vezes se estiverem presentes em múltiplas comunidades, a inercia para um nível $l$ segue descrita na equação \ref{eq:inertia_l}.
 Considerando que $C_l$ é o conjunto de comunidades de nível  $l$.
 
-\begin{equation}
+\begin{equation}\label{eq:inertia_l}
     I_l = \sum_{c \in C_l}\frac{\sum_{v \in c} |v-g_c|^2}{|c|}
 \end{equation}
 
@@ -114,26 +117,90 @@ A extensão do conceito de inercia para a razão entre a inercia aplicada a dois
 Isso é, $\sfrac{I_l}{I_0}$ descreve não apenas quão homogêneo são os agrupamentos estabelecidos, mas o quão mais homogêneos eles são em relação á população em geral.
 Note-se que $I_0$ nesse contexto se refere à comunidade $C_n$, isso é, a comunidade que contém todos os vértices.
 
+\subsection{Distancia esperada}
+
+A homofilia, como propriedade de redes complexas onde os vértices tendem a estarem adjacentes à vértices semelhantes.
+Em um sistema com atributos discretos, é facilmente estabelecido uma função $\Delta$  que descreve o quão mais semelhantes os vértices adjacentes são do que seria esperado em um modelo nulo.
+O modelo nulo trivial neste caso é a consideração de vértices conectados com igual probabilidade, mantendo-se a mesma quantidade de vértices e arestas, conforme descrito por \citeonline{easley2010networks}.
+
+A adaptação para um modelo de um espaço contínuo de múltiplas dimensões se dá calculando uma aproximação da distância média entre cada par de vértices, essa média, $H_e$, é o valor que seria esperado se o grafo não fosse homofílico.
+O valor real é calculado como a média da distância dos pontos adjacentes, $H_r$.
+
+\subsection{Resultados}
+
 \begin{table}[htbp]
     \centering
-    \caption{Modularidade com os parâmetros básicos}
-    \label{tab:mod_base_params}
-    \begin{tblr}{l|r|r|r|r|r} \hline
-        \SetCell{c} Execução & \SetCell{c} $l_0$ & \SetCell{c} $l_1$ & \SetCell{c} $l_2$
-& \SetCell{c} $\sfrac{l_1}{l_0}$ & \SetCell{c} $\sfrac{l_2}{l_0}$
+    \caption{Homogeneidade e homofilia com os parâmetros básicos}
+    \label{tab:iner_base_params}
+    \begin{tblr}{l|r|r|r|r} \hline
+        \SetCell{c} Execução & \SetCell{c} $\sfrac{I_1}{I_0}$ & \SetCell{c} $\sfrac{I_2}{I_0}$ & \SetCell{c} $\sfrac{I_1+I_2}{2I_0}$ & \SetCell{c} $\sfrac{H_r}{H_e}$
         \\ \hline
-        $B_0$ & 2,08113 & 0,82459 & 0,70850 & 0.39622 & 0.34044 \\ \hline
-        $B_1$ & 2,08113 & 0,79279 & 0,68140 & 0,38090 & 0,32742 \\ \hline
-        $B_2$ & 2,08113 & 0,74972 & 0,60168 & 0,36073 & 0,28911 \\ \hline
-        $B_3$ & 2,08113 & 0,83942 & 0,69236 & 0,39902 & 0,30305 \\ \hline
-        $B_4$ & 2,08113 & 0,77449 & 0,63069 & 0,37215 & 0,30305 \\ \hline
-        $B_5$ & 2,08113 & 0,78058 & 0,64480 & 0,37508 & 0,30983 \\ \hline
-        $B_6$ & 2,08113 & 0,78190 & 0,64167 & 0,37571 & 0,30833 \\ \hline
-        $B_7$ & 2,08113 & 0,76719 & 0,64844 & 0,36864 & 0,31158 \\ \hline
-        $B_8$ & 2,08113 & 0,79498 & 0,65848 & 0,38199 & 0,31640 \\ \hline
-        $B_9$ & 2,08113 & 0,77872 & 0,64572 & 0,37418 & 0,21027 \\ \hline
+$B_0$ & 0,37838 & 0,32957 & 0,353975 & 0,51867 \\ \hline
+$B_1$ & 0,37367 & 0,34085 & 0,357260 & 0,54287 \\ \hline
+$B_2$ & 0,34342 & 0,28694 & 0,315180 & 0,48891 \\ \hline
+$B_3$ & 0,39089 & 0,35864 & 0,374765 & 0,54219 \\ \hline
+$B_4$ & 0,39894 & 0,35848 & 0,378710 & 0,55024 \\ \hline
+$B_5$ & 0,33398 & 0,27633 & 0,305155 & 0,48106 \\ \hline
+$B_6$ & 0,45564 & 0,38316 & 0,419400 & 0,55749 \\ \hline
+$B_7$ & 0,41636 & 0,36857 & 0,392465 & 0,57048 \\ \hline
+$B_8$ & 0,32854 & 0,28121 & 0,304875 & 0,49867 \\ \hline
+$B_9$ & 0,37391 & 0,32310 & 0,348505 & 0,53405 \\ \hline
+Média & 0,37937 & 0,33069 & 0,355030 & 0,52846 \\ \hline
     \end{tblr}
     \fonte{Elaborado pelo autor}
 \end{table}
+
+Na \autoref{tab:iner_base_params}, estão discriminados os valores de inércia médios para as comunidades organizadas por nível.
+A leitura que se pode fazer desses dados, em especial das médias, é: em média uma comunidade de primeiro nível tem 38\% da diversidade que se encontra na população geral; e em média uma comunidade de segundo nível (sub comunidade) tem 33\% da diversidade presente na população em geral.
+Por fim, em média a distância entre dos vértices adjacentes é metade do que seria esperado sem a homofilia, indicando a presença dessa propriedade.
+
+Naturalmente, existe uma influencias significativa que a quantidade de comunidades tem neste valor.
+Observe-se na \autoref{tab:iner_pro_params}, com mais comunidades para distribuir os vértices, as comunidades ficam significativamente mais homogêneas.
+Como efeito disso, a distancia entre vértices conectados é bastante reduzida também.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Homofilia e Homogeneidade com $K = (9, 2, 2, 2)$}
+    \label{tab:iner_pro_params}
+    \begin{tblr}{l|r|r|r|r|r} \hline
+        \SetCell{c} Execução & \SetCell{c} $\sfrac{I_1}{I_0}$ & \SetCell{c} $\sfrac{I_2}{I_0}$ & \SetCell{c} $\sfrac{I_3}{I_0}$ & \SetCell{c} $\sfrac{I_4}{I_0}$ & \SetCell{c} $\sfrac{H_r}{H_e}$ \\ \hline
+        $M_0$ & 0,18520 & 0,10856 & 0,05518 & 0,03054 & 0,17945 \\ \hline
+        $M_1$ & 0,18758 & 0,11560 & 0,06015 & 0,03193 & 0,18039 \\ \hline
+        $M_2$ & 0,18446 & 0,11812 & 0,05993 & 0,03546 & 0,18521 \\ \hline
+        $M_3$ & 0,18714 & 0,11471 & 0,06123 & 0,03290 & 0,18356 \\ \hline
+        $M_4$ & 0,18125 & 0,11156 & 0,05556 & 0,03016 & 0,17048 \\ \hline
+        Média & 0,18513 & 0,11371 & 0,05841 & 0,03220 & 0,17982 \\ \hline
+    \end{tblr}
+\fonte{Elaborado pelo autor}
+\end{table}
+
+Também de forma natural, existe uma relação entre o parâmetro $\theta$ e a inercia.
+É apontado na tabela \autoref{tab:iner_var_params} a variação da inercia conforme se altera $\theta$.
+Duas características dos dados descritos são relevantes, primeiramente com $\theta = 1$ se a ortogonalidade das comunidades não estivesse tendo efeito, seria de se esperar comunidades onde a diversidade interna se aproximaria da diversidade da população geral, mas não é isso o que se observa.
+Isso é, em um modelo nulo, onde não existisse correlação entre os atributos do vértice e a comunidade em que ele participa, seria esperado uma razão de inercia que tendesse as um.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Homofilia e Homogeneidade com $\theta$ variável}
+    \label{tab:iner_var_params}
+    \begin{tblr}{l|r|r|r|r} \hline
+        \SetCell{c} Execução & \SetCell{c} $\theta$ & \SetCell{c} $\sfrac{I_1}{I_0}$ & \SetCell{c} $\sfrac{I_2}{I_0}$ &
+        \SetCell{c} Média
+        \\ \hline
+        $I_0$ & \multirow{3}{*}{1.00} & 0,74099 & 0,72866 & \multirow{3}{*}{0.72601} \\ \hline
+        $I_1$ &                       & 0,69068 & 0,67882 &                          \\ \hline
+        $I_2$ &                       & 0,77254 & 0,74436 &                          \\ \hline
+        $I_3$ & \multirow{3}{*}{0.66} & 0,42301 & 0,38883 & \multirow{3}{*}{0.38678} \\ \hline
+        $I_4$ &                       & 0,44184 & 0,37531 &                          \\ \hline
+        $I_5$ &                       & 0,37331 & 0,31835 &                          \\ \hline
+        $I_6$ & \multirow{3}{*}{0.33} & 0,43381 & 0,38709 & \multirow{3}{*}{0.39471} \\ \hline
+        $I_7$ &                       & 0,36789 & 0,30745 &                          \\ \hline
+        $I_8$ &                       & 0,46135 & 0,41065 &                          \\ \hline
+    \end{tblr}
+\fonte{Elaborado pelo autor}
+\end{table}
+
+O segundo ponto a ser destacado é que $\theta$ não é um controle direto sobre a inercia, nos casos com  $\theta=0.66$, $\theta=0.33$ e $\theta=0.1$ (\autoref{tab:iner_base_params}), a razão se manteve em um mesmo patamar, entre 30\% e 40\%.
+Existem outros fatores que afetam diretamente a homogeneidade das comunidades, e que são mais dificilmente controlados por parâmetros.
 
 \end{document}

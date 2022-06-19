@@ -179,8 +179,9 @@ def homophily(graph: Graph):
                     )
             sample = (next(generator) for _ in range(sample_size))
             expected = sum(p.imap_unordered(_distance, sample))/sample_size
-        print(f'{sample_size=}')
-        print(f'{expected=}')
+        # print(f'{sample_size=}')
+        # print(f'{expected=}')
 
         real = sum(p.imap_unordered(_distance, graph.edge_set))/len(graph.edge_set)
-        print(f'{real=}')
+        # print(f'{real=}')
+        print(round(real/expected, 5))
