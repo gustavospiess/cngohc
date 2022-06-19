@@ -70,9 +70,12 @@ def relative_inertia(graph: Graph):
             inertia_by_level[part.level] += inertia
             qtd_by_level[part.level] += 1
 
-    pprint(inertia_by_level)
-    pprint(qtd_by_level)
-    pprint({l: inertia_by_level[l]/qtd_by_level[l] for l in qtd_by_level})
+    # pprint(inertia_by_level)
+    # pprint(qtd_by_level)
+    pprint({l: round(inertia_by_level[l]/qtd_by_level[l], 5) for l in qtd_by_level})
+    pprint({l: round(
+            (inertia_by_level[l]/qtd_by_level[l])/ (inertia_by_level[0]/qtd_by_level[0]),
+            5) for l in qtd_by_level})
 
 
 def modularity_part(data):

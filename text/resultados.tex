@@ -38,9 +38,9 @@ Esse entendimento é solidificado na função de modularidade $Q$ de \citeonline
         $B_5$ & 0,80396 & 0,60521 \\ \hline
         $B_6$ & 0,79186 & 0,59827 \\ \hline
         $B_7$ & 0,80232 & 0,64051 \\ \hline
-        $B_8$ & 0,78787 & 0,27823 \\ \hline
+        $B_8$ & 0,78787 & 0,57823 \\ \hline
         $B_9$ & 0,80018 & 0,64781 \\ \hline
-        Média & 0,79602 & 0,57660 \\ \hline
+        Média & 0,79602 & 6.06602 \\ \hline
     \end{tblr}
     \fonte{Elaborado pelo autor}
 \end{table}
@@ -94,5 +94,46 @@ Note-se o caso $M_9$ como conta exemplo do impacto de $K$ na modularidade, bem c
 Alternativamente, é possível modificar significativamente os valores obtidos para a modularidade com os parâmetros $E_\text{btw}^\text{max}$ e $E_\text{wth}^\text{max}$.
 Na execução $M_{10}$ utilizou-se os demais parâmetros nos valores padrão, mas com $E_\text{btw}^\text{max}=45$, para um $EQ$ de 0,29.
 
+\section{Homofilia e Homogeneidade}
+
+Homogeneidade é a principal propriedade das comunidades definidas por semelhança de vértices, e ela está intimamente ligada á propriedade de homofilia.
+Assumindo a distância euclideana como função de semelhança, a forma natural de medir a homogeneidade das comunidades descritas por uma cobertura é a inercia e a razão da inercia entre diferentes níveis de comunidades.
+
+Inertia, definida como a soma dos quadrados das distancias de cada membro de um conjunto com a média do conjunto, sumariza quão semelhantes ou dissemelhantes os membros são.
+A razão entre a inercia em diferentes níveis é facilmente extrapolada do conceito de razão de inercia introduzido por \citeonline{largeron2015generating}.
+Assumindo que as comunidades de uma rede complexa sejam homogêneas e hierárquicas, é natural que as comunidades mais específicas (sub comunidades), tenham menos diversidade qua as comunidade mais generalistas.
+Tendo em vista que a inercia calculada com uma cobertura deve levar em conta que vértices serão contados múltiplas vezes se estiverem presentes em múltiplas comunidades, a inercia para um nível $l$ segue descrita na equação \ref{eq:inertia_l}.
+Considerando que $C_l$ é o conjunto de comunidades de nível  $l$.
+
+\begin{equation}
+    I_l = \sum_{c \in C_l}\frac{\sum_{v \in c} |v-g_c|^2}{|c|}
+\end{equation}
+
+$I_l$ apresenta uma forma de comparação entre diferentes coberturas, de forma a identificar qual seria mais homogênea dado um mesmo conjunto do vértices.
+A extensão do conceito de inercia para a razão entre a inercia aplicada a dois níveis distintos se dá para isolar o fator de escala.
+Isso é, $\sfrac{I_l}{I_0}$ descreve não apenas quão homogêneo são os agrupamentos estabelecidos, mas o quão mais homogêneos eles são em relação á população em geral.
+Note-se que $I_0$ nesse contexto se refere à comunidade $C_n$, isso é, a comunidade que contém todos os vértices.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Modularidade com os parâmetros básicos}
+    \label{tab:mod_base_params}
+    \begin{tblr}{l|r|r|r|r|r} \hline
+        \SetCell{c} Execução & \SetCell{c} $l_0$ & \SetCell{c} $l_1$ & \SetCell{c} $l_2$
+& \SetCell{c} $\sfrac{l_1}{l_0}$ & \SetCell{c} $\sfrac{l_2}{l_0}$
+        \\ \hline
+        $B_0$ & 2,08113 & 0,82459 & 0,70850 & 0.39622 & 0.34044 \\ \hline
+        $B_1$ & 2,08113 & 0,79279 & 0,68140 & 0,38090 & 0,32742 \\ \hline
+        $B_2$ & 2,08113 & 0,74972 & 0,60168 & 0,36073 & 0,28911 \\ \hline
+        $B_3$ & 2,08113 & 0,83942 & 0,69236 & 0,39902 & 0,30305 \\ \hline
+        $B_4$ & 2,08113 & 0,77449 & 0,63069 & 0,37215 & 0,30305 \\ \hline
+        $B_5$ & 2,08113 & 0,78058 & 0,64480 & 0,37508 & 0,30983 \\ \hline
+        $B_6$ & 2,08113 & 0,78190 & 0,64167 & 0,37571 & 0,30833 \\ \hline
+        $B_7$ & 2,08113 & 0,76719 & 0,64844 & 0,36864 & 0,31158 \\ \hline
+        $B_8$ & 2,08113 & 0,79498 & 0,65848 & 0,38199 & 0,31640 \\ \hline
+        $B_9$ & 2,08113 & 0,77872 & 0,64572 & 0,37418 & 0,21027 \\ \hline
+    \end{tblr}
+    \fonte{Elaborado pelo autor}
+\end{table}
 
 \end{document}
