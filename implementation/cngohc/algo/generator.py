@@ -24,7 +24,7 @@ class Parameters(tp.NamedTuple):
     '''Minimum number of edges of the graph'''
     deviation_sequence: tp.Tuple[float, ...] = (1, 1,)  # A
     '''Sequence of deviation values to initialize the vertexes '''
-    homogeneity_indicator: float = 0  # theta
+    homogeneity_indicator: float = 0.1  # theta
     '''Ratio of vertexes to be added by homogeneity'''
     representative_count: int = 20  # NbRep
     '''Number of representatives of a partition'''
@@ -264,7 +264,7 @@ def edge_insertion_within(
         other = rand_edge_within(vertex_pool, degree)
         vertex_pool.remove(other)
         neighbor_set.add(other)
-    return frozenset((vertex, n) for  in neighbor_set)
+    return frozenset((vertex, n) for n in neighbor_set)
 
 
 def edge_insertion_between(

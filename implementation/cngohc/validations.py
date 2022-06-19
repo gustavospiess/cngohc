@@ -109,30 +109,33 @@ def shens_modularity(graph: Graph):
     global __degree_of
     __degree_of = __graph.degree_of
     global __partition_qt_of
-    __partition_qt_of = {
-            p: len(graph.partitions_of[p])-1 for p in graph.partition.depht}
     global __degree_sum
     __degree_sum = 2*len(graph.edge_set)
     global __neighbors
     __neighbors = __graph.neighbors_of
 
     community_set = tuple(sorted(
-            (p for p in graph.partition.flat),
+            (p for p in graph.partition.flat if p.level > 0),
             key=lambda p: p.level * -1))
 
-    mod = 0.0
-    for community in community_set:
-        generator = (
-                (community, tuple((va, vb) for va in community.depht))
-                for vb in community.depht)
-        with Pool() as p:
-            _map = p.imap_unordered(modularity_part, generator)
-            _mod = sum(_map)/(__degree_sum)
-            mod += _mod
-            print(
-                    round(_mod, 5),
-                    community.level,
-                    round(mod, 5))
+    data = {c.level: 0 for c in community_set}
+    for level in data:
+        __partition_qt_of = {
+                p: sum( 1
+                        for c in graph.partitions_of[p]
+                        if c.level == level)
+                for p in graph.partition.depht}
+        for community in community_set:
+            if community.level != level:
+                continue
+            generator = (
+                    (community, tuple((va, vb) for va in community.depht))
+                    for vb in community.depht)
+            with Pool() as p:
+                _map = p.imap_unordered(modularity_part, generator)
+                _mod = sum(_map)/(__degree_sum)
+                data[community.level] += _mod
+        print(level, round(data[level], 5))
 
 
 def diameter(graph: Graph):
