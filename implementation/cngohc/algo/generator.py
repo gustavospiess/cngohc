@@ -136,8 +136,8 @@ def _initialize_leaf_communities(
         vertex_pool = (
                 partition -
                 {vertex} -
-                {e[1] for e in edge_set} -
-                {e[0] for e in edge_set})
+                {e[1] for e in edge_set if vertex in e} -
+                {e[0] for e in edge_set if vertex in e})
         max_edge_count = min(len(vertex_pool), param.max_within_edge)
         edge_count = max_edge_count
         if (max_edge_count > 1):

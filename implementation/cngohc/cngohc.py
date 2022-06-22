@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 
 from .algo.generator import Parameters, generator
 from .algo import rand
-from .models import Graph, Vertex
+from .models import Graph, Vertex, Partition
 
 
 from .validations import relative_inertia, shens_modularity, homophily as homo
@@ -108,13 +108,23 @@ def edge_distribution(ctx):
 @click.pass_context
 def data(ctx):
     graph = ctx.obj['graph']
+    da = dict()
+    # print('data:')
     for p in sorted(graph.partition.flat, key=lambda p: p.level):
-        print(
-                # f'partition id {p.identifier}; ' +
-                f'level {p.level}; ' +
-                f'len {len(p.depht)}; ' +
-                f'wth degree {len(graph.edges_of_part[p])*2}; ' +
-                f'degree {sum(graph.degree_of[v] for v in p.depht)};')
+        # print(
+        #         # f'partition id {p.identifier}; ' +
+        #         # f'level {p.level}; ' +
+        #         # f'len {len(p.depht)}; ' +
+        #         f'wth degree {len(graph.edges_of_part[p])*2}; ' +
+        #         f'degree {sum(graph.degree_of[v] for v in p.depht)};')
+        d = len(p.depht)
+        d_ = sum(len(s.depht) for s in p if isinstance(s, Partition))
+        da[p] = (d, d_)
+    max_l = max(p.level for p in graph.partition.flat)
+    for l in range(0, max_l):
+        a = sum(da[p][0] for p in da if p.level == l)
+        b = sum(da[p][1] for p in da if p.level == l)
+        print(l, b-a)
 
 
 @check.command()
@@ -126,6 +136,7 @@ def view(ctx):
     nx_graph.add_edges_from(graph.edge_set)
 
     position = {n: tuple(d*10 for d in n) for n in graph.vertex_set}
+    position = nx.spring_layout(nx_graph, scale=100, pos=position, iterations=10)
 
     colors = [
             '#7FFFFF', '#00FFFF', '#FF7FFF', '#7F7FFF', '#007FFF', '#FF00FF',
@@ -136,21 +147,21 @@ def view(ctx):
             ]
     shuffle(colors)
 
-    part_color = {p: c for p, c in zip(graph.partition.flat, colors)}
+    part_color = {p: c for p, c in zip(graph.partition.flat, colors*8)}
 
     shared_nodes = [
             v
             for v in graph.vertex_set
             if len(graph.leaf_partitions_of[v]) > 1]
-    for p in sorted(graph.partition.flat, key=lambda p: p.level * -1):
-        nodes = list(n for n in p if isinstance(n, Vertex))
-        if len(nodes) == 0:
-            continue
-        nx.draw_networkx_nodes(
-                nx_graph, position, nodes, node_color=part_color[p])
-        plt.plot([0, 0], [-40, 40], lw=3, color='black')
-        plt.plot([-40, 40], [0, 0], lw=3, color='black')
-        plt.show()
+    # for p in sorted(graph.partition.flat, key=lambda p: p.level * -1):
+    #     nodes = list(n for n in p if isinstance(n, Vertex))
+    #     if len(nodes) == 0:
+    #         continue
+    #     nx.draw_networkx_nodes(
+    #             nx_graph, position, nodes, node_color=part_color[p])
+    #     plt.plot([0, 0], [-40, 40], lw=3, color='black')
+    #     plt.plot([-40, 40], [0, 0], lw=3, color='black')
+    #     plt.show()
     for p in sorted(graph.partition.flat, key=lambda p: p.level * -1):
         nodes = list(
                 n
@@ -160,8 +171,22 @@ def view(ctx):
                 nx_graph, position, nodes, node_color=part_color[p])
     nx.draw_networkx_nodes(
             nx_graph, position, shared_nodes, node_color='#000000')
-    plt.plot([0, 0], [-40, 40], lw=3, color='black')
-    plt.plot([-40, 40], [0, 0], lw=3, color='black')
+    nx.draw_networkx_edges(nx_graph, pos=position)
+    # plt.plot([0, 0], [-40, 40], lw=3, color='black')
+    # plt.plot([-40, 40], [0, 0], lw=3, color='black')
+    plt.show()
+
+    position = {n: tuple(d*10 for d in n) for n in graph.vertex_set}
+    for p in sorted(graph.partition.flat, key=lambda p: p.level * -1):
+        nodes = list(
+                n
+                for n in p
+                if isinstance(n, Vertex) and n not in shared_nodes)
+        nx.draw_networkx_nodes(
+                nx_graph, position, nodes, node_color=part_color[p])
+    nx.draw_networkx_nodes(
+            nx_graph, position, shared_nodes, node_color='#000000')
+    nx.draw_networkx_edges(nx_graph, pos=position)
     plt.show()
 
 
