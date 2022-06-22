@@ -1,0 +1,46 @@
+\documentclass[notes.tex]{subfiles}
+\begin{document}
+
+\chapter{Conclusões}
+
+Este trabalho demonstra um modelo algorítmico para a geração de redes complexas com comunidades hierárquicas e comunidades sobrepostas.
+Junto do algoritmo foram identificados valores básicos para a parametrização que geram grafos com todas as propriedades desejadas.
+A fundamentação teórica apresenta uma exploração em língua portuguesa academicamente relevante, descrevendo redes complexas, comunidades e as suas propriedades.
+Os resultados experimentais demonstram o sucesso nos objetivos gerais e específicos estipulados para o modelo.
+
+Quando ao objetivo específico da inclusão de comunidades na rede gerada, bem como a construção de uma \emph{ground truth} para quais são os membros das comunidades é demonstrado como bem sucedido na exploração dos resultados da função de modularidade estendida $EQ$.
+A presença das comunidades, bem como o pertencimento dos vértices a elas é confirmado pela função de qualidade de cobertura.
+Notadamente, essa função e a suas aplicação recursiva destacam a presença de comunidades hierarquicamente organizadas, de forma que se aninham em comunidades auto semelhantes, e sobrepostas, de forma a compartilharem vértices.
+Demonstradamente o compartilhamento de vértices é sensível à parametrização do modelo, se mostrando mais presente em grafos gerados a partir de parâmetros que geram uma estrutura com menos comunidades.
+
+O objetivos relativos á comunidades homogêneas foram bem sucedidos conforme demonstrado experimentalmente, sendo parametrizável o quão pronunciada é essa propriedade.
+Com a escolha de parâmetros que reforcem comunidades de tamanho reduzido (maiores valores para $K$) os grafos gerados consistentemente apresentam comunidades com menos de quatro porcento da diversidade global.
+Os parâmetros básicos, consideravelmente conservadores no quanto eles reforçam características específicas, geram grafos onde as comunidades apresentam consistentemente menos de trinta e quatro por cento da diversidade que o grafo.
+
+\section{Extensões}
+
+Redes complexas como área de estudo é um campo promissor e mais estudos devem ser realizados.
+O processo de geração de redes complexas com comunidades é uma área de relevância acadêmica, e o modelo apresentado neste trabalho tem um conjunto de extensões desejáveis, são elas:
+
+A otimização da cobertura gerada para algorítimos de percolação de cliques, por meio da redução de arestas entre vértices que estejam entre duas comunidades.
+Isso poderia ser implementado no processo de geração final de arestas, removendo estres vértices e não os considerando na avaliação de se a comunidade é um grafo completo.
+Idealmente, isso deveria ser parametrizado com um valor entre zero e um, identificando a proporção de arestas entre vértices na mesma área de superposição.
+
+A elaboração de um método mais deliberado nas escolha de comunidades, que permita um controle mais fino da proporção de vértices em áreas de superposição.
+Uma implementação intuitiva seria a parametrização de uma proporção, quantos vértices estariam em uma comunidade folha apenas, quantos estariam em duas, quantos estariam em três (O modelo não é incompatível com a escolha de três ou mais comunidades) etc.
+Cada vértice teria primeiramente uma quantidade de comunidades folha decidido com essas proporções, e a escolha poderia ser feita ou repetindo a chamada para a função, ou escolhendo as comunidades mais próximas.
+
+O desenvolvimento de novos modelos de eleição de representantes, considerando que naturalmente a escolha de representantes com características distintas pode otimizar o processo.
+As escolhas de metodologia naturais seriam a minimação da função $d$ para os vértices já dentro da comunidade, tanto considerando a média dos vértices para com os representantes eleitos, quanto para o seu mínimo.
+
+O desenvolvimento de novos modelos para a função $d$, especialmente em vista da ortogonalidade.
+Uma abordagem que se desejaria explorar é a limitação da quantidade de níveis hierárquicos para a quantidade de dimensões nos vértices, para que sejam usados eixos distintos como eixo de ortogonalidade por nível.
+Isso é, as comunidades de primeiro nível teriam predileção por discriminar seus membros com base em um eixo, as de segundo nível teriam por outro eixo (ortogonal ao primeiro) e assim sucessivamente.
+De fato, a implementação de uma estrutura assim poderia suplantar a necessidade de um parâmetro de controle  $\theta$, pois a variação em  $\A$ seria capaz de modificar esse comportamento controlando inclusive para diferentes níveis.
+
+Um estudo mais aprofundado das proporcionalidades identificadas em sistemas do mundo real e a sua presença nos grafos gerados pelo modelo.
+Um exemplo disso é a distribuição de graus em função logarítmica, que apesar de ter sido observado em testes, não pode ser avalada mais rigorosamente.
+
+Uma avaliação comparativa da cobertura gerada pelo modelo com as coberturas identificadas por algoritmos de identificação de comunidades canonicamente aceitos na literatura.
+
+\end{document}

@@ -4,7 +4,7 @@
 \chapter{Resultados experimentais}
 
 Foi realizada uma implementação do algoritmo descrito na linguagem python 3.8.
-A partir desse, foram executados os tester para avaliar a presença das propriedades desejadas no modelo.
+A partir desse, foram executados os testes para avaliar a presença das propriedades desejadas no modelo.
 Para os testes iniciais, foram utilizados valores descritos no \autoref{qua:base_params}.
 
 \begin{quadro}[htbp]
@@ -15,7 +15,7 @@ Para os testes iniciais, foram utilizados valores descritos no \autoref{qua:base
         \SetCell{c} $N$ & \SetCell{c} $E_\text{wth}^\text{max}$ & \SetCell{c} $E_\text{btw}^\text{max}$ & \SetCell{c} $MTE$ & \SetCell{c} $\A$ & \SetCell{c} $K$ & \SetCell{c} $\theta$ & \SetCell{c} $\text{NbRep}$ \\ \hline
          1000 & 45 & 3 & 30000 & (1, 1) & (6, 2) & $\sfrac{1}{10}$ & 20 \\ \hline
     \end{tblr}
-    \fonte{Elaborado pelo autor}
+    \fonte{elaborado pelo autor}
 \end{quadro}
 
 \section{Comunidades}
@@ -23,33 +23,48 @@ Para os testes iniciais, foram utilizados valores descritos no \autoref{qua:base
 A presença de comunidades como uma propriedade de redes complexas está tipicamente atrelada a ideia de haverem mais arestas internas a uma comunidade do que arestas que atravessem a fronteira entre duas comunidades.
 Esse entendimento é solidificado na função de modularidade $Q$ de \citeonline{girvan2002community}, conforme descrito na equação \ref{eq:mod}.
 \citeonline{shen2009detect} descreve uma adaptação, modularidade estendida $EQ$, para a aplicação em coberturas (em oposição a partições), conforme equação \ref{eq:mod_e}.
+Essa aplicação em coberturas destaca a possibilidade de comunidades sobrepostas.
+A aplicação de $EQ$ recursivamente, de forma a considerar o subgrafo com os membros da comunidade dividido entre as comunidades que a compõe descreve a propriedade de comunidades hierárquicas.
+
+\begin{equation}
+O_i = \left[\sum_{c \in C_n| L_{c} = i-1}V_c\right] - \left[\sum_{c \in C_n| L_{c} = i}V_c\right]
+\end{equation}
+
+A presença de sobreposição nas comunidades pode ser medida como um função $O_i$ que calcula a quantidade de vértices presentes em mais de uma comunidade de nível $i$.
+O valor é dado pela diferença da quantidade de vértices em comunidades de nível $i$ e a quantidade de vértices em comunidades de nível $i+1$.
+O efeito disso é que vértices que estejam em duas comunidades distintas de nível $i+1$ ou menores, serão contados duas vezes, mas os que pertencem a duas comunidades de nível $i$ ou menores serão compensadas.
+Por fim, a soma de $O_i$ para todos os níveis será anotada como  $O$.
+
+Observa-se na \autoref{tab:mod_base_params} os valores de $EQ$ para 10 execuções do modelo com os parâmetros básicos ($B_0$ a $B_9$).
+Para as comunidades de primeiro nível, isso é, as que são compostas por sub comunidades, a função gera uma média de aproximadamente 0,8 o que indica uma estrutura de comunidade muito expressiva.
+No segundo nível, o valor médio foi de aproximadamente 0,6 indicando comunidades menos expressivas mas ainda presentes.
 
 \begin{table}[htbp]
     \centering
     \caption{Modularidade com os parâmetros básicos}
     \label{tab:mod_base_params}
-    \begin{tblr}{l|r|r} \hline
-        \SetCell{c} Execução & \SetCell{c} $EQ_1$ & \SetCell{c} $EQ_2$ \\ \hline
-        $B_0$ & 0,79749 & 0,59244 \\ \hline
-        $B_1$ & 0,79729 & 0,60191 \\ \hline
-        $B_2$ & 0,80668 & 0,61159 \\ \hline
-        $B_3$ & 0,79498 & 0,64428 \\ \hline
-        $B_4$ & 0,79230 & 0,61631 \\ \hline
-        $B_5$ & 0,78668 & 0,56342 \\ \hline
-        $B_6$ & 0,80528 & 0,62212 \\ \hline
-        $B_7$ & 0,81357 & 0,59754 \\ \hline
-        $B_8$ & 0,81050 & 0,58689 \\ \hline
-        $B_9$ & 0,78874 & 0,57122 \\ \hline
-        Média & 0,79935 & 0,60077 \\ \hline
+    \begin{tblr}{l|r|r|r|r} \hline
+        \SetCell{c} Execução & \SetCell{c} $EQ_1$ & \SetCell{c} $EQ_2$  & \SetCell{c} $O_1$ & \SetCell{c} $O_2$\\ \hline
+        $B_0$ & 0,79749 & 0,59244 & 18 & 240 \\ \hline
+        $B_1$ & 0,79729 & 0,60191 & 20 & 227 \\ \hline
+        $B_2$ & 0,80668 & 0,61159 & 10 & 224 \\ \hline
+        $B_3$ & 0,79498 & 0,64428 & 19 & 188 \\ \hline
+        $B_4$ & 0,79230 & 0,61631 & 23 & 193 \\ \hline
+        $B_5$ & 0,78668 & 0,56342 & 25 & 254 \\ \hline
+        $B_6$ & 0,80528 & 0,62212 & 14 & 209 \\ \hline
+        $B_7$ & 0,81357 & 0,59754 & 12 & 228 \\ \hline
+        $B_8$ & 0,81050 & 0,58689 & 11 & 238 \\ \hline
+        $B_9$ & 0,78874 & 0,57122 & 20 & 252 \\ \hline
+        Média & 0,79935 & 0,60077 & 17 & 225\\ \hline
     \end{tblr}
-    \fonte{Elaborado pelo autor}
+    \fonte{elaborado pelo autor}
 \end{table}
 
-Observa-se na tabela \autoref{tab:mod_base_params} os valores de $EQ$ para 10 execuções do modelo com os parâmetros básicos ($B_0$ a $B_9$).
-Para ás comunidades de primeiro nível, isso é, as que são compostas por sub comunidades, a função gera uma média de aproximadamente 0,8 o que indica uma estrutura de comunidade muito expressiva.
-No segundo nível, o valor médio foi de aproximadamente 0,6 indicando comunidades menos expressivas mas ainda presentes.
+A \autoref{tab:mod_base_params} indica também os valores de sobreposição entre comunidades de primeiro ($O_1$) e segundo nível ($O_2$).
+Os valores indicam quem em média, dos mil vértices presentes em um grafo como o observado, dezessete estarão em duas comunidades de primeiro nível e em média duzentos e vinte e cinto vértices estarão em duas comunidades de segundo nível.
+O que esses valores indicam é que até vinte e quatro por cento dos vértices, para essa parametrização, estariam distribuídos em mais de uma comunidade.
 
-Naturalmente, a escolha de valores distintos par os parâmetros pode ser feita para reforçar as características desejáveis.
+Naturalmente, a escolha de valores distintos para os parâmetros pode ser feita para reforçar as características desejáveis.
 Limitando o valor de $MTE$ e considerando uma estrutura de comunidades gerada com  $K = (9, 2, 2, 2)$, obteve-se os dados distritos na \autoref{tab:mod_pro_params}.
 Observa-se que a redução do número mínimo foi feita para evitar a descaracterização das comunidades folha, considerando que o valor de $K$ gera 72 dessas.
 
@@ -57,22 +72,25 @@ Observa-se que a redução do número mínimo foi feita para evitar a descaracte
     \centering
     \caption{Modularidade com $K = (9, 2, 2, 2)$}
     \label{tab:mod_pro_params}
-    \begin{tblr}{l|r|r|r|r} \hline
-        \SetCell{c} Execução & \SetCell{c} $EQ_1$ & \SetCell{c} $EQ_2$ & \SetCell{c} $EQ_3$ & \SetCell{c} $EQ_4$ \\ \hline
-        $M_0$ & 0,87488 & 0,92136 & 0,93030 & 0,90631 \\ \hline
-        $M_0$ & 0,87855 & 0,92355 & 0,93257 & 0,90777 \\ \hline
-        $M_0$ & 0,87783 & 0,92417 & 0,93343 & 0,90915 \\ \hline
-        $M_0$ & 0,87769 & 0,92300 & 0,93276 & 0,90888 \\ \hline
-        $M_0$ & 0,86678 & 0,91529 & 0,92477 & 0,90950 \\ \hline
-        Média & 0,87515 & 0,92147 & 0,93077 & 0,90832 \\ \hline
+    \begin{tblr}{l|r|r|r|r|r} \hline
+        \SetCell{c} Execução & \SetCell{c} $EQ_1$ & \SetCell{c} $EQ_2$ & \SetCell{c} $EQ_3$ & \SetCell{c} $EQ_4$ & \SetCell{c} $O$ \\ \hline
+        $M_0$ & 0,87488 & 0,92136 & 0,93030 & 0,90631 & 0 \\ \hline
+        $M_1$ & 0,87855 & 0,92355 & 0,93257 & 0,90777 & 0 \\ \hline
+        $M_2$ & 0,87783 & 0,92417 & 0,93343 & 0,90915 & 0 \\ \hline
+        $M_3$ & 0,87769 & 0,92300 & 0,93276 & 0,90888 & 0 \\ \hline
+        $M_4$ & 0,86678 & 0,91529 & 0,92477 & 0,90950 & 0 \\ \hline
+        Média & 0,87515 & 0,92147 & 0,93077 & 0,90832 & 0 \\ \hline
     \end{tblr}
-    \fonte{Elaborado pelo autor}
+    \fonte{elaborado pelo autor}
 \end{table}
 
-O incremento nos valores obtidos é atribuível á existência de mais comunidades para as quais distribuir os vértices, não apenas em profanidade mas em diâmetro também.
+O incremento nos valores obtidos é atribuível à existência de mais comunidades para as quais distribuir os vértices, não apenas em profundidade mas em diâmetro também.
 Descartando-se a possibilidade de ser a alteração do valor de $MTE$ ao realizar testes com este zerado mas mantendo o $K$ padrão.
+Em compensação, essa parametrização faz com que a escolha de comunidades folha se torne muito mais provável, anulando a possibilidade de comunidades sobrepostas.
+Esse comportamento ocorre por no processo de escolha das comunidades a ordenação das comunidades se dá por escolher quais comunidades tem os representantes mais próximos, e as comunidades folha por serem em maior quantidade são muito mais prováveis de serem escolhidas.
+
 Outros testes descritos na \autoref{tab:mod_var_params}, onde com $MTE = 0$ realizou-se uma exploração dos valores de $EQ$ para diversos valores em $K$.
-Note-se o caso $M_9$ como conta exemplo do impacto de $K$ na modularidade, bem como o exemplo $M_6$, que nas comunidades de primeiro teme $EQ = 0,5$.
+Note-se o caso $M_9$ como contra exemplo do impacto de $K$ na modularidade, bem como o exemplo $M_6$, que nas comunidades de primeiro teme $EQ = 0,5$.
 
 \begin{table}[htbp]
     \centering
@@ -89,7 +107,7 @@ Note-se o caso $M_9$ como conta exemplo do impacto de $K$ na modularidade, bem c
         $M_8$ & $(100)$ & 0,87249 \\ \hline
         $M_9$ & $(3)$ & 0,34691 \\ \hline
     \end{tblr}
-    \fonte{Elaborado pelo autor}
+    \fonte{elaborado pelo autor}
 \end{table}
 
 Alternativamente, é possível modificar significativamente os valores obtidos para a modularidade com os parâmetros $E_\text{btw}^\text{max}$ e $E_\text{wth}^\text{max}$.
@@ -97,27 +115,27 @@ Na execução $M_{10}$ utilizou-se os demais parâmetros nos valores padrão, ma
 
 \section{Homofilia e Homogeneidade}
 
-Homogeneidade é a principal propriedade das comunidades definidas por semelhança de vértices, e ela está intimamente ligada á propriedade de homofilia.
+Homogeneidade é a principal propriedade das comunidades definidas por semelhança de vértices, ela está intimamente ligada à propriedade de homofilia.
 Assumindo a distância euclideana como função de semelhança, a forma natural de medir a homogeneidade das comunidades descritas por uma cobertura é a inercia e a razão da inercia entre diferentes níveis de comunidades.
 
 \subsection{Inercia}
 
-Inertia, definida como a soma dos quadrados das distancias de cada membro de um conjunto com a média do conjunto, sumariza quão semelhantes ou dissemelhantes os membros são.
+Inercia, definida como a soma dos quadrados das distancias de cada membro de um conjunto com a média do conjunto, sumariza quão semelhantes ou dissemelhantes os membros são.
 A razão entre a inercia em diferentes níveis é facilmente extrapolada do conceito de razão de inercia introduzido por \citeonline{largeron2015generating}.
-Assumindo que as comunidades de uma rede complexa sejam homogêneas e hierárquicas, é natural que as comunidades mais específicas (sub comunidades), tenham menos diversidade qua as comunidade mais generalistas.
-Tendo em vista que a inercia calculada com uma cobertura deve levar em conta que vértices serão contados múltiplas vezes se estiverem presentes em múltiplas comunidades, a inercia para um nível $l$ segue descrita na equação \ref{eq:inertia_l}.
+Assumindo que as comunidades de uma rede complexa sejam homogêneas e hierárquicas, é natural que as comunidades mais específicas (sub comunidades), tenham menos diversidade que as comunidade mais generalistas.
+Tendo em vista que a inercia calculada com uma cobertura deve levar em conta que vértices serão contados múltiplas vezes se estiverem presentes em múltiplas comunidades, a inercia para um nível $l$ segue descrita na equação \ref{eq:inercia_l}.
 Considerando que $C_l$ é o conjunto de comunidades de nível  $l$.
 
-\begin{equation}\label{eq:inertia_l}
+\begin{equation}\label{eq:inercia_l}
     I_l = \sum_{c \in C_l}\frac{\sum_{v \in c} |v-g_c|^2}{|c|}
 \end{equation}
 
 $I_l$ apresenta uma forma de comparação entre diferentes coberturas, de forma a identificar qual seria mais homogênea dado um mesmo conjunto do vértices.
 A extensão do conceito de inercia para a razão entre a inercia aplicada a dois níveis distintos se dá para isolar o fator de escala.
-Isso é, $\sfrac{I_l}{I_0}$ descreve não apenas quão homogêneo são os agrupamentos estabelecidos, mas o quão mais homogêneos eles são em relação á população em geral.
+Isso é, $\sfrac{I_l}{I_0}$ descreve não apenas quão homogêneo são os agrupamentos estabelecidos, mas o quão mais homogêneos eles são em relação à população em geral.
 Note-se que $I_0$ nesse contexto se refere à comunidade $C_n$, isso é, a comunidade que contém todos os vértices.
 
-\subsection{Distancia esperada}
+\subsection{Distância esperada}
 
 A homofilia, como propriedade de redes complexas onde os vértices tendem a estarem adjacentes à vértices semelhantes.
 Em um sistema com atributos discretos, é facilmente estabelecido uma função $\Delta$  que descreve o quão mais semelhantes os vértices adjacentes são do que seria esperado em um modelo nulo.
@@ -127,6 +145,10 @@ A adaptação para um modelo de um espaço contínuo de múltiplas dimensões se
 O valor real é calculado como a média da distância dos pontos adjacentes, $H_r$.
 
 \subsection{Resultados}
+
+Na \autoref{tab:iner_base_params} estão discriminados os valores de inércia médios para as comunidades organizadas por nível.
+A leitura que se pode fazer desses dados, em especial das médias, é: em média uma comunidade de primeiro nível tem 38\% da diversidade que se encontra na população geral; e em média uma comunidade de segundo nível (sub comunidade) tem 33\% da diversidade presente na população em geral.
+Por fim, em média a distância entre dos vértices adjacentes é metade do que seria esperado sem a homofilia, indicando a presença dessa propriedade.
 
 \begin{table}[htbp]
     \centering
@@ -147,16 +169,12 @@ $B_8$ & 0,32854 & 0,28121 & 0,304875 & 0,49867 \\ \hline
 $B_9$ & 0,37391 & 0,32310 & 0,348505 & 0,53405 \\ \hline
 Média & 0,37937 & 0,33069 & 0,355030 & 0,52846 \\ \hline
     \end{tblr}
-    \fonte{Elaborado pelo autor}
+    \fonte{elaborado pelo autor}
 \end{table}
 
-Na \autoref{tab:iner_base_params}, estão discriminados os valores de inércia médios para as comunidades organizadas por nível.
-A leitura que se pode fazer desses dados, em especial das médias, é: em média uma comunidade de primeiro nível tem 38\% da diversidade que se encontra na população geral; e em média uma comunidade de segundo nível (sub comunidade) tem 33\% da diversidade presente na população em geral.
-Por fim, em média a distância entre dos vértices adjacentes é metade do que seria esperado sem a homofilia, indicando a presença dessa propriedade.
-
-Naturalmente, existe uma influencias significativa que a quantidade de comunidades tem neste valor.
+Naturalmente, existe uma influencia significativa que a quantidade de comunidades tem neste valor.
 Observe-se na \autoref{tab:iner_pro_params}, com mais comunidades para distribuir os vértices, as comunidades ficam significativamente mais homogêneas.
-Como efeito disso, a distancia entre vértices conectados é bastante reduzida também.
+Como efeito disso, a distância entre vértices conectados é bastante reduzida.
 
 \begin{table}[htbp]
     \centering
@@ -171,7 +189,7 @@ Como efeito disso, a distancia entre vértices conectados é bastante reduzida t
         $M_4$ & 0,18125 & 0,11156 & 0,05556 & 0,03016 & 0,17048 \\ \hline
         Média & 0,18513 & 0,11371 & 0,05841 & 0,03220 & 0,17982 \\ \hline
     \end{tblr}
-\fonte{Elaborado pelo autor}
+\fonte{elaborado pelo autor}
 \end{table}
 
 Também de forma natural, existe uma relação entre o parâmetro $\theta$ e a inercia.
@@ -197,7 +215,7 @@ Isso é, em um modelo nulo, onde não existisse correlação entre os atributos 
         $I_7$ &                       & 0,36789 & 0,30745 &                          \\ \hline
         $I_8$ &                       & 0,46135 & 0,41065 &                          \\ \hline
     \end{tblr}
-\fonte{Elaborado pelo autor}
+\fonte{elaborado pelo autor}
 \end{table}
 
 O segundo ponto a ser destacado é que $\theta$ não é um controle direto sobre a inercia, nos casos com  $\theta=0.66$, $\theta=0.33$ e $\theta=0.1$ (\autoref{tab:iner_base_params}), a razão se manteve em um mesmo patamar, entre 30\% e 40\%.

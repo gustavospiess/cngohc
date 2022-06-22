@@ -4,7 +4,7 @@
 
 \chapter{Fundamentação teórica}
 
-Grafos podem trivialmente ser definidos como $\G = (\V, \E)$ onde $\V$ é um conjunto dos vértices de  $\G$ e  $\E$ é um conjunto de pares não ordenados de vértices ajacentes em $\G$, i.e. as arestas.
+Grafos podem trivialmente ser definidos como $\G = (\V, \E)$ onde $\V$ é um conjunto dos vértices de  $\G$ e  $\E$ é um conjunto de pares não ordenados de vértices adjacentes em $\G$, i.e. as arestas.
 
 \begin{figure}[htpb]
     \centering
@@ -27,7 +27,7 @@ Uma comunidade, dentro de qualquer definição, deve ser um sub grafo conexo, po
 \citeonline{largeron2015generating} define comunidade como uma classe de estrutura topológica comum a redes complexas, essas comunidades são categorizadas por terem uma densidade de vértices elevada.
 \citeonline{shen2009detect} entende que comunidades sejam estruturas que contenham múltiplos cliques dentro de si, e que essas comunidades se dispões em uma estrutura recursiva.
 \citeonline{akoglu2009rtg} descreve comunidades como estruturas modulares, onde nodos de um vértice formam grupos distintos entre si por que os membros do grupo tem maior chance de estarem conectados entre si do que estarem conectar com membros de outros grupos.
-\citeonline{girvan2002community} define ``Cluster'' e comunidade como duas propriedades distintas, o primeiro sendo a probabilidade de dois nodos ambos adjacentes a um terceiro serem também ajacentes entre si, e a segunda como sendo condutos de vértices densamente conectados entre si, e esparsamente conectados para além de si.
+\citeonline{girvan2002community} define ``Cluster'' e comunidade como duas propriedades distintas, o primeiro sendo a probabilidade de dois nodos ambos adjacentes a um terceiro serem também adjacentes entre si, e a segunda como sendo condutos de vértices densamente conectados entre si, e esparsamente conectados para além de si.
 
 As definições são agrupadas em três classes distintas por \citeonline{fortunato2010community}: definição local; definição global; e definição por similaridade de vértice.
 Essas definições não são mutuamente exclusivas, mas também não são ortogonais uma a outra.
@@ -185,7 +185,7 @@ Esse gerador é o que os autores chamam de um teclado recursivo, na realidade é
 Nominalmente, os vértices são uma sequência aleatória de caracteres de um conjunto finito de possibilidades, é repetidamente escolhido uma letra para o destino e uma para a origem simultaneamente.
 Com um parâmetro controlando um reforço que é feito para que a célula da matriz escolhida a cada interação seja da diagonal principal, existe uma tendencia de que vértices adjacentes tenham as mesmas letras nas mesmas posições.
 
-Essas regras simples são o bastante para que o modelo de \citeonline{akoglu2009rtg} tenha como emergentes algumas das propriedades desejáveis em um modelo de geração de redes complexas para.
+Essas regras simples são o bastante para que o modelo de \citeonline{akoglu2009rtg} tenha como emergentes algumas das propriedades desejáveis em um modelo de geração de redes complexas.
 Além das proporções, mundo pequeno, anexação preferencial e homofilia, o sistema de \citeonline{akoglu2009rtg} gera comunidades homogêneas.
 
 Existe também um interesse relevante em quanto os algoritmos de geração de redes complexas precisam em tempo.
