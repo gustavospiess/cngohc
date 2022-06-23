@@ -20,7 +20,7 @@ import typing as tp
 class Parameters(tp.NamedTuple):
     vertex_count: int = 1000  # N
     '''Number of vertexes of the graph'''
-    min_edge_count: int = 30000  # MTE
+    min_edge_count: int = 7000  # MTE
     '''Minimum number of edges of the graph'''
     deviation_sequence: tp.Tuple[float, ...] = (1, 1,)  # A
     '''Sequence of deviation values to initialize the vertexes '''
@@ -405,10 +405,10 @@ def generator(param: Parameters):
 
     count = 0
     for batch in batch_generator(__rolling_graph):
-        print(
-                f'{round(time()-initial_time, 3)};' +
-                f' {count}/{param.vertex_count};' +
-                f' {100*count/param.vertex_count}%')
+        # print(
+        #         f'{round(time()-initial_time, 3)};' +
+        #         f' {count}/{param.vertex_count};' +
+        #         f' {100*count/param.vertex_count}%')
         with Pool() as p:
             proccess_batch = p.imap_unordered(introduce_vertex, batch)
             part_builder = PartitionBuilder(
@@ -427,19 +427,19 @@ def generator(param: Parameters):
                     )
             count += len(batch)
 
-    print(
-            f'{round(time()-initial_time, 3)};' +
-            f' {count}/{param.vertex_count};' +
-            f' {100*count/param.vertex_count}%')
+    # print(
+    #         f'{round(time()-initial_time, 3)};' +
+    #         f' {count}/{param.vertex_count};' +
+    #         f' {100*count/param.vertex_count}%')
 
     fei_level = len(__parameters.community_count)
     fei_control = False
     while len(__rolling_graph.edge_set) < param.min_edge_count:
-        print(
-                f'{round(time()-initial_time, 3)};' +
-                f' {len(__rolling_graph.edge_set)}/{param.min_edge_count};' +
-                f' {len(__rolling_graph.edge_set)/param.min_edge_count*100}' +
-                f'%; {fei_level}')
+        # print(
+        #         f'{round(time()-initial_time, 3)};' +
+        #         f' {len(__rolling_graph.edge_set)}/{param.min_edge_count};' +
+        #         f' {len(__rolling_graph.edge_set)/param.min_edge_count*100}' +
+        #         f'%; {fei_level}')
         final_edges = final_edge_insertino(
                 __rolling_graph,
                 param.min_edge_count - len(__rolling_graph.edge_set),
@@ -459,10 +459,10 @@ def generator(param: Parameters):
                 edge_set(__rolling_graph.edge_set | final_edges),
                 __rolling_graph.partition
                 )
-    print(
-            f'{round(time()-initial_time, 3)}; ' +
-            f'{len(__rolling_graph.edge_set)}/{param.min_edge_count}; ' +
-            f'{len(__rolling_graph.edge_set)/param.min_edge_count*100}%')
+    # print(
+    #         f'{round(time()-initial_time, 3)}; ' +
+    #         f'{len(__rolling_graph.edge_set)}/{param.min_edge_count}; ' +
+    #         f'{len(__rolling_graph.edge_set)/param.min_edge_count*100}%')
 
 
     return __rolling_graph

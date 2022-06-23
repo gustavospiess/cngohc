@@ -13,7 +13,7 @@ Para os testes iniciais, foram utilizados valores descritos no \autoref{qua:base
     \label{qua:base_params}
     \begin{tblr}{|r|r|r|r|r|r|r|r|} \hline
         \SetCell{c} $N$ & \SetCell{c} $E_\text{wth}^\text{max}$ & \SetCell{c} $E_\text{btw}^\text{max}$ & \SetCell{c} $MTE$ & \SetCell{c} $\A$ & \SetCell{c} $K$ & \SetCell{c} $\theta$ & \SetCell{c} $\text{NbRep}$ \\ \hline
-         1000 & 45 & 3 & 30000 & (1, 1) & (6, 2) & $\sfrac{1}{10}$ & 20 \\ \hline
+         1000 & 45 & 3 & 7000 & (1, 1) & (6, 2) & $\sfrac{1}{10}$ & 20 \\ \hline
     \end{tblr}
     \fonte{elaborado pelo autor}
 \end{quadro}
@@ -45,17 +45,17 @@ No segundo nível, o valor médio foi de aproximadamente 0,6 indicando comunidad
     \label{tab:mod_base_params}
     \begin{tblr}{l|r|r|r|r} \hline
         \SetCell{c} Execução & \SetCell{c} $EQ_1$ & \SetCell{c} $EQ_2$  & \SetCell{c} $O_1$ & \SetCell{c} $O_2$\\ \hline
-        $B_0$ & 0,79749 & 0,59244 & 18 & 240 \\ \hline
-        $B_1$ & 0,79729 & 0,60191 & 20 & 227 \\ \hline
-        $B_2$ & 0,80668 & 0,61159 & 10 & 224 \\ \hline
-        $B_3$ & 0,79498 & 0,64428 & 19 & 188 \\ \hline
-        $B_4$ & 0,79230 & 0,61631 & 23 & 193 \\ \hline
-        $B_5$ & 0,78668 & 0,56342 & 25 & 254 \\ \hline
-        $B_6$ & 0,80528 & 0,62212 & 14 & 209 \\ \hline
-        $B_7$ & 0,81357 & 0,59754 & 12 & 228 \\ \hline
-        $B_8$ & 0,81050 & 0,58689 & 11 & 238 \\ \hline
-        $B_9$ & 0,78874 & 0,57122 & 20 & 252 \\ \hline
-        Média & 0,79935 & 0,60077 & 17 & 225\\ \hline
+        $B_0$ & 0.71695 & 0.79204 & 16 & 235 \\ \hline
+        $B_1$ & 0.72441 & 0.79760 & 18 & 211 \\ \hline
+        $B_2$ & 0.70039 & 0.79391 & 14 & 252 \\ \hline
+        $B_3$ & 0.73633 & 0.79622 & 13 & 190 \\ \hline
+        $B_4$ & 0.71758 & 0.78549 & 26 & 235 \\ \hline
+        $B_5$ & 0.73179 & 0.79201 & 33 & 224 \\ \hline
+        $B_6$ & 0.74779 & 0.79828 & 15 & 213 \\ \hline
+        $B_7$ & 0.73912 & 0.80411 & 20 & 200 \\ \hline
+        $B_8$ & 0.74237 & 0.80504 & 19 & 194 \\ \hline
+        $B_9$ & 0.71339 & 0.79877 & 17 & 237 \\ \hline
+        Média & 0.73701 & 0.79635 & 19 & 219 \\ \hline
     \end{tblr}
     \fonte{elaborado pelo autor}
 \end{table}
@@ -74,12 +74,12 @@ Observa-se que a redução do número mínimo foi feita para evitar a descaracte
     \label{tab:mod_pro_params}
     \begin{tblr}{l|r|r|r|r|r} \hline
         \SetCell{c} Execução & \SetCell{c} $EQ_1$ & \SetCell{c} $EQ_2$ & \SetCell{c} $EQ_3$ & \SetCell{c} $EQ_4$ & \SetCell{c} $O$ \\ \hline
-        $M_0$ & 0,87488 & 0,92136 & 0,93030 & 0,90631 & 0 \\ \hline
-        $M_1$ & 0,87855 & 0,92355 & 0,93257 & 0,90777 & 0 \\ \hline
-        $M_2$ & 0,87783 & 0,92417 & 0,93343 & 0,90915 & 0 \\ \hline
-        $M_3$ & 0,87769 & 0,92300 & 0,93276 & 0,90888 & 0 \\ \hline
-        $M_4$ & 0,86678 & 0,91529 & 0,92477 & 0,90950 & 0 \\ \hline
-        Média & 0,87515 & 0,92147 & 0,93077 & 0,90832 & 0 \\ \hline
+        $M_0$ & 0.96702 & 0.95833 & 0.93128 & 0.87673 & 0 \\ \hline
+        $M_1$ & 0.96721 & 0.95979 & 0.93388 & 0.88221 & 0 \\ \hline
+        $M_2$ & 0.96514 & 0.95933 & 0.93357 & 0.87722 & 0 \\ \hline
+        $M_3$ & 0.96541 & 0.95711 & 0.92974 & 0.87888 & 0 \\ \hline
+        $M_4$ & 0.96672 & 0.95868 & 0.93582 & 0.88090 & 0 \\ \hline
+        Média & 0.96630 & 0.95865 & 0.93286 & 0.87919 & 0 \\ \hline
     \end{tblr}
     \fonte{elaborado pelo autor}
 \end{table}
@@ -98,20 +98,21 @@ Note-se o caso $M_9$ como contra exemplo do impacto de $K$ na modularidade, bem 
     \label{tab:mod_var_params}
     \begin{tblr}{l|r|r} \hline
         \SetCell{c} Execução & $K$ & \SetCell{c} Média de $EQ$ \\ \hline
-        % (0.85619 + 0.93076 + 0.79259) /3 = 0.859847
-        $M_5$ & $(5, 5, 5)$ & 0,859847 \\ \hline 
-        % (0.91485 + 0.86146 + 0.49883) /3 = 0.75838
-        $M_6$ & $(2, 4, 8)$ & 0,75838 \\ \hline
-        % (0.91605 + 0.9208 + 0.86662) /3 = 0.901157
-        $M_7$ & $(8, 2, 4)$ & 0,901157 \\ \hline
-        $M_8$ & $(100)$ & 0,87249 \\ \hline
-        $M_9$ & $(3)$ & 0,34691 \\ \hline
+        % (0.59322 +0.94915 +0.79429)/3 = 0.778887
+        $M_5$ & $(5, 5, 5)$ & 0.77889 \\ \hline 
+        %(0.96943 +0.86339 +0.49881)/3 = 0.77721
+        $M_6$ & $(2, 4, 8)$ & 0.77721 \\ \hline
+        % (0.96947 +0.93266 +0.87089)/3 = 0.92434
+        $M_7$ & $(8, 2, 4)$ & 0.92434 \\ \hline
+        $M_8$ & $(100)$ & 0.95152 \\ \hline
+        $M_9$ & $(3)$ & 0.49024 \\ \hline
     \end{tblr}
     \fonte{elaborado pelo autor}
 \end{table}
 
 Alternativamente, é possível modificar significativamente os valores obtidos para a modularidade com os parâmetros $E_\text{btw}^\text{max}$ e $E_\text{wth}^\text{max}$.
-Na execução $M_{10}$ utilizou-se os demais parâmetros nos valores padrão, mas com $E_\text{btw}^\text{max}=45$ e $K = (2, 2)$, para um $EQ$ de 0,4.
+% (0.48115 + 0.4421)/2 = 0.461625
+Na execução $M_{10}$ utilizou-se os demais parâmetros nos valores padrão, mas com $E_\text{btw}^\text{max}=45$ e $K = (2, 2)$, para um $EQ$ médio de 0,46.
 
 \section{Homofilia e Homogeneidade}
 
@@ -157,17 +158,17 @@ Por fim, em média a distância entre dos vértices adjacentes é metade do que 
     \begin{tblr}{l|r|r|r|r} \hline
         \SetCell{c} Execução & \SetCell{c} $\sfrac{I_1}{I_0}$ & \SetCell{c} $\sfrac{I_2}{I_0}$ & \SetCell{c} $\sfrac{I_1+I_2}{2I_0}$ & \SetCell{c} $\sfrac{H_r}{H_e}$
         \\ \hline
-$B_0$ & 0,37838 & 0,32957 & 0,353975 & 0,51867 \\ \hline
-$B_1$ & 0,37367 & 0,34085 & 0,357260 & 0,54287 \\ \hline
-$B_2$ & 0,34342 & 0,28694 & 0,315180 & 0,48891 \\ \hline
-$B_3$ & 0,39089 & 0,35864 & 0,374765 & 0,54219 \\ \hline
-$B_4$ & 0,39894 & 0,35848 & 0,378710 & 0,55024 \\ \hline
-$B_5$ & 0,33398 & 0,27633 & 0,305155 & 0,48106 \\ \hline
-$B_6$ & 0,45564 & 0,38316 & 0,419400 & 0,55749 \\ \hline
-$B_7$ & 0,41636 & 0,36857 & 0,392465 & 0,57048 \\ \hline
-$B_8$ & 0,32854 & 0,28121 & 0,304875 & 0,49867 \\ \hline
-$B_9$ & 0,37391 & 0,32310 & 0,348505 & 0,53405 \\ \hline
-Média & 0,37937 & 0,33069 & 0,355030 & 0,52846 \\ \hline
+$B_0$ & 0.38193 & 0.34155 & 0.36174 & 0.45942 \\ \hline
+$B_1$ & 0.34067 & 0.30168 & 0.32118 & 0.45920 \\ \hline
+$B_2$ & 0.34262 & 0.29697 & 0.31980 & 0.49265 \\ \hline
+$B_3$ & 0.35961 & 0.29986 & 0.32974 & 0.48305 \\ \hline
+$B_4$ & 0.41670 & 0.37592 & 0.39631 & 0.52725 \\ \hline
+$B_5$ & 0.35321 & 0.28246 & 0.31784 & 0.46047 \\ \hline
+$B_6$ & 0.37795 & 0.29310 & 0.33553 & 0.46127 \\ \hline
+$B_7$ & 0.35209 & 0.29903 & 0.32556 & 0.45348 \\ \hline
+$B_8$ & 0.36251 & 0.32820 & 0.34536 & 0.46364 \\ \hline
+$B_9$ & 0.36874 & 0.32936 & 0.34905 & 0.50499 \\ \hline
+Média & 0.36560 & 0.31481 & 0.34021 & 0.47654 \\ \hline
     \end{tblr}
     \fonte{elaborado pelo autor}
 \end{table}
@@ -182,15 +183,21 @@ Como efeito disso, a distância entre vértices conectados é bastante reduzida.
     \label{tab:iner_pro_params}
     \begin{tblr}{l|r|r|r|r|r} \hline
         \SetCell{c} Execução & \SetCell{c} $\sfrac{I_1}{I_0}$ & \SetCell{c} $\sfrac{I_2}{I_0}$ & \SetCell{c} $\sfrac{I_3}{I_0}$ & \SetCell{c} $\sfrac{I_4}{I_0}$ & \SetCell{c} $\sfrac{H_r}{H_e}$ \\ \hline
-        $M_0$ & 0,18520 & 0,10856 & 0,05518 & 0,03054 & 0,17945 \\ \hline
-        $M_1$ & 0,18758 & 0,11560 & 0,06015 & 0,03193 & 0,18039 \\ \hline
-        $M_2$ & 0,18446 & 0,11812 & 0,05993 & 0,03546 & 0,18521 \\ \hline
-        $M_3$ & 0,18714 & 0,11471 & 0,06123 & 0,03290 & 0,18356 \\ \hline
-        $M_4$ & 0,18125 & 0,11156 & 0,05556 & 0,03016 & 0,17048 \\ \hline
-        Média & 0,18513 & 0,11371 & 0,05841 & 0,03220 & 0,17982 \\ \hline
+        $M_0$ & 0.18740 & 0.11020 & 0.05650 & 0.03240 & 0.15975 \\ \hline
+        $M_1$ & 0.18766 & 0.11563 & 0.06017 & 0.03277 & 0.16491 \\ \hline
+        $M_2$ & 0.18446 & 0.11812 & 0.05993 & 0.03526 & 0.17281 \\ \hline
+        $M_3$ & 0.18566 & 0.11307 & 0.06003 & 0.03169 & 0.16211 \\ \hline
+        $M_4$ & 0.18111 & 0.11163 & 0.05563 & 0.03016 & 0.16158 \\ \hline
+        Média & 0.18526 & 0.11373 & 0.05845 & 0.03246 & 0.16423 \\ \hline
     \end{tblr}
 \fonte{elaborado pelo autor}
 \end{table}
+
+% (0.18740 + 0.18766 + 0.18446 + 0.18566 + 0.18111)/5 = 0.18526
+% (0.11020 + 0.11563 + 0.11812 + 0.11307 + 0.11163)/5 = 0.11373
+% (0.05650 + 0.06017 + 0.05993 + 0.06003 + 0.05563)/5 = 0.05845
+% (0.03240 + 0.03277 + 0.03526 + 0.03169 + 0.03016)/5 = 0.03246
+% (0.15975 + 0.16491 + 0.17281 + 0.16211 + 0.16158)/5 = 0.16423
 
 Também de forma natural, existe uma relação entre o parâmetro $\theta$ e a inercia.
 É apontado na tabela \autoref{tab:iner_var_params} a variação da inercia conforme se altera $\theta$.
@@ -205,20 +212,21 @@ Isso é, em um modelo nulo, onde não existisse correlação entre os atributos 
         \SetCell{c} Execução & \SetCell{c} $\theta$ & \SetCell{c} $\sfrac{I_1}{I_0}$ & \SetCell{c} $\sfrac{I_2}{I_0}$ &
         \SetCell{c} Média
         \\ \hline
-        $I_0$ & \multirow{3}{*}{1.00} & 0,74099 & 0,72866 & \multirow{3}{*}{0.72601} \\ \hline
-        $I_1$ &                       & 0,69068 & 0,67882 &                          \\ \hline
-        $I_2$ &                       & 0,77254 & 0,74436 &                          \\ \hline
-        $I_3$ & \multirow{3}{*}{0.66} & 0,42301 & 0,38883 & \multirow{3}{*}{0.38678} \\ \hline
-        $I_4$ &                       & 0,44184 & 0,37531 &                          \\ \hline
-        $I_5$ &                       & 0,37331 & 0,31835 &                          \\ \hline
-        $I_6$ & \multirow{3}{*}{0.33} & 0,43381 & 0,38709 & \multirow{3}{*}{0.39471} \\ \hline
-        $I_7$ &                       & 0,36789 & 0,30745 &                          \\ \hline
-        $I_8$ &                       & 0,46135 & 0,41065 &                          \\ \hline
+        $I_0$ & \multirow{3}{*}{1.00} & 0.78255 & 0.73782 & \multirow{3}{*}{0.71637} \\ \hline
+        $I_1$ &                       & 0.70558 & 0.67610 &                          \\ \hline
+        $I_2$ &                       & 0.70773 & 0.68841 &                          \\ \hline
+        $I_3$ & \multirow{3}{*}{0.66} & 0.40448 & 0.34173 & \multirow{3}{*}{0.36539} \\ \hline
+        $I_4$ &                       & 0.40280 & 0.33749 &                          \\ \hline
+        $I_5$ &                       & 0.37041 & 0.33541 &                          \\ \hline
+        $I_6$ & \multirow{3}{*}{0.33} & 0.34582 & 0.29460 & \multirow{3}{*}{0.34005} \\ \hline
+        $I_7$ &                       & 0.36632 & 0.30172 &                          \\ \hline
+        $I_8$ &                       & 0.40126 & 0.33059 &                          \\ \hline
     \end{tblr}
 \fonte{elaborado pelo autor}
 \end{table}
 
-O segundo ponto a ser destacado é que $\theta$ não é um controle direto sobre a inercia, nos casos com  $\theta=0.66$, $\theta=0.33$ e $\theta=0.1$ (\autoref{tab:iner_base_params}), a razão se manteve em um mesmo patamar, entre 30\% e 40\%.
+
+O segundo ponto a ser destacado é que $\theta$ não é um controle direto sobre a inercia, nos casos com  $\theta=0.66$, $\theta=0.33$ e $\theta=0.1$ (\autoref{tab:iner_base_params}), a razão se manteve em um mesmo patamar, entre 34\% e 40\%.
 Existem outros fatores que afetam diretamente a homogeneidade das comunidades, e que são mais dificilmente controlados por parâmetros.
 
 \end{document}
