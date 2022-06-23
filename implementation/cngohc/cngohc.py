@@ -5,6 +5,7 @@ import click
 from os import path
 from random import shuffle
 from collections import Counter
+from itertools import product, repeat
 
 
 import networkx as nx
@@ -135,60 +136,48 @@ def view(ctx):
     nx_graph = nx.Graph()
     nx_graph.add_edges_from(graph.edge_set)
 
-    position = {n: tuple(d*10 for d in n) for n in graph.vertex_set}
-    position = nx.spring_layout(nx_graph, scale=100, pos=position, iterations=10)
 
     colors = [
-            '#7FFFFF', '#00FFFF', '#FF7FFF', '#7F7FFF', '#007FFF', '#FF00FF',
-            '#7F00FF', '#0000FF', '#FFFF7F', '#7FFF7F', '#00FF7F', '#FF7F7F',
-            '#7F7F7F', '#007F7F', '#FF007F', '#7F007F', '#00007F', '#FFFF00',
-            '#7FFF00', '#00FF00', '#FF7F00', '#7F7F00', '#007F00', '#FF0000',
-            '#7F0000',
-            ]
-    shuffle(colors)
+            'red', 'lime', 'green', 'yellow', 'blue', 'purple', 'orange', 'pink', 'cyan',
+            'teal', 'fuchsia', 'brown',
+            'gray', 'olive', 'crimson', 'tan', 'navy', 'chocolate']
+    color = (c for _ in range(100) for  c in colors) 
+    shape = 's^>v<dph8o'
+    part_color = dict()
+    part_color[graph.partition] = ('o', 'white')
+    for commuinty_a, _shape in zip(graph.partition, shape):
+        part_color[commuinty_a] = (_shape, 'white')
+        if isinstance(commuinty_a, Partition):
+            for commuinty_b in commuinty_a:
+                _color = next(color)
+                part_color[commuinty_b] = (_shape, _color)
 
-    part_color = {p: c for p, c in zip(graph.partition.flat, colors*8)}
-
-    shared_nodes = [
-            v
-            for v in graph.vertex_set
-            if len(graph.leaf_partitions_of[v]) > 1]
-    # for p in sorted(graph.partition.flat, key=lambda p: p.level * -1):
-    #     nodes = list(n for n in p if isinstance(n, Vertex))
-    #     if len(nodes) == 0:
-    #         continue
-    #     nx.draw_networkx_nodes(
-    #             nx_graph, position, nodes, node_color=part_color[p])
-    #     plt.plot([0, 0], [-40, 40], lw=3, color='black')
-    #     plt.plot([-40, 40], [0, 0], lw=3, color='black')
-    #     plt.show()
-    for p in sorted(graph.partition.flat, key=lambda p: p.level * -1):
-        nodes = list(
-                n
-                for n in p
-                if isinstance(n, Vertex) and n not in shared_nodes)
-        nx.draw_networkx_nodes(
-                nx_graph, position, nodes, node_color=part_color[p])
-    nx.draw_networkx_nodes(
-            nx_graph, position, shared_nodes, node_color='#000000')
-    nx.draw_networkx_edges(nx_graph, pos=position)
-    # plt.plot([0, 0], [-40, 40], lw=3, color='black')
-    # plt.plot([-40, 40], [0, 0], lw=3, color='black')
-    plt.show()
+    style_map = dict()
+    for p in sorted(graph.partition.flat, key=lambda p: p.level):
+        if p.level > 2:
+            break
+        for v in p.depht:
+            if all(sub in p for sub in graph.leaf_partitions_of[v]) or (len(graph.leaf_partitions_of[v]) == 1):
+                style_map[v] = part_color[p]
 
     position = {n: tuple(d*10 for d in n) for n in graph.vertex_set}
-    for p in sorted(graph.partition.flat, key=lambda p: p.level * -1):
-        nodes = list(
-                n
-                for n in p
-                if isinstance(n, Vertex) and n not in shared_nodes)
-        nx.draw_networkx_nodes(
-                nx_graph, position, nodes, node_color=part_color[p])
-    nx.draw_networkx_nodes(
-            nx_graph, position, shared_nodes, node_color='#000000')
-    nx.draw_networkx_edges(nx_graph, pos=position)
-    plt.show()
+    for i in (0, 5):
+        if i > 0:
+            position = nx.spring_layout(nx_graph, k=2, pos=position, iterations=i)
 
+        for v in graph.partition.depht:
+            nx.draw_networkx_nodes(
+                    nx_graph,
+                    position,
+                    (v,),
+                    node_size=150,
+                    node_color=style_map[v][1],
+                    node_shape=style_map[v][0],
+                    edgecolors='#000000')
+        nx.draw_networkx_edges(nx_graph, pos=position, width=0.2)
+        plt.show()
+        nx.draw_networkx_edges(nx_graph, pos=position, width=0.1)
+        plt.show()
 
 @main.command()
 @click.option(

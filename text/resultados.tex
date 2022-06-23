@@ -229,4 +229,80 @@ Isso é, em um modelo nulo, onde não existisse correlação entre os atributos 
 O segundo ponto a ser destacado é que $\theta$ não é um controle direto sobre a inercia, nos casos com  $\theta=0.66$, $\theta=0.33$ e $\theta=0.1$ (\autoref{tab:iner_base_params}), a razão se manteve em um mesmo patamar, entre 34\% e 40\%.
 Existem outros fatores que afetam diretamente a homogeneidade das comunidades, e que são mais dificilmente controlados por parâmetros.
 
+\section{Visualização}
+
+Uma das características da propriedade de existência de comunidades é que a definição de comunidade é dependente de contexto.
+Ainda assim, parece haver um entendimento natural de comunidades e de suas propriedades a partir da visualização das mesmas.
+Segue a baixo a renderização dos grafos $B_0$ e $M_0$, gerados respectivamente com os parâmetros padrão e com os parâmetros otimizando para a modularidade (mais valores em $K$ e valores maiores).
+
+A renderização desses grafos conta com uma codificação de forma que vértices que estejam na mesma comunidade de primeiro nível compartilhem o formato, e vértices que estejam na mesma comunidade de segundo nível compartilhem as cores, como é observável na \autoref{fig:m0}.
+Vértices que estejam em mais de uma comunidade de segundo nível terão a cor branca, e vértices que estejam em mais de uma comunidade de primeiro nível terão o formato de círculo.
+Dessa forma, é possível identificar as áreas de sobreposição, bem como os primeiros níveis da hierarquia de comunidades.
+
+\begin{figure}[htpb]
+    \centering
+    \caption{$M_0$ renderizado aproximando os vértices adjacentes}\label{fig:m0}
+    \includegraphics[width=\textwidth, height=0.6\textheight]{figures/m0.png}
+    \fonte{elaborado pelo autor.}
+\end{figure}
+
+Na \autoref{fig:m0} está a renderização do grafo $M_0$ com o posicionamento dos vértices de forma a minimizar a distância deles na imagem.
+Além das divisões entre comunidades que estão categorizadas com os formatos e com as cores, é visível uma divisão interna de pequenos grupos densamente conexos.
+Essa visualização e entendimento intuitivo da divisão é decorrente de uma presença muito acentuada da propriedade de comunidades.
+
+Essa divisão mais presenta, conforme já foi distrito anteriormente, é responsável também pela falta de vértices em regiões sobrepostas, de certa forma sacrificando ganhos nessa propriedade (sobreposição) para ganhar maior definição em outra (comunidades hierárquicas).
+A \autoref{fig:m0_pos} e a \autoref{fig:m0_pos_wires} demonstram isso.
+Ambas apresentam os vértices posicionados com base nos seus atributos, de forma que o centro (mais próximo a origem) e mais densamente povoado, no entanto a \autoref{fig:m0_pos_wires} não renderiza os vértices, apenas as arestas.
+Com isso, é abundantemente claro o quão fortemente delineadas são as comunidades.
+Demonstra-se que cada comunidade possui um domínio absoluto sobre alguma região do espaço onde os vértices se encontram.
+
+\begin{figure}[htpb]
+    \centering
+    \caption{$M_0$ renderizado com os vértices posicionado pelos seus atributos}\label{fig:m0_pos}
+    \includegraphics[width=0.8\textwidth, height=0.32\textheight]{figures/m0_pos.png}
+    \fonte{elaborado pelo autor.}
+\end{figure}
+
+\begin{figure}[htpb]
+    \centering
+    \caption{$M_0$ renderizado com os vértices posicionado pelos seus atributos (apenas arestas)}\label{fig:m0_pos_wires}
+    \includegraphics[width=\textwidth, height=0.52\textheight]{figures/m0_pos_wires.png}
+    \fonte{elaborado pelo autor.}
+\end{figure}
+
+A \autoref{fig:b0_pos} e a \autoref{fig:b0_pos_wires} fazem a mesma distinção, mas bom o grafo $B_0$.
+$B_0$ apresenta um conjunto de comunidades onde ocorre a sobreposição, não apenas no sentido de comunidades sobrepostas, mas em um sentido mais simples, de que há vértices que não pertencem a comunidade (e que não tem ligações com ela) ocupando o mesmo espaço.
+Novamente, esse é um efeito de uma menor proporção de comunidades.
+
+A visualização das arestas mostra uma divisão visual das comunidades, com uma comunidade no centro e cinco comunidades rodeando essa.
+Dessas seis comunidades, é possível identificar que existem grupos distintos dentro delas, isso é, as sub comunidades são visíveis, mas pela natureza delas (e presença de vértices que certem as duas), são divisões muito menos precisas.
+
+\begin{figure}[htpb]
+    \centering
+    \caption{$B_0$ renderizado com os vértices posicionado pelos seus atributos}\label{fig:b0_pos}
+    \includegraphics[width=\textwidth, height=0.52\textheight]{figures/b0_pos.png}
+    \fonte{elaborado pelo autor.}
+\end{figure}
+
+\begin{figure}[htpb]
+    \centering
+    \caption{$B_0$ renderizado com os vértices posicionado pelos seus atributos (apenas arestas)}\label{fig:b0_pos_wires}
+    \includegraphics[width=0.8\textwidth, height=0.32\textheight]{figures/b0_pos_wires.png}
+    \fonte{elaborado pelo autor.}
+\end{figure}
+
+% \begin{figure}[htpb]
+%     \centering
+%     \caption{Exemplo de grafo}\label{fig:b0}
+%     \includegraphics[width=\textwidth, height=0.42\textheight]{figures/b0.png}
+%     \fonte{elaborado pelo autor.}
+% \end{figure}
+
+% \begin{figure}[htpb]
+%     \centering
+%     \caption{Exemplo de grafo}\label{fig:b0_wires}
+%     \includegraphics[width=1\textwidth, height=0.42\textheight]{figures/b0_wires.png}
+%     \fonte{elaborado pelo autor.}
+% \end{figure}
+
 \end{document}
