@@ -10,12 +10,15 @@ Os resultados experimentais demonstram o sucesso nos objetivos gerais e específ
 
 Quando ao objetivo específico da inclusão de comunidades na rede gerada, bem como a construção de uma \emph{ground truth} para quais são os membros das comunidades é demonstrado como bem sucedido na exploração dos resultados da função de modularidade estendida $EQ$.
 A presença das comunidades, bem como o pertencimento dos vértices a elas é confirmado pela função de qualidade de cobertura.
-Notadamente, essa função e a suas aplicação recursiva destacam a presença de comunidades hierarquicamente organizadas, de forma que se aninham em comunidades auto semelhantes, e sobrepostas, de forma a compartilharem vértices.
+Notadamente, essa função e a sua aplicação recursiva destacam a presença de comunidades hierarquicamente organizadas, de forma que se aninham em comunidades auto semelhantes, e sobrepostas, de forma a compartilharem vértices.
 Demonstradamente o compartilhamento de vértices é sensível à parametrização do modelo, se mostrando mais presente em grafos gerados a partir de parâmetros que geram uma estrutura com menos comunidades.
 
 O objetivos relativos á comunidades homogêneas foram bem sucedidos conforme demonstrado experimentalmente, sendo parametrizável o quão pronunciada é essa propriedade.
 Com a escolha de parâmetros que reforcem comunidades de tamanho reduzido (maiores valores para $K$) os grafos gerados consistentemente apresentam comunidades com menos de quatro porcento da diversidade global.
 Os parâmetros básicos, consideravelmente conservadores no quanto eles reforçam características específicas, geram grafos onde as comunidades apresentam consistentemente menos de trinta e quatro por cento da diversidade que o grafo.
+
+Por fim, acredita-se que esse trabalho poderá se tornar uma referência relevante, dada a falta de literatura em língua portuguesa para a área de redes complexas e comunidades.
+Existem também possíveis extensões deste trabalho.
 
 \section{Extensões}
 
@@ -23,7 +26,7 @@ Redes complexas como área de estudo é um campo promissor e mais estudos devem 
 O processo de geração de redes complexas com comunidades é uma área de relevância acadêmica, e o modelo apresentado neste trabalho tem um conjunto de extensões desejáveis, são elas:
 
 A otimização da cobertura gerada para algorítimos de percolação de cliques, por meio da redução de arestas entre vértices que estejam entre duas comunidades.
-Isso poderia ser implementado no processo de geração final de arestas, removendo estres vértices e não os considerando na avaliação de se a comunidade é um grafo completo.
+Isso poderia ser implementado no processo de geração final de arestas, removendo estes vértices e não os considerando na avaliação de que a comunidade é um grafo completo.
 Idealmente, isso deveria ser parametrizado com um valor entre zero e um, identificando a proporção de arestas entre vértices na mesma área de superposição.
 
 A elaboração de um método mais deliberado nas escolha de comunidades, que permita um controle mais fino da proporção de vértices em áreas de superposição.

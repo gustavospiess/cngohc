@@ -11,12 +11,12 @@ A modelagem proposta se baseia na construção de uma cobertura (em oposição �
 
 \section{Hipótese}
 
-Esse trabalho se propõe a validar se o modelo a descrito a baixo satisfaz um conjunto de propriedades desejáveis.
+Esse trabalho se propõe a validar se o modelo descrito satisfaz um conjunto de propriedades desejáveis.
 Para tanto, estende-se a representação clássica de grafo para a inclusão de uma cobertura, bem como a delimitação dos vértices como vetores em um espaço de $p$ dimensões.
 
-\subsection{A Representação do grafo}
+\subsection{Representação do grafo}
 
-O model gera um grafo com atributos e uma cobertura de comunidades hierarquicamente dispostas.
+O modelo gera um grafo com atributos e uma cobertura de comunidades hierarquicamente dispostas.
 
 \begin{equation}
 \begin{split}
@@ -31,7 +31,7 @@ O model gera um grafo com atributos e uma cobertura de comunidades hierarquicame
 Os vértices em $\V$ são uma nuvem de pontos em um espaço de $p$ dimensões, cada um sendo um vetor com $p$ valores racionais (representados com ponto flutuante).
 As arestas em $\E$ são simples pares não ordenados de vértices.
 A cobertura $C_n$ é uma estrutura recursiva de conjuntos com $n$ níveis, onde o conjunto $C_n$ é composto por $m$ conjuntos $C_{n-1}$.
-No último níveo o conjunto $C_0$ é composto por vértices do grafo, esses conjuntos são as comunidades \emph{folha}, significando que elas não são compostas por outras comunidades.
+No último nível o conjunto $C_0$ é composto por vértices do grafo, esses conjuntos são as comunidades \emph{folha}, significando que elas não são compostas por outras comunidades.
 
 Essa estrutura recursiva é a representação das comunidades hierárquicas, onde os vértices que pertencem a uma comunidade $C$, denotado $V_C$ são os membros do conjunto união dos membros de  $C$, isso é, $\bigcup_{S \in c} V_S$.
 Como característica dessa modelagem, os vértices da comunidade representada por $C_n$ são a totalidade dos vértices do grafo, portanto $V_{C_n} = \V$.
@@ -44,12 +44,12 @@ Todas as comunidades do grafo $\G$ contém pelo menos um membro.
 
 Uma característica de notação é a função flat que mapeia uma comunidade para um conjunto de quais as comunidades que a compõe.
 Para efeito de notação $\text{flat}(C_n)$ é um conjunto com todas as comunidades do grafo, incluindo a comunidade global.
-E o mapa $L$, que relaciona cada comunidade com a quantidade de ancestrais que a comunidade possui, ou seja, com a quantidade de comunidades que ela compõe.
+O mapa $L$ relaciona cada comunidade com a quantidade de ancestrais que a comunidade possui, ou seja, com a quantidade de comunidades que ela compõe.
 As notações utilizadas serão  $L_C$, leia-se nível de $C$, ou $L$, leia-se níveis.
-A raiz da cobertura é o nível zero ($L_{C_n} = 0$) e a o nível de um nó folha é igual a $n$ ($L_{C_0}=n$)
+A raiz da cobertura é o nível zero ($L_{C_n} = 0$) e a o nível de um nó folha é igual a $n$ ($L_{C_0}=n$).
 As características que devem ser verdadeiras se um grafo for representado nesta modelagem encontram-se descritas no \autoref{qua:prop_representacao}.
 
-\begin{quadro}[hbtp]
+\begin{quadro}[hbt]
     \centering
     \caption{Características da modelagem}
     \label{qua:prop_representacao}
@@ -90,12 +90,15 @@ As características que devem ser verdadeiras se um grafo for representado nesta
 \end{quadro}
 
 Além dessa estruturação de $\G$, o modelo faz uso de uma segunda representação do grafo, denotada  $\G_p = (\V, \E, C_n, R)$.
-Ela representa um estado parcial do grafo sendo gerado, neste estado parcial o grafo não necessariamente é conexo e vértices com grau zero não fazem parte de nenhuma comunidade definida na cobertura $C_n$.
+Ela representa um estado parcial do grafo sendo gerado.
+Neste estado parcial o grafo não necessariamente é conexo e vértices com grau zero não fazem parte de nenhuma comunidade definida na cobertura $C_n$.
 Nessa representação também é incluso um novo dado $R$, que identifica os representantes de uma determinada comunidade, isso é, os membros eleitos durante o processo com quem se compara um vértice $v$ ao considerar introduzir este à comunidade.
+Esse estado $\G_p$ mantém algumas das características de notação descritas no \autoref{qua:prop_representacao}.
+Notadamente as funções $\text{flat}(C)$, $L_C$ e $V_C$ são usadas no modelo em contextos em que  $C$ é definida como uma comunidade em $\G_p$.
 
 \subsection{Propriedades desejáveis do modelo}
 
-\citeonline{largeron2015generating} implementa um modelo algorítmico de geração de redes complexas que mantém uma série de propriedades desejáveis.
+\citeonline{largeron2015generating} implementam um modelo algorítmico de geração de redes complexas que mantém uma série de propriedades desejáveis.
 Como a implementação proposta se baseia no modelo de \citeonline{largeron2015generating}, é desejável que as propriedades sejam mantidas.
 Nominalmente, são elas:
 
@@ -117,7 +120,7 @@ A construção das arestas é feita priorizando a introdução de vértices a v�
 É introduzida também a conceitualização de ortogonalidade de comunidades.
 É trivial a identificação, em sistemas do mundo real, de grupamentos que se sobrepõe devido ao compartilhamento de características distintas, isso é, cada uma das comunidades na área sobreposta tem como definição uma característica distinta.
 Em uma definição de comunidade por semelhança de vértice, dado um sistema onde os vértices são caraterizados por dois ou mais características independentes, cada comunidade pode ter uma semelhança não em função da soma das características, mas de uma categorização em específico.
-Considerando comunidades de indivíduos caracterizados por sua área de atuação e por sua crença religiosa, assumindo que não há uma influencia direta entre essas duas características, uma comunidade de membros de uma religião poderia estar sobreposta a uma comunidade de profissionais de uma determinada área.
+Considerando comunidades de indivíduos caracterizados por sua área de atuação e por sua crença religiosa, assumindo que não há uma influência direta entre essas duas características, uma comunidade de membros de uma religião poderia estar sobreposta a uma comunidade de profissionais de uma determinada área.
 Essas duas comunidades seriam ortogonais.
 
 \section{Implementação do modelo}
@@ -179,7 +182,7 @@ A primeira fase do algoritmo é a inicialização dos vértices e das comunidade
 Conforme definido no \autoref{qua:fase_1}.
 
 \begin{quadro}[htbp]
-\caption{Fase 1 do modelo}
+\caption{Primeira fase do modelo -- inicialização dos vértices e comunidades}
 \label{qua:fase_1}
 \begin{algorithm}
 Output: $\G_p = (\V, \E, C_n, R)$
@@ -222,7 +225,7 @@ return $\G_p$
 \end{quadro}
 
 O processo da inicialização se divide em gerar a nuvem de pontos e inicializar as comunidades.
-A linha quatro inicializa $\V$ com um conjunto vazio, e o laço de repetição das linhas 6 á 10 insere vetores neste conjunto enquanto ele tiver menos de  $N$ membros.
+A linha 4 inicializa $\V$ com um conjunto vazio, e o laço de repetição das linhas 6 á 10 insere vetores neste conjunto enquanto ele tiver menos de  $N$ membros.
 O vetor em si é definido como uma série de distribuições aleatórias com o centro em zero e o desvio padrão informado pelo parâmetro $\A$.
 
 O processo de geração das estruturas de comunidade é mais complexo, exigindo uma função para possibilitar recursividade.
@@ -230,7 +233,7 @@ A função cover tem como condicionante a característica de que a comunidade qu
 Na linha 14 é feita essa ramificação, considerando que $l$, um parâmetro de controle que é incrementado a cada chamada recursiva.
 Se $l$ for igual á cardinalidade de $k$, isso indica que se está processando o último nível a ser gerado, uma folha, o comportamento deixa de ser recursivo.
 
-Este último nível gerado compõe um conjunto de arestas entre os membros da comunidade folha.
+O último nível gerado compõe um conjunto de arestas entre os membros da comunidade folha.
 Nas linhas 16 até 20 é iterado sobre os vértices, os vértices com quem é possível formar arestas, nomeado $p'$, são definidos como os vértices em $p$ diferentes de $v$ com quem $v$ não é adjacente.
 Nas linhas 17 e 18 uma quantidade aleatória das arestas possíveis são construídas.
 
@@ -239,11 +242,11 @@ $\text{Sample}(P, l)$ escolhe um sub conjunto de $P$ com $l$ elementos uniformem
 $\text{Rand}_{\text{Uni}(P)}$ funciona da mesma forma, mas retorna um único membro de $P$.
 
 No caso de não ser uma comunidade folha, o processo de construção da comunidade encontra-se nas linhas 22 até 28.
-Para isso primeiramente é definido um tamanho de amostragem $s$.
+Para isso, primeiramente é definido um tamanho de amostragem $s$.
 Esse tamanho é definido como um produto dos valores de $K$, filtrando para o nível atual em diante.
 Com isso, buscasse uma amostra $p'$, com tamanho  $s$ ou o valor máximo possível se  $s$ for maior que a quantidade de membros em  $p$.
 
-Com essa amostra, é realizado um agrupamentos utilizando o algoritmo \emph{K Medoids} \cite{largeron2015generating}.
+Com essa amostra, realiza-se um agrupamentos utilizando o algoritmo \emph{K Medoids} \cite{largeron2015generating}.
 Nesses clusters iniciais é realizada a chamada recursiva da função $\text{cover}$, que faz a construção da comunidade composta pelos vértices do cluster.
 Com as comunidades definidas e agrupadas no conjunto $c$, que representa a comunidade que se está processando, é realizada a introdução de arestas para que a comunidade seja conexa.
 Assumindo que todas as comunidades geradas por meio da função  $\text{cover}$ sejam conexas, é construído um caminho que liga um membro de cada comunidade.
@@ -259,7 +262,7 @@ Esse processo tem um forte componente do custo relacionado á quantidade de vér
 Para tanto, as principais distinções do modelo proposto para com o modelo de \citeonline{largeron2015generating} são para possibilidade de paralelização do processo.
 
 \begin{quadro}[bhtp]
-\caption{Fase 2 do modelo, construção dos lotes}
+\caption{Segunda fase do modelo -- Construção dos lotes}
 \label{qua:fase_2_1}
 \begin{algorithm}
 Output: $B \subset \set{B' | B' \subset \V}$
@@ -285,19 +288,19 @@ $B \leftarrow B \cup B'$
 \fonte{elaborado pelo autor}
 \end{quadro}
 
-A implementação trabalha com lotes que serão processados sequencialmente, os membros de cada lote serão processados de forma assíncrona.
+A implementação feita trabalha com lotes que serão processados sequencialmente, os membros de cada lote serão processados de forma assíncrona.
 Para isso, as arestas adicionadas no processamento de cada vértice individual não serão consideradas como existentes no processamento de vértices do mesmo lote.
 No mesmo sentido, os vértices processados individualmente não serão considerados como membros de comunidade alguma enquanto o lote é processado.
 Em outros termos, é estabelecido um estado do grafo que será considerado imutável, e cada vértice será processado com o mesmo estado, acumulando as informações geradas no processamento e cada vértice para a construção de um novo estado quando da conclusão de todos os vértices do lote.
 Para tanto, os lotes são construídos e processados de acordo com o \autoref{qua:fase_2_1}
 
 Os lotes tem tamanhos definidos, o tamanho base $B_s$ é dado pela quantidade total de comunidades $|\text{flat}(C_n)|$.
-E a sequência de tamanhos $B_s'$ é dada pelas potencias de dois, multiplicadas por $B_s$, até o primeiro valor que seja maior ou igual a cinco mil.
+E, a sequência de tamanhos $B_s'$ é dada pelas potencias de dois, multiplicadas por $B_s$, até o primeiro valor que seja maior ou igual a cinco mil.
 Os lotes gerados depois dessa primeira sequência tem tamanho definido aleatoriamente entre cinco mil e dez mil.
 O consumo desses lotes para a construção das comunidades hierárquicas e sobrepostas é implementada conforme descrição no \autoref{qua:fase_2_2}.
 
 \begin{quadro}[htbp]
-\caption{Fase 2 do modelo, processamento dos lotes}
+\caption{Segunda fase do modelo -- Processamento dos lotes}
 \label{qua:fase_2_2}
 \begin{algorithm}
 Output: $\G = (\V, \E, C_n)$
@@ -339,7 +342,7 @@ A implementação da função introduce em si se dá pela escolha de um conjunto
 São geradas as arestas internas a comunidade dentro de uma função $\text{edgesWithin}(v, \G_p, C_i)$ e as externas ás comunidades $\text{edgesBetween}(v, \G_p, C_c, |t_{\E}|)$.
 Ambas as funções de geração de arestas retornam um conjunto de pares não ordenados.
 
-Assumindo que as implementações dessa funções se dá de forma a reforçar as propriedades desejadas, isso é:
+Assumindo que as implementações dessa funções ocorre: de forma a reforçar as propriedades desejadas, isso é,
 as comunidades escolhidas serem estocasticamente selecionadas para que os membros sejam semelhantes ao vértice $v$;
 e as arestas criadas reforçarem as características estruturais da comunidade.
 É esperado que as propriedades de homofilia, comunidades homogêneas, entre outras emerjam naturalmente.
@@ -355,7 +358,7 @@ Os representantes de uma comunidade, denota-se $R_C$, são, em um primeiro momen
 A cada lote processado, o processo de construção de um novo estado para o grafo, realiza uma nova seleção dos representantes de cada comunidade.
 
 \begin{quadro}[htbp]
-\caption{Fase 2 do modelo, função $\text{chooseCommunities}(v, \G_p)$}
+\caption{Segunda fase do modelo -- função $\text{chooseCommunities}(v, \G_p)$}
 \label{qua:fase_2_3}
 \begin{algorithm}
 Function $\text{chooseCommunities}(v, \G_p)$
@@ -372,7 +375,7 @@ end
 
 Conforme apresentado no \autoref{qua:fase_2_3}, tendo os representantes definidos, é utilizada a função $\text{Rand}_\text{PL}$, definida por \citeonline{largeron2015generating}, para escolher um par ordenado de comunidade e representante.
 Essa função escolhe um membro de um conjunto ordenado de cardinalidade $m$ com a distribuição $x \mapsto \frac{x^{-2}}{\sum^m_{i=1}i^{-2}}$.
-Para tanto, os pared ordenados de comunidade e representante são ordenados pela função de semelhança $d$.
+Para tanto, os pares ordenados de comunidade e representante são organizados pela função de semelhança $d$.
 
 \begin{equation}
 d(v, v') = (1-\theta)|v-v'| + \theta|v_a - v'_a|
@@ -383,14 +386,14 @@ Isso é, a função $d$ é dependente do contexto de qual comunidade se está co
 $\theta = 0$ indicando que é considerada apenas a distância euclideana e $\theta = 1$ indicando que não se considerará ela.
 
 O eixo $a$ utilizado na função $d$ é dependente de comunidade e é definido como a dimensão em que a comunidade é menos esparsa.
-Para tanto, identifica-se que a função de inercia de um conjunto de pontos, como utilizado por \citeonline{largeron2015generating}, pode ser expressa como uma soma da inercia consistindo apenas uma dimensão por vez.
+Para tanto, identifica-se que a função de inérica de um conjunto de pontos, como utilizado por \citeonline{largeron2015generating}, pode ser expressa como uma soma da inércia consistindo apenas uma dimensão por vez.
 
 \begin{equation}
 \sum_{v \in C} |g-v|^2 = \sum_{a=0}^{n}\sum_{v \in C}(g_a - v_a)^2
 \end{equation}
 
 Considerando $n$ como o índice do último componente dos vetores em $C$ e $g$ sendo o centro de gravidade de $g$.
-O eixo considerado em $d$ é aquele com a menor contribuição para a inercia.
+O eixo considerado em $d$ é aquele com a menor contribuição para a inércia.
 
 Com a ordenação definida, a função escolhe uma comunidade $C$ á qual adicionar o vértice $v$.
 Se essa comunidade for uma comunidade folha, os dois laços de repetição não serão executados e o conjunto $\set{C'_0, C''_0}$ terá apenas uma comunidade ($C' = C''$).
@@ -405,7 +408,7 @@ Essa quantidade máxima é escalonada de acordo com a quantidade de comunidades 
 A quantidade final de arestas a serem selecionadas é definida com a função $\text{Rand}_\text{PL}$.
 
 \begin{quadro}[htbp]
-\caption{Fase 2 do modelo, função $\text{edgesWithin}(v, \G_p, C, n)$}
+\caption{Segunda fase do modelo -- função $\text{edgesWithin}(v, \G_p, C, n)$}
 \label{qua:fase_2_4}
 \begin{algorithm}
 Function $\text{edgesWithin}(v, \G_p, C, n)$
@@ -432,7 +435,7 @@ A função elenca um conjunto $p$ de vértices que podem ser escolhidos.
 Esse conjunto é a união de todos os representantes de comunidades nas quais o vértice $v$ não está sendo introduzido.
 
 \begin{quadro}[htbp]
-\caption{Fase 2 do modelo, função $edgesBetween(v, \G_p, C_c, m)$}
+\caption{Segunda fase do modelo -- função $edgesBetween(v, \G_p, C_c, m)$}
 \label{qua:fase_2_5}
 \begin{algorithm}
 Function $edgesBetween(v, \G_p, C_c, n)$
@@ -467,7 +470,7 @@ A eleição dos novos representantes apresenta um ponto de interesse mais releva
 A alternativa utilizada neste trabalho é a seleção dos representantes mais próximos ao centro de gravidade da comunidade.
 A quantidade de representantes é o menor valor entre $\text{NbRep}$ e $|V_C|$.
 
-Destaca-se que esses representantes não precisam de ser vértices do grafo, já que são utilizados apenas para a comparação de distância.
+Destaca-se que esses representantes não precisam ser vértices do grafo, já que são utilizados apenas para a comparação de distância.
 Em implementações alternativas poderia ser utilizado o centro de gravidade.
 Alternativamente, poderia se utilizar pontos que maximizam a distância do centro de gravidade, para que os representantes sejam exemplos da periferia da comunidade.
 
@@ -478,7 +481,7 @@ Para todos os efeitos, o grafo gerado até este ponto já tem a maioria das prop
 Esta etapa final de geração de arestas é executado para o reforço dessas características.
 
 \begin{quadro}[htbp]
-\caption{Fase 3 do modelo, adição final de arestas}
+\caption{Terceira fase do modelo -- adição final de arestas}
 \label{qua:fase_3}
 \begin{algorithm}
 Output: $\G = (\V, \E, C_n)$
@@ -500,7 +503,7 @@ Com esse valor, é iniciado um processo iterativo, enquanto forem encontradas tr
 Quando todas as comunidades desse nível forem subgrafos completos o valor de $l$ é decrementado.
 
 O laço em si itera enquanto a quantidade de arestas no grafo não for igual ao parâmetro $MTE$ e o grafo não for um grafo completo. 
-Isso é, se o parâmetro denotar uma quantidade de arestas superior ao que é possível com a quantidade de vértices, este não serás um laço infinito.
+Isso é, se o parâmetro denotar uma quantidade de arestas superior ao que é possível com a quantidade de vértices, este não será um laço infinito.
 
 O processo interno ao loop é a identificação das arestas que se adicionadas ao grafo completariam mais um triângulo.
 Depois, essas arestas são filtradas para considerar apenas as que seriam internas a alguma comunidade de nível $l$.
@@ -509,7 +512,8 @@ Neste caso, $l$ é decrementado para que se considerem as comunidades hierarquic
 Caso  $T'$ seja não vazio, é escolhido uma aresta aleatória para ser preenchida no grafo.
 
 Essa implementação deliberadamente otimiza o coeficiente de clusterização, definido na equação \ref{eq:coef_clus}.
-Assumindo que as propriedades de homofilia estejam presentes, esse processo deveria de ter pouco ou nenhum impacto na mesma, pela característica transitiva da semelhança como distância euclideana.
+Assumindo que as propriedades de homofilia estejam presentes.
+Esse processo deveria de ter pouco ou nenhum impacto na mesma, pela característica transitiva da semelhança como distância euclideana.
 Isso é, qualquer aresta adicionada nesse processo que ligue dois vértices  $a$ e  $b$ que compartilham um vizinho  $c$ não vai ter uma distância maior que soma das duas arestas já presentes no grafo.
 
 \begin{equation}
