@@ -86,7 +86,7 @@ As características que devem ser verdadeiras se um grafo for representado nesta
         \\ \hline
     \end{tblr}
 
-    \fonte{elaborado pelo autor}
+    \fonte{elaborado pelo autor.}
 \end{quadro}
 
 Além dessa estruturação de $\G$, o modelo faz uso de uma segunda representação do grafo, denotada  $\G_p = (\V, \E, C_n, R)$.
@@ -139,7 +139,7 @@ Isso se deve à construção de uma árvore de comunidades hierarquicamente anin
 
 \begin{quadro}[htb]
     \centering
-    \caption{Características da modelagem}
+    \caption{Parâmetros do modelo}
     \label{qua:parameters}
 
     \begin{tblr}{|l|X|} \hline
@@ -173,7 +173,7 @@ Isso se deve à construção de uma árvore de comunidades hierarquicamente anin
 
     \end{tblr}
 
-    \fonte{elaborado pelo autor}
+    \fonte{elaborado pelo autor.}
 \end{quadro}
 
 \subsection{Inicialização do grafo}
@@ -221,7 +221,7 @@ for $C_i \in \text{flat}(C_n)$ do
 $\G_p \leftarrow (\V, \E, C_n, R)$
 return $\G_p$
 \end{algorithm}
-\fonte{elaborado pelo autor}
+\fonte{elaborado pelo autor.}
 \end{quadro}
 
 O processo da inicialização se divide em gerar a nuvem de pontos e inicializar as comunidades.
@@ -285,7 +285,7 @@ begin
 end
 $B \leftarrow B \cup B'$ 
 \end{algorithm}
-\fonte{elaborado pelo autor}
+\fonte{elaborado pelo autor.}
 \end{quadro}
 
 A implementação feita trabalha com lotes que serão processados sequencialmente, os membros de cada lote serão processados de forma assíncrona.
@@ -331,7 +331,7 @@ end
 $\G \leftarrow (\V, \E, C_n)$ 
 return $\G$
 \end{algorithm}
-\fonte{elaborado pelo autor}
+\fonte{elaborado pelo autor.}
 \end{quadro}
 
 Nesse processo, são consumidos os lotes, de forma que a função $\text{introduce}(v, \G_p)$ possa ser executada paralelamente.
@@ -370,7 +370,7 @@ Function $\text{chooseCommunities}(v, \G_p)$
     return $\set{C'_0, C''_0}$
 end
 \end{algorithm}
-\fonte{elaborado pelo autor}
+\fonte{elaborado pelo autor.}
 \end{quadro}
 
 Conforme apresentado no \autoref{qua:fase_2_3}, tendo os representantes definidos, é utilizada a função $\text{Rand}_\text{PL}$, definida por \citeonline{largeron2015generating}, para escolher um par ordenado de comunidade e representante.
@@ -419,7 +419,7 @@ Function $\text{edgesWithin}(v, \G_p, C, n)$
     return $\set{\set{v, u} | u \in W}$
 end
 \end{algorithm}
-\fonte{elaborado pelo autor}
+\fonte{elaborado pelo autor.}
 \end{quadro}
 
 Uma quantidade $e$ de arestas é gerada utilizado a função $\text{Rand}_\text{EdgeWth}(W)$, definida por \citeonline{largeron2015generating}.
@@ -448,7 +448,7 @@ Function $edgesBetween(v, \G_p, C_c, n)$
     return $\set{\set{v, u_0} | u \in W}$
 end
 \end{algorithm}
-\fonte{elaborado pelo autor}
+\fonte{elaborado pelo autor.}
 \end{quadro}
 
 O máximo de arestas é definido como $m$ sendo o mínimo entre a cardinalidade conjunto de adjacências possíveis, a quantidade de arestas internas á comunidades, e o parâmetro $E_\text{btw}^\text{max}$.
@@ -495,7 +495,7 @@ begin
     else $\E \leftarrow \E \cup \set{\text{Rand}_\text{Uni}(T')}$
 end
 \end{algorithm}
-\fonte{elaborado pelo autor}
+\fonte{elaborado pelo autor.}
 \end{quadro}
 
 O processo descrito no \autoref{qua:fase_3} inicia identificando o nível máximo que uma comunidade pode possuir, $l$.

@@ -15,7 +15,7 @@ Para os testes iniciais, foram utilizados valores descritos no \autoref{qua:base
         \SetCell{c} $N$ & \SetCell{c} $E_\text{wth}^\text{max}$ & \SetCell{c} $E_\text{btw}^\text{max}$ & \SetCell{c} $MTE$ & \SetCell{c} $\A$ & \SetCell{c} $K$ & \SetCell{c} $\theta$ & \SetCell{c} $\text{NbRep}$ \\ \hline
          1000 & 45 & 3 & 7000 & (1, 1) & (6, 2) & $\sfrac{1}{10}$ & 20 \\ \hline
     \end{tblr}
-    \fonte{elaborado pelo autor}
+    \fonte{elaborado pelo autor.}
 \end{quadro}
 
 \section{Presença de comunidades}
@@ -57,7 +57,7 @@ No segundo nível, o valor médio foi de aproximadamente 0,6 indicando comunidad
         $B_9$ & 0,71339 & 0,79877 & 17 & 237 \\ \hline
         Média & 0,73701 & 0,79635 & 19 & 219 \\ \hline
     \end{tblr}
-    \fonte{elaborado pelo autor}
+    \fonte{elaborado pelo autor.}
 \end{table}
 
 A \autoref{tab:mod_base_params} indica também os valores de sobreposição entre comunidades de primeiro ($O_1$) e segundo nível ($O_2$).
@@ -81,7 +81,7 @@ Observa-se que a redução do número mínimo foi feita para evitar a descaracte
         $M_4$ & 0,96672 & 0,95868 & 0,93582 & 0,88090 & 0 \\ \hline
         Média & 0,96630 & 0,95865 & 0,93286 & 0,87919 & 0 \\ \hline
     \end{tblr}
-    \fonte{elaborado pelo autor}
+    \fonte{elaborado pelo autor.}
 \end{table}
 
 O incremento nos valores obtidos é atribuível à existência de mais comunidades para as quais distribuir os vértices, não apenas em profundidade mas também em diâmetro.
@@ -107,7 +107,7 @@ Note-se o caso $M_9$ como contra exemplo do impacto de $K$ na modularidade, bem 
         $M_8$ & $(100)$ & 0,95152 \\ \hline
         $M_9$ & $(3)$ & 0,49024 \\ \hline
     \end{tblr}
-    \fonte{elaborado pelo autor}
+    \fonte{elaborado pelo autor.}
 \end{table}
 
 Alternativamente, é possível modificar significativamente os valores obtidos para a modularidade com os parâmetros $E_\text{btw}^\text{max}$ e $E_\text{wth}^\text{max}$.
@@ -170,7 +170,7 @@ $B_8$ & 0,36251 & 0,32820 & 0,34536 & 0,46364 \\ \hline
 $B_9$ & 0,36874 & 0,32936 & 0,34905 & 0,50499 \\ \hline
 Média & 0,36560 & 0,31481 & 0,34021 & 0,47654 \\ \hline
     \end{tblr}
-    \fonte{elaborado pelo autor}
+    \fonte{elaborado pelo autor.}
 \end{table}
 
 Naturalmente, existe uma influência significativa que a quantidade de comunidades tem neste valor.
@@ -190,7 +190,7 @@ Como efeito disso, a distância entre vértices conectados é bastante reduzida.
         $M_4$ & 0,18111 & 0,11163 & 0,05563 & 0,03016 & 0,16158 \\ \hline
         Média & 0,18526 & 0,11373 & 0,05845 & 0,03246 & 0,16423 \\ \hline
     \end{tblr}
-\fonte{elaborado pelo autor}
+\fonte{elaborado pelo autor.}
 \end{table}
 
 % (0.18740 + 0.18766 + 0.18446 + 0.18566 + 0.18111)/5 = 0.18526
@@ -222,7 +222,7 @@ Isso é, em um modelo nulo, onde não existe correlação entre os atributos do 
         $I_7$ &                       & 0,36632 & 0,30172 &                          \\ \hline
         $I_8$ &                       & 0,40126 & 0,33059 &                          \\ \hline
     \end{tblr}
-\fonte{elaborado pelo autor}
+\fonte{elaborado pelo autor.}
 \end{table}
 
 
@@ -267,8 +267,7 @@ Demonstra-se que cada comunidade possui um domínio absoluto sobre alguma regiã
     \centering
     \caption{$M_0$ renderizado com os vértices posicionado pelos seus atributos (apenas arestas)}\label{fig:m0_pos_wires}
     \includegraphics[width=\textwidth, height=0.52\textheight]{figures/m0_pos_wires.png}
-    \fonte{elaborado pelo autor.}
-\end{figure}
+    \fonte{elaborado pelo autor.} \end{figure}
 
 A \autoref{fig:b0_pos} e a \autoref{fig:b0_pos_wires} fazem a mesma distinção, mas com o grafo $B_0$.
 $B_0$ apresenta um conjunto de comunidades onde ocorre a sobreposição, não apenas no sentido de comunidades sobrepostas, mas em um sentido mais simples, de que há vértices que não pertencem a comunidade (e que não tem ligações com ela) ocupando o mesmo espaço.
@@ -276,6 +275,9 @@ Novamente, esse é um efeito de uma menor proporção de comunidades.
 
 A visualização das arestas mostra uma divisão visual das comunidades, com uma comunidade no centro e cinco comunidades a rodeando.
 Dessas seis comunidades, é possível identificar que existem grupos distintos dentro delas, isso é, as sub comunidades são visíveis, mas pela natureza delas (e presença de vértices que certem as duas), são divisões muito menos precisas.
+
+O mesmo grafo está exibido novamente na \autoref{fig:b0} e na \autoref{fig:b0_wires}.
+Nelas é possível identificar mais claramente as áreas de sobreposição das comunidades de segundo nível (identificadas por não terem cor) bem como a presença de mais arestas internas as comunidades, naturalmente.
 
 \begin{figure}[htpb]
     \centering
@@ -291,18 +293,18 @@ Dessas seis comunidades, é possível identificar que existem grupos distintos d
     \fonte{elaborado pelo autor.}
 \end{figure}
 
-% \begin{figure}[htpb]
-%     \centering
-%     \caption{Exemplo de grafo}\label{fig:b0}
-%     \includegraphics[width=\textwidth, height=0.42\textheight]{figures/b0.png}
-%     \fonte{elaborado pelo autor.}
-% \end{figure}
+\begin{figure}[htpb]
+    \centering
+    \caption{$B_0$ renderizado aproximando os vértices adjacentes}\label{fig:b0}
+    \includegraphics[width=\textwidth, height=0.42\textheight]{figures/b0.png}
+    \fonte{elaborado pelo autor.}
+\end{figure}
 
-% \begin{figure}[htpb]
-%     \centering
-%     \caption{Exemplo de grafo}\label{fig:b0_wires}
-%     \includegraphics[width=1\textwidth, height=0.42\textheight]{figures/b0_wires.png}
-%     \fonte{elaborado pelo autor.}
-% \end{figure}
+\begin{figure}[htpb]
+    \centering
+    \caption{$B_0$ renderizado aproximando os vértices adjacentes (apenas arestas)}\label{fig:b0_wires}
+    \includegraphics[width=1\textwidth, height=0.42\textheight]{figures/b0_wires.png}
+    \fonte{elaborado pelo autor.}
+\end{figure}
 
 \end{document}
