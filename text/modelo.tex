@@ -31,7 +31,7 @@ O modelo gera um grafo com atributos e uma cobertura de comunidades hierarquicam
 Os vértices em $\V$ são uma nuvem de pontos em um espaço de $p$ dimensões, cada um sendo um vetor com $p$ valores racionais (representados com ponto flutuante).
 As arestas em $\E$ são simples pares não ordenados de vértices.
 A cobertura $C_n$ é uma estrutura recursiva de conjuntos com $n$ níveis, onde o conjunto $C_n$ é composto por $m$ conjuntos $C_{n-1}$.
-No último nível o conjunto $C_0$ é composto por vértices do grafo, esses conjuntos são as comunidades \emph{folha}, significando que elas não são compostas por outras comunidades.
+No último nível, o conjunto $C_0$ é composto por vértices do grafo, esses conjuntos são as comunidades \emph{folha}, significando que elas não são compostas por outras comunidades.
 
 Essa estrutura recursiva é a representação das comunidades hierárquicas, onde os vértices que pertencem a uma comunidade $C$, denotado $V_C$ são os membros do conjunto união dos membros de  $C$, isso é, $\bigcup_{S \in c} V_S$.
 Como característica dessa modelagem, os vértices da comunidade representada por $C_n$ são a totalidade dos vértices do grafo, portanto $V_{C_n} = \V$.
@@ -104,7 +104,7 @@ Nominalmente, são elas:
 
 \begin{alineas}
     \item mundo pequeno: O diâmetro das redes complexas geradas pelo modelo deve ter uma relação logarítmica com a quantidade de vértices no modelo;
-    \item distribuição de graus em lei de potência: Os graus dos vértices devem estar distribuídos com uma lei de potência
+    \item distribuição de graus em lei de potência: Os graus dos vértices devem estar distribuídos com uma lei de potência;
     \item homofilia: O grafo gerado deve apresentar uma tendência de priorização da adjacência com vértices semelhantes;
     \item estrutura de comunidades: O grafo gerado deve de ter comunidades, conforme etiquetadas na cobertura, de forma que todo vértice pertença a uma ou mais comunidades, e as comunidades se organizem em uma estrutura hierárquica;
     \item comunidades homogêneas: As comunidades devem ser coesas não apenas na perspectiva topológica, mas em similaridade.
@@ -118,7 +118,7 @@ Essa implementação visa garantir a homogeneidade das comunidades e a homofilia
 A construção das arestas é feita priorizando a introdução de vértices a vértices com mais arestas dentro da comunidade, de forma a reforçar a distribuição de graus em lei de potência e a estrutura de comunidade, bem como a propriedade de mundo pequeno.
 
 É introduzida também a conceitualização de ortogonalidade de comunidades.
-É trivial a identificação, em sistemas do mundo real, de grupamentos que se sobrepõe devido ao compartilhamento de características distintas, isso é, cada uma das comunidades na área sobreposta tem como definição uma característica distinta.
+É trivial a identificação, em sistemas do mundo real, de agrupamentos que se sobrepõe devido ao compartilhamento de características distintas, isso é, cada uma das comunidades na área sobreposta tem como definição uma característica distinta.
 Em uma definição de comunidade por semelhança de vértice, dado um sistema onde os vértices são caraterizados por dois ou mais características independentes, cada comunidade pode ter uma semelhança não em função da soma das características, mas de uma categorização em específico.
 Considerando comunidades de indivíduos caracterizados por sua área de atuação e por sua crença religiosa, assumindo que não há uma influência direta entre essas duas características, uma comunidade de membros de uma religião poderia estar sobreposta a uma comunidade de profissionais de uma determinada área.
 Essas duas comunidades seriam ortogonais.
@@ -134,7 +134,7 @@ Por fim, as arestas finais são adicionadas.
 
 As propriedades descritas podem ser controladas utilizando uma série de parâmetros.
 Os parâmetros seguem descritos no \autoref{qua:parameters}.
-Eles são uma adaptação bastante direta dos parâmetros do modelo de \citeonline{largeron2015generating}, a diferença mais significativa é no parâmetro $K$, que é um vetor multi dimensional de inteiros maiores que 1.
+Eles são uma adaptação bastante direta dos parâmetros do modelo de \citeonline{largeron2015generating}, a diferença mais significativa é no parâmetro $K$, que é um vetor multidimensional de inteiros maiores que 1.
 Isso se deve à construção de uma árvore de comunidades hierarquicamente aninhadas.
 
 \begin{quadro}[htb]
@@ -238,7 +238,7 @@ Nas linhas 16 até 20 é iterado sobre os vértices, os vértices com quem é po
 Nas linhas 17 e 18 uma quantidade aleatória das arestas possíveis são construídas.
 
 As funções $\text{Rand}_{\text{Uni}}$ e $\text{Sample}$ são duas funções de escolha aleatória uniformes.
-$\text{Sample}(P, l)$ escolhe um sub conjunto de $P$ com $l$ elementos uniformemente distribuído, i.e., todos os membros de $P$ tem a mesma chance de estar presente no conjunto construído.
+$\text{Sample}(P, l)$ escolhe um subconjunto de $P$ com $l$ elementos uniformemente distribuído, i.e., todos os membros de $P$ tem a mesma chance de estar presente no conjunto construído.
 $\text{Rand}_{\text{Uni}(P)}$ funciona da mesma forma, mas retorna um único membro de $P$.
 
 No caso de não ser uma comunidade folha, o processo de construção da comunidade encontra-se nas linhas 22 até 28.
@@ -397,7 +397,7 @@ O eixo considerado em $d$ é aquele com a menor contribuição para a inércia.
 
 Com a ordenação definida, a função escolhe uma comunidade $C$ á qual adicionar o vértice $v$.
 Se essa comunidade for uma comunidade folha, os dois laços de repetição não serão executados e o conjunto $\set{C'_0, C''_0}$ terá apenas uma comunidade ($C' = C''$).
-Caso a comunidade possua sub comunidades, o processo de escolha executado iterativamente com as variáveis $C'$ e  $C''$, restringindo para que sejam escolhidas apenas comunidades contidas nas variáveis.
+Caso a comunidade possua sub-comunidades, o processo de escolha executado iterativamente com as variáveis $C'$ e  $C''$, restringindo para que sejam escolhidas apenas comunidades contidas nas variáveis.
 É restringido também, na seleção de $C''$ que este não seja igual à  $C'$.
 
 \subsubsection{Geração de arestas}
@@ -434,6 +434,11 @@ As arestas que ligam o vértice $v$ a outros com os quais ele não compartilha c
 A função elenca um conjunto $p$ de vértices que podem ser escolhidos.
 Esse conjunto é a união de todos os representantes de comunidades nas quais o vértice $v$ não está sendo introduzido.
 
+O máximo de arestas é definido como $m$ sendo o mínimo entre a cardinalidade conjunto de adjacências possíveis, a quantidade de arestas internas á comunidades, e o parâmetro $E_\text{btw}^\text{max}$.
+A quantidade de arestas a serem geradas $e$ é  definida com a função $\text{Rand}_\text{PL}$, de zero a $m$.
+As arestas em si são construídas com base na função $\text{Rand}_\text{EdgeBtw}(W)$ \cite{largeron2015generating}, que escolhe o representante com o qual o vértice se ligará usando a densidade probabilística descrita na equação \ref{eq:rand_edge_btw}.
+Ressalta-se que com a adaptação que foi realizada a função $d$ é dependente da comunidade que contextualiza a semelhança entre os vértices.
+
 \begin{quadro}[htbp]
 \caption{Segunda fase do modelo -- função $edgesBetween(v, \G_p, C_c, m)$}
 \label{qua:fase_2_5}
@@ -450,11 +455,6 @@ end
 \end{algorithm}
 \fonte{elaborado pelo autor.}
 \end{quadro}
-
-O máximo de arestas é definido como $m$ sendo o mínimo entre a cardinalidade conjunto de adjacências possíveis, a quantidade de arestas internas á comunidades, e o parâmetro $E_\text{btw}^\text{max}$.
-A quantidade de arestas a serem geradas $e$ é  definida com a função $\text{Rand}_\text{PL}$, de zero a $m$.
-As arestas em si são construídas com base na função $\text{Rand}_\text{EdgeBtw}(W)$ \cite{largeron2015generating}, que escolhe o representante com o qual o vértice se ligará usando a densidade probabilística descrita na equação \ref{eq:rand_edge_btw}.
-Ressalta-se que com a adaptação que foi realizada a função $d$ é dependente da comunidade que contextualiza a semelhança entre os vértices.
 
 \begin{equation}\label{eq:rand_edge_btw}
     u \mapsto \frac{d(v, u)^{-1}}{\displaystyle\sum_{u' \in W}d(v, u')^{-1}}
@@ -526,6 +526,6 @@ No entanto é possível demonstrar que valores mais elevados de $MTE$ tem o efei
 
 Da perspectiva das características estruturais de uma comunidade, é intuitiva também a compreensão de que valores razoáveis do parâmetro reforçarão a estrutura, construindo novas arestas nas comunidades folha.
 Mas também é perceptível que a geração de arestas a ponto de transformar comunidades que não são folha em cliques faz com que a estrutura das comunidades folha contidas nesta sejam destruídas.
-Mas essas influências da parametrização são melhor exploradas com resultados experimentais.
+Mas, essas influências da parametrização são melhor exploradas com resultados experimentais.
 
 \end{document}
