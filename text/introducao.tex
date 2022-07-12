@@ -5,27 +5,33 @@
 \chapter{Introdução}
 
 Redes complexas, como definido por \citeonline{metz2007redes}, são grafos com uma topologia não trivial.
-Isso é, são grafos onde parte ou toda a informação de interesse não contida nos vértices e arestas individualmente, mas em propriedades do conjunto de vértices e arestas.
-Esses grafos e as suas propriedades são aplicáveis as mais diversas áreas, como por exemplo na propagação de uma epidemia \citeonline{stegehuis2016epidemic}.
+Isso é, são grafos onde parte ou toda a informação de interesse não está contida nos vértices e arestas individualmente, mas em propriedades do conjunto de vértices e arestas.
+Esses grafos e as suas propriedades são aplicáveis as mais diversas áreas, como por exemplo na propagação de uma epidemia \cite{stegehuis2016epidemic}.
 
 Segundo \citeonline{girvan2002community}, um dos sistemas do mundo real que se pode modelar em uma rede complexa é o conjunto de relações sociais.
 Uma modelagem simplista desse sistema é a representação de cada indivíduo como um vértice, e vértices adjacentes sendo pares de indivíduos que se conhecem.
-Nesse tipo de sistema um subgrafo completo, denominado clique \cite{fortunato2010community}, pode ser interpretada como uma propriedade relevante a indicação de que desse conjunto de indivíduos onde todos se conhecem.
+Nesse tipo de sistema pode se encontrar um subgrafo completo, denominado clique \cite{fortunato2010community}.
+Esse clique pode ser interpretado como uma propriedade relevante, indicando a presença de que um objeto composto por esses vértices.
 
 \citeonline{girvan2002community} também apontam que outros sistemas, como cadeias alimentares, cadeias de metabolização, redes de transmissão elétrica e redes de computadores podem ser representadas como redes complexas.
 Muitas vezes propriedades que se observam em redes complexas de um domínio estão presentes também nas redes complexas de outros domínios, mas com interpretações distintas sobre o objeto modelado.
 \citeonline{fortunato2010community} indica isso nas múltiplas discussão e interpretações do que constitui uma comunidade em uma rede complexa, dividindo-se principalmente em características estruturais, e por semelhança de vértice.
-
+ 
 \citeonline{largeron2015generating} descrevem o que é chamado na literatura de um modelo de geração algorítmica de redes complexas no qual os vértices do grafo estão dispostos em uma nuvem de ponto e a distribuição deles em diferentes comunidades leva em conta sua posição espacial, e as arestas são construídas em função desse pertencimento a uma comunidade.
 \citeonline{akoglu2009rtg} descrevem um modelo mais primitivo, que não realiza a atribuição explícita de comunidades, mas que gera um grafo com essas comunidades. 
 Ressalta-se, observando o trabalho de \citeonline{fortunato2010community} de que há uma vasta literatura a respeito dos processos de detecção dessas comunidades.
 Observando-se a literatura da qual os trabalhos de \citeonline{largeron2015generating, akoglu2009rtg} e \citeonline{slota2019scalable}, é indicada a existência dos modelos necessários para a geração de redes complexas com comunidades.
-No entanto, propriedades adjacentes a presença de comunidades para os quais existe literatura a respeito da detecção, como comunidades hierárquicas e comunidades sobrepostas, parecem estar pouco presentes em modelos de geradores de redes complexas.
+No entanto, propriedades adjacentes a presença de comunidades para os quais existe literatura a respeito da detecção parecem estar pouco presentes em modelos de geradores de redes complexas.
+
+Dessas propriedades de redes complexas para as quais não foram identificados modelos de geração destampam-se comunidades hierárquicas e comunidades sobrepostas.
+Comunidades hierárquicas, ou hierarquicamente ordenadas, são estruturas recursivas que podem ser encontradas em redes complexas, onde a característica de distribuição de arestas faz com que comunidades sejam compostas por sub comunidades.
+Comunidades sobrepostas são estruturas comunitárias onde vértices podem estar em mais de uma comunidade simultaneamente, de forma que a descrição das comunidades se dá em uma cobertura, não em uma partição \cite{fortunato2010community}.
+
 Tendo esse contexto, este trabalho adaptou os modelos presentes na literatura de geração de redes complexas para a incorporação dessas propriedades, comunidades sobrepostas e comunidades hierárquicas.
 
 \section{Objetivos}
 
-O objetivo desse trabalho é a construção de um modelo de geração algorítmica de redes complexas com comunidades hierarquicamente organizadas e com comunidades sobrepostas.
+O objetivo desse trabalho é construir um modelo de geração algorítmica de redes complexas com comunidades hierarquicamente organizadas e com comunidades sobrepostas.
 
 Os objetivos específicos são:
 

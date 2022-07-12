@@ -4,19 +4,23 @@
 \chapter{Modelo}
 
 Este trabalho propõe um modelo algorítmico de geração de redes complexas que produza grafos mais realistas.
-Realista nesse contexto é entendido como tendo a presença de um conjunto de propriedades que se observam em grafos do mundo real.
+Realista nesse contexto é entendido como tendo a presença de um conjunto de propriedades que se observam em grafos que modelam sistema do mundo real.
 A proposta desse trabalho é a extensão do modelo de \citeonline{largeron2015generating} para a construção de grafos em que se apresentem também as propriedades de comunidades hierárquicas e comunidades sobrepostas.
-A modelagem proposta se baseia na construção de uma cobertura (em oposição á construção de uma partição) recursiva, de forma semelhante ao que é produzido pelo algoritmo de detecção proposto por \citeonline{shen2009detect}.
+A modelagem proposta se baseia na construção de uma cobertura (em oposição à construção de uma partição) recursiva, de forma semelhante ao que é produzido pelo algoritmo de detecção proposto por \citeonline{shen2009detect}.
 
 
 \section{Hipótese}
 
-Esse trabalho se propõe a validar se o modelo descrito satisfaz um conjunto de propriedades desejáveis.
+A hipótese a ser avaliada é a de que a extensão do modelo descrito por \citeonline{largeron2015generating} para a introdução de comunidades hierárquicas e sobrepostas pode ser feita com a aplicação recursiva de uma escolha de comunidades.
+Isso é, modificando o modelo para que a construção inicial das comunidades se dê de forma recursiva, e modificando o processo de escolha de comunidade para que seja possível a escolha de um par de comunidades, é esperado que se mantenham as propriedades se mantenham.
+
+Essa modificação do modelo não deve de afetar a capacidade dele de gerar grafos com comunidades estruturalmente relevantes, e ainda assim homogêneas.
 Para tanto, estende-se a representação clássica de grafo para a inclusão de uma cobertura, bem como a delimitação dos vértices como vetores em um espaço de $p$ dimensões.
 
 \subsection{Representação do grafo}
 
-O modelo gera um grafo com atributos e uma cobertura de comunidades hierarquicamente dispostas.
+O modelo proposto gera um grafo com atributos e uma cobertura de comunidades hierarquicamente dispostas.
+Este grafo é representado da seguinte maneira.
 
 \begin{equation}
 \begin{split}
@@ -28,6 +32,7 @@ O modelo gera um grafo com atributos e uma cobertura de comunidades hierarquicam
 \end{split}
 \end{equation}
 
+Onde $\G$ é o grafo, \V é o conjunto de vértices, \E o conjunto de arestas e  $C_n$ o conjunto inicial da representação da cobertura.
 Os vértices em $\V$ são uma nuvem de pontos em um espaço de $p$ dimensões, cada um sendo um vetor com $p$ valores racionais (representados com ponto flutuante).
 As arestas em $\E$ são simples pares não ordenados de vértices.
 A cobertura $C_n$ é uma estrutura recursiva de conjuntos com $n$ níveis, onde o conjunto $C_n$ é composto por $m$ conjuntos $C_{n-1}$.
@@ -35,7 +40,7 @@ No último nível, o conjunto $C_0$ é composto por vértices do grafo, esses co
 
 Essa estrutura recursiva é a representação das comunidades hierárquicas, onde os vértices que pertencem a uma comunidade $C$, denotado $V_C$ são os membros do conjunto união dos membros de  $C$, isso é, $\bigcup_{S \in c} V_S$.
 Como característica dessa modelagem, os vértices da comunidade representada por $C_n$ são a totalidade dos vértices do grafo, portanto $V_{C_n} = \V$.
-Isso implica que para qualquer vértice em $\V$, ele deve de estar presente pelo menos uma comunidade folha.
+Isso implica que para qualquer vértice em $\V$, ele deve de estar presente pelo menos uma comunidade folha\footnote{Pela organização da cobertura em uma estrutura de árvore refere-se a comunidades do último nível, que não possuem subdivisões internas, como comunidades folha.}.
 Ao estar presente em uma comunidade folha, o vértice é considerando também parte de todas as comunidades compostas por esta comunidade folha.
 
 A cardinalidade de cada um dos conjuntos que formam a cobertura é variável de acordo com o nível, isso é, dado um nível $x$ todas as coberturas  $C_{n-x}$ possuem a mesma quantidade de elementos, mas conjuntos de níveis distintos podem possuir quantidades de elementos distintas.
@@ -46,7 +51,7 @@ Uma característica de notação é a função flat que mapeia uma comunidade pa
 Para efeito de notação $\text{flat}(C_n)$ é um conjunto com todas as comunidades do grafo, incluindo a comunidade global.
 O mapa $L$ relaciona cada comunidade com a quantidade de ancestrais que a comunidade possui, ou seja, com a quantidade de comunidades que ela compõe.
 As notações utilizadas serão  $L_C$, leia-se nível de $C$, ou $L$, leia-se níveis.
-A raiz da cobertura é o nível zero ($L_{C_n} = 0$) e a o nível de um nó folha é igual a $n$ ($L_{C_0}=n$).
+A raiz da cobertura é o nível zero ($L_{C_n} = 0$) e o nível de um nó folha é igual a $n$ ($L_{C_0}=n$).
 As características que devem ser verdadeiras se um grafo for representado nesta modelagem encontram-se descritas no \autoref{qua:prop_representacao}.
 
 \begin{quadro}[hbt]
@@ -60,7 +65,7 @@ As características que devem ser verdadeiras se um grafo for representado nesta
         Para toda a comunidade $C$, se ela não for folha, a função flat dela é a união de $C$ com a função flat de seus componentes.&
         $\displaystyle \forall C (L_C < n \implies \text{flat}(C) = C\cup\bigcup_{S \in C}\text{flat}(S))$
         \\\hline
-        Para toda a comunidade $C$, se ela for folha, a função flat dela é um conjunto consigo.&
+        Para toda a comunidade $C$, se ela for folha, a função flat dela é um conjunto contendo apenas ela.&
         $\displaystyle \forall C (L_C = n \implies \text{flat}(C) = \set{C})$
         \\\hline
         A comunidade raiz engloba todos os vértices do grafo.&
@@ -69,19 +74,19 @@ As características que devem ser verdadeiras se um grafo for representado nesta
         Para todas as comunidades $C$, se $C$ não for folha, os vértices englobados em C são a união dos vértices englobados em seus componentes&
         $\displaystyle \forall C (L_C > 0 \implies V_C =  \bigcup_{S \in C} V_S)$
         \\ \hline
-        Para todas as comunidades $C$, se $C$ for folha, os vértices englobados em C seus componentes&
+        Para todas as comunidades $C$, se $C$ for folha, os vértices englobados em C são seus membros.&
         $\displaystyle \forall C (L_C = 0 \implies V_{C_0} = C_0)$
         \\ \hline
-        Para todos os vetores do grafo, existe uma comunidade folha a qual ela pertence &
+        Para todos os vetores do grafo, existe uma comunidade folha a qual ela pertence.&
         $\displaystyle \forall v (\exists C(v \in C \land L_C = n))$
         \\ \hline
-        Pra todo vértice $v$, pra todo $l$, existe uma comunidade $C$ que contenha o vértice e seja do nível $l$&
+        Pra todo vértice $v$, pra todo $l$, existe uma comunidade $C$ que contenha o vértice e seja do nível $l$.&
         $\displaystyle \forall v \forall l (\exists C (v \in V_{C_x} \land L_C = l))$
         \\ \hline
-        Todos as comunidades não folha tem a mesma quantidade de componentes se forem do mesmo nível, a cardinalidade de uma comunidade não folha é expressa num vetor $K$ &
+        Todos as comunidades não folha tem a mesma quantidade de componentes se forem do mesmo nível, a cardinalidade de uma comunidade não folha é expressa num vetor $K$.&
         $\displaystyle \exists K (K \in \mathbb{I}^{n-1} \land \forall C (L_C < n \implies K_{L_C} = |C|))$
         \\ \hline
-        Toda a comunidade tem pelo menos uma componente e engloba pelo menos um vértice&
+        Toda a comunidade tem pelo menos uma componente e engloba pelo menos um vértice.&
         $\displaystyle \forall C (|C| \ge 1 \land |V_C| \ge 1)$
         \\ \hline
     \end{tblr}
@@ -103,14 +108,14 @@ Como a implementação proposta se baseia no modelo de \citeonline{largeron2015g
 Nominalmente, são elas:
 
 \begin{alineas}
-    \item mundo pequeno: O diâmetro das redes complexas geradas pelo modelo deve ter uma relação logarítmica com a quantidade de vértices no modelo;
+    \item mundo pequeno: o diâmetro das redes complexas geradas pelo modelo deve ter uma relação logarítmica com a quantidade de vértices no modelo;
     \item distribuição de graus em lei de potência: Os graus dos vértices devem estar distribuídos com uma lei de potência;
     \item homofilia: O grafo gerado deve apresentar uma tendência de priorização da adjacência com vértices semelhantes;
     \item estrutura de comunidades: O grafo gerado deve de ter comunidades, conforme etiquetadas na cobertura, de forma que todo vértice pertença a uma ou mais comunidades, e as comunidades se organizem em uma estrutura hierárquica;
     \item comunidades homogêneas: As comunidades devem ser coesas não apenas na perspectiva topológica, mas em similaridade.
 \end{alineas}
 
-Para tanto, a abordagem do modelo é a construção explicita das comunidades com base na similaridade dos vértices.
+Para tanto, a abordagem do modelo é a construção explícita das comunidades com base na similaridade dos vértices.
 Para isso, a similaridade dos vértices é definida com base na distância euclideana dos vetores de atributos dos vértices.
 As arestas do grafo são definidas com base nas comunidades das quais o vértice faz parte.
 
@@ -127,7 +132,7 @@ Essas duas comunidades seriam ortogonais.
 
 A implementação do modelo se divide em três etapas, que consumindo um conjunto de parâmetros produzem um grafo conforme a representação previamente descrita.
 As etapas inicialmente constroem uma nuvem de pontos e os cluster iniciais para as comunidades.
-Com esses vértices e as comunidades iniciais, iterativamente são adicionados novos vértices ás comunidades, e são geradas arestas nesse processo.
+Com esses vértices e as comunidades iniciais, iterativamente são adicionados novos vértices às comunidades, e são geradas arestas nesse processo.
 Por fim, as arestas finais são adicionadas.
 
 \subsection{Parâmetros}
@@ -149,10 +154,10 @@ Isso se deve à construção de uma árvore de comunidades hierarquicamente anin
         Quantidade de vértices.
         \\ \hline
         $E_\text{wth}^\text{max} \in \set{i \in \mathbb{N} | i \ge 1}$&
-        Número máximo de arestas (internas a comunidade) inseridas a um vértice ao introduzir ele a uma comunidade.
+        Número máximo de arestas (internas à comunidade) inseridas a um vértice ao introduzir ele a uma comunidade.
         \\ \hline
         $E_\text{btw}^\text{max} \in \set{i \in \mathbb{N} | i \ge 1}$&
-        Número máximo de arestas (externas a comunidade) inseridas a um vértice ao introduzir ele as comunidades.
+        Número máximo de arestas (externas à comunidade) inseridas a um vértice ao introduzir ele as comunidades.
         \\ \hline
         $MTE \in \set{m \in \mathbb{N} | m \ge 1}$&
         Número mínimo de arestas no grafo produzido.
@@ -209,7 +214,7 @@ begin
     $p' \leftarrow \text{Sample}(p, \min\set{s, |p|})$
     $k \leftarrow \text{K Medoids}(p', K_l)$ 
     $c \leftarrow \set{\text{cover}(l+1, q) | q \in k}$
-    $p' \leftarrow \set{\text{Rand}_\text{Uni}(c') | c' \in V_c}$
+    $p' \leftarrow \set{\text{Rand}_\text{Uni}(c') | c' \in c}$
     $\E \leftarrow \E \cup \set{\Set{p'_i, p'_{i+1}}| i \in \set{1, 2, \ldots |p'| -1}}$
     return $c$
 end
@@ -225,23 +230,23 @@ return $\G_p$
 \end{quadro}
 
 O processo da inicialização se divide em gerar a nuvem de pontos e inicializar as comunidades.
-A linha 4 inicializa $\V$ com um conjunto vazio, e o laço de repetição das linhas 6 á 10 insere vetores neste conjunto enquanto ele tiver menos de  $N$ membros.
+A linha 2 inicializa $\V$ com um conjunto vazio, e o laço de repetição das linhas 4 à 8 insere vetores neste conjunto enquanto ele tiver menos de  $N$ membros.
 O vetor em si é definido como uma série de distribuições aleatórias com o centro em zero e o desvio padrão informado pelo parâmetro $\A$.
 
 O processo de geração das estruturas de comunidade é mais complexo, exigindo uma função para possibilitar recursividade.
 A função cover tem como condicionante a característica de que a comunidade que se está processando é ou não folha, isso é, se ela possuirá ou não subdivisões internas.
-Na linha 14 é feita essa ramificação, considerando que $l$, um parâmetro de controle que é incrementado a cada chamada recursiva.
-Se $l$ for igual á cardinalidade de $k$, isso indica que se está processando o último nível a ser gerado, uma folha, o comportamento deixa de ser recursivo.
+Na linha 11 é feita essa ramificação, considerando que $l$, um parâmetro de controle que é incrementado a cada chamada recursiva.
+Se $l$ for igual à cardinalidade de $k$, isso indica que se está processando o último nível a ser gerado, uma folha, o comportamento deixa de ser recursivo.
 
 O último nível gerado compõe um conjunto de arestas entre os membros da comunidade folha.
-Nas linhas 16 até 20 é iterado sobre os vértices, os vértices com quem é possível formar arestas, nomeado $p'$, são definidos como os vértices em $p$ diferentes de $v$ com quem $v$ não é adjacente.
-Nas linhas 17 e 18 uma quantidade aleatória das arestas possíveis são construídas.
+Nas linhas 13 até 15 é iterado sobre os vértices, os vértices com quem é possível formar arestas, nomeado $p'$, são definidos como os vértices em $p$ diferentes de $v$ com quem $v$ não é adjacente.
+Nas linhas 16 e 17 uma quantidade aleatória das arestas possíveis são construídas.
 
 As funções $\text{Rand}_{\text{Uni}}$ e $\text{Sample}$ são duas funções de escolha aleatória uniformes.
 $\text{Sample}(P, l)$ escolhe um subconjunto de $P$ com $l$ elementos uniformemente distribuído, i.e., todos os membros de $P$ tem a mesma chance de estar presente no conjunto construído.
 $\text{Rand}_{\text{Uni}(P)}$ funciona da mesma forma, mas retorna um único membro de $P$.
 
-No caso de não ser uma comunidade folha, o processo de construção da comunidade encontra-se nas linhas 22 até 28.
+No caso de não ser uma comunidade folha, o processo de construção da comunidade encontra-se nas linhas 21 até 26.
 Para isso, primeiramente é definido um tamanho de amostragem $s$.
 Esse tamanho é definido como um produto dos valores de $K$, filtrando para o nível atual em diante.
 Com isso, buscasse uma amostra $p'$, com tamanho  $s$ ou o valor máximo possível se  $s$ for maior que a quantidade de membros em  $p$.
@@ -257,8 +262,8 @@ Por fim, o processo também realiza a atribuição dos representantes de cada co
 
 \subsection{Processamento dos vértices}
 
-O processamento dos vértices, isso é, a sistemática introdução deles á comunidades bem como a definição de arestas que reforcem a comunidade considerando os membros introduzidos, é esperado que seja mais custoso.
-Esse processo tem um forte componente do custo relacionado á quantidade de vértices do grafo final, isso é, o parâmetro $N$.
+O processamento dos vértices, isso é, a sistemática introdução deles à comunidades bem como a definição de arestas que reforcem a comunidade considerando os membros introduzidos, é esperado que seja mais custoso.
+Esse processo tem um forte componente do custo relacionado à quantidade de vértices do grafo final, isso é, o parâmetro $N$.
 Para tanto, as principais distinções do modelo proposto para com o modelo de \citeonline{largeron2015generating} são para possibilidade de paralelização do processo.
 
 \begin{quadro}[bhtp]
@@ -339,7 +344,7 @@ Isso é, fazendo uso de um estado $\G_p = (\V, \E, C_n, R)$ imutável, o process
 Ao final desse processamento, é trivial acumular os dados gerados por cada execução, e com esses dados gerar um novo estado do grafo.
 
 A implementação da função introduce em si se dá pela escolha de um conjunto de comunidades $C_c$ por meio da função $\text{chooseCommunities}(v, \G_p)$, seguido pela geração de arestas.
-São geradas as arestas internas a comunidade dentro de uma função $\text{edgesWithin}(v, \G_p, C_i)$ e as externas ás comunidades $\text{edgesBetween}(v, \G_p, C_c, |t_{\E}|)$.
+São geradas as arestas internas à comunidade dentro de uma função $\text{edgesWithin}(v, \G_p, C_i)$ e as externas às comunidades $\text{edgesBetween}(v, \G_p, C_c, |t_{\E}|)$.
 Ambas as funções de geração de arestas retornam um conjunto de pares não ordenados.
 
 Assumindo que as implementações dessa funções ocorre: de forma a reforçar as propriedades desejadas, isso é,
@@ -395,7 +400,7 @@ Para tanto, identifica-se que a função de inérica de um conjunto de pontos, c
 Considerando $n$ como o índice do último componente dos vetores em $C$ e $g$ sendo o centro de gravidade de $g$.
 O eixo considerado em $d$ é aquele com a menor contribuição para a inércia.
 
-Com a ordenação definida, a função escolhe uma comunidade $C$ á qual adicionar o vértice $v$.
+Com a ordenação definida, a função escolhe uma comunidade $C$ à qual adicionar o vértice $v$.
 Se essa comunidade for uma comunidade folha, os dois laços de repetição não serão executados e o conjunto $\set{C'_0, C''_0}$ terá apenas uma comunidade ($C' = C''$).
 Caso a comunidade possua sub-comunidades, o processo de escolha executado iterativamente com as variáveis $C'$ e  $C''$, restringindo para que sejam escolhidas apenas comunidades contidas nas variáveis.
 É restringido também, na seleção de $C''$ que este não seja igual à  $C'$.
@@ -434,7 +439,7 @@ As arestas que ligam o vértice $v$ a outros com os quais ele não compartilha c
 A função elenca um conjunto $p$ de vértices que podem ser escolhidos.
 Esse conjunto é a união de todos os representantes de comunidades nas quais o vértice $v$ não está sendo introduzido.
 
-O máximo de arestas é definido como $m$ sendo o mínimo entre a cardinalidade conjunto de adjacências possíveis, a quantidade de arestas internas á comunidades, e o parâmetro $E_\text{btw}^\text{max}$.
+O máximo de arestas é definido como $m$ sendo o mínimo entre a cardinalidade conjunto de adjacências possíveis, a quantidade de arestas internas à comunidades, e o parâmetro $E_\text{btw}^\text{max}$.
 A quantidade de arestas a serem geradas $e$ é  definida com a função $\text{Rand}_\text{PL}$, de zero a $m$.
 As arestas em si são construídas com base na função $\text{Rand}_\text{EdgeBtw}(W)$ \cite{largeron2015generating}, que escolhe o representante com o qual o vértice se ligará usando a densidade probabilística descrita na equação \ref{eq:rand_edge_btw}.
 Ressalta-se que com a adaptação que foi realizada a função $d$ é dependente da comunidade que contextualiza a semelhança entre os vértices.
